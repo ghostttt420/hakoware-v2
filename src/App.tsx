@@ -1,34 +1,56 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState, useEffect } from 'react'
+import { fetchContracts } from './services/firebase'
+import './index.css' 
+import { calculateDebt } from './utils/gameLogic'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [contracts, setContracts] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  // Load Data on Start
+  useEffect(() => {
+    async function loadData() {
+      const data = await fetchContracts();
+      
+      // Sort by debt (highest first)
+      const sorted = data.sort((a, b) => {
+         const debtA = calculateDebt(a).totalDebt;
+         const debtB = calculateDebt(b).totalDebt;
+         return debtB - debtA;
+      });
+
+      setContracts(sorted);
+      setLoading(false);
+    }
+    loadData();
+  }, [])
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div className="app-container">
+      <h1 style={{textAlign: 'center', color: '#ffd700'}}>HAKOWARE v2</h1>
+      
+      {loading ? (
+        <div style={{color: 'white', textAlign: 'center'}}>Summoning Database...</div>
+      ) : (
+        <div className="grid-container">
+          {contracts.map(c => {
+             const stats = calculateDebt(c);
+             return (
+                <div key={c.id} style={{
+                    background: '#1e1e1e', 
+                    padding: '20px', 
+                    margin: '10px', 
+                    borderLeft: '4px solid #00e676',
+                    color: 'white'
+                }}>
+                  <h3>{c.name}</h3>
+                  <h2 style={{color: '#ffd700'}}>{stats.totalDebt} APR</h2>
+                </div>
+             )
+          })}
+        </div>
+      )}
+    </div>
   )
 }
 
