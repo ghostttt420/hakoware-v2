@@ -1,10 +1,15 @@
-// src/utils/gameLogic.js
+// Pure logic functions - No React code here
 
 export const calculateDebt = (contract) => {
-    if (!contract.lastInteraction) return { totalDebt: 0, daysMissed: 0 };
+    if (!contract.lastInteraction) return { totalDebt: 0, daysMissed: 0, limit: 50 };
     
-    // Handle Firestore Timestamp conversion if needed
-    const lastInteraction = contract.lastInteraction.toDate ? contract.lastInteraction.toDate() : new Date(contract.lastInteraction);
+    // Handle Firestore Timestamp vs Date object
+    let lastInteraction;
+    if (contract.lastInteraction.toDate) {
+        lastInteraction = contract.lastInteraction.toDate();
+    } else {
+        lastInteraction = new Date(contract.lastInteraction);
+    }
     
     const now = new Date();
     const diffTime = Math.abs(now - lastInteraction);
@@ -18,13 +23,11 @@ export const calculateDebt = (contract) => {
 };
 
 export const getHunterRank = (debt) => {
-    // Note: In React we return strings or JSX, usually strings for innerHTML is risky, 
-    // but for now let's just return the text/class logic.
-    if (debt === 0) return { label: 'CLEAN RECORD', color: '#00C851' };
-    if (debt < 10) return { label: 'ROOKIE', color: '#aaa' };
-    if (debt < 30) return { label: 'NEN USER', color: '#ffd700' };
-    if (debt < 50) return { label: 'PHANTOM TROUPE', color: '#ff8800' };
-    return { label: 'CHIMERA ANT', color: '#ff4444' };
+    if (debt === 0) return 'CLEAN RECORD';
+    if (debt < 10) return 'ROOKIE';
+    if (debt < 30) return 'NEN USER';
+    if (debt < 50) return 'PHANTOM TROUPE';
+    return 'CHIMERA ANT';
 };
 
 export const calculateCreditScore = (debt, days) => {
