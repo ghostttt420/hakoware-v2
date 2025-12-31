@@ -1,68 +1,458 @@
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    --bg: #121212;
+    --card-bg: #1e1e1e;
+    --text: #e0e0e0;
+    --gold: #ffd700;
+    --red: #ff4444;
+    --green: #00e676;
+    --font-header: 'Press Start 2P', cursive;
+    --font-body: 'Roboto Mono', monospace;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Align top for scrolling */
+    padding-top: 40px;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+.app-container { width: 100%; max-width: 600px; padding: 20px; }
+
+/* Dynamic Header */
+header { text-align: center; margin-bottom: 40px; }
+h1.glitch {
+    font-family: var(--font-header);
+    color: var(--gold);
+    font-size: 2rem;
+    position: relative;
+    text-shadow: 2px 2px var(--red);
+    animation: pulse 2s infinite;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
+/* Controls */
+.input-wrapper {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    flex-wrap: wrap; 
 }
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+input {
+    flex: 1 1 200px; /* Grow, Shrink, min-width 200px */
+    padding: 15px;
+    background: #2a2a2a;
+    border: 2px solid #333;
+    color: white;
+    font-family: var(--font-body);
+    outline: none;
+    border-radius: 4px;
+    min-height: 50px; /* Touch friendly height */
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+input:focus { border-color: var(--gold); }
+
+.nen-btn {
+    width: 100%; /* Force full width */
+    background: var(--gold);
+    border: none;
+    padding: 15px 0; /* Taller hit area */
+    font-family: var(--font-header);
+    font-size: 1rem; /* Larger text */
+    cursor: pointer;
+    border-radius: 4px;
+    color: black;
+    text-transform: uppercase;
+    margin-top: 10px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 0 #b39700; /* 3D effect */
+    transition: transform 0.1s, box-shadow 0.1s;
+}
+.nen-btn:active {
+    transform: translateY(4px);
+    box-shadow: 0 0 0 #b39700;
+}
+
+/* Grid & Cards */
+.grid-container { display: grid; gap: 20px; }
+
+.card {
+    background: var(--card-bg);
+    border-left: 5px solid var(--gold);
+    padding: 20px;
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+}
+
+.card:hover { transform: translateY(-3px); }
+
+.card.bankrupt {
+    border-left: 5px solid var(--red);
+    background: #2a0000;
+}
+
+.card-header { display: flex; justify-content: space-between; align-items: center; }
+.mascot { font-size: 2rem; animation: float 3s ease-in-out infinite; }
+
+.debt-display {
+    font-family: var(--font-header);
+    font-size: 1.5rem;
+    margin: 15px 0;
+    color: var(--gold);
+}
+
+.info { font-size: 0.9rem; color: #888; margin-bottom: 15px; }
+
+.action-btn {
+    width: 100%;
+    padding: 12px;
+    background: var(--green);
+    border: none;
+    color: #000;
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-family: var(--font-body);
+}
+
+.action-btn:hover { opacity: 0.9; }
+
+/* Animations */
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+}
+
+/* Add these to your existing CSS */
+
+/* SVG Icons */
+.svg-icon { width: 40px; height: 40px; fill: var(--gold); }
+.bankrupt .svg-icon { fill: var(--red); animation: shake 0.5s infinite; }
+
+/* Advanced Controls */
+.advanced-controls {
+    background: #222;
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid #333;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.hidden { display: none; }
+.icon-btn {
+    flex: 0 0 50px; /* Fixed width */
+    background: #222;
+    border: 1px solid #333;
+    border-radius: 4px;
+    color: var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+
+/* Modal */
+dialog {
+    background: #1a1a1a;
+    color: white;
+    border: 2px solid var(--gold);
+    padding: 20px;
+    border-radius: 8px;
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    max-width: 300px;
+}
+dialog::backdrop { background: rgba(0,0,0,0.8); }
+
+.modal-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+.modal-btn { padding: 10px; cursor: pointer; font-weight: bold; border: none; }
+.modal-btn.green { background: var(--green); color: black; }
+.modal-btn.red { background: var(--red); color: white; }
+.tiny { font-size: 0.6rem; font-weight: normal; display: block; }
+
+/* Toast Notification */
+.toast {
+    position: fixed; top: 20px; right: 20px;
+    background: var(--gold); color: black;
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-weight: bold;
+    z-index: 100;
+    transition: opacity 0.5s;
+}
+
+@keyframes shake {
+    0% { transform: translate(1px, 1px) rotate(0deg); }
+    10% { transform: translate(-1px, -2px) rotate(-1deg); }
+    20% { transform: translate(-3px, 0px) rotate(1deg); }
+    30% { transform: translate(3px, 2px) rotate(0deg); }
+    40% { transform: translate(1px, -1px) rotate(1deg); }
+    50% { transform: translate(-1px, 2px) rotate(-1deg); }
+    60% { transform: translate(-3px, 1px) rotate(0deg); }
+    100% { transform: translate(1px, -2px) rotate(-1deg); }
+}
+
+/* --- MASCOT ANIMATIONS --- */
+
+.mascot-icon {
+    font-size: 2.5rem;
+    display: inline-block; /* Required for animation to work on text */
+}
+
+/* 🧚 Fairy: Floats up and down */
+.mascot-icon.fairy {
+    animation: float 3s ease-in-out infinite;
+}
+
+/* 👹 Demon: Shakes violently */
+.mascot-icon.demon {
+    animation: shake 0.5s infinite;
+}
+
+/* OPTIONAL: If the card is bankrupt, ensure any icon inside shakes */
+.card.bankrupt .mascot-icon {
+    animation: shake 0.5s infinite;
+}
+
+/* Keep your existing keyframes */
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+@keyframes shake {
+    0% { transform: translate(1px, 1px) rotate(0deg); }
+    10% { transform: translate(-1px, -2px) rotate(-1deg); }
+    20% { transform: translate(-3px, 0px) rotate(1deg); }
+    30% { transform: translate(3px, 2px) rotate(0deg); }
+    40% { transform: translate(1px, -1px) rotate(1deg); }
+    50% { transform: translate(-1px, 2px) rotate(-1deg); }
+    60% { transform: translate(-3px, 1px) rotate(0deg); }
+    100% { transform: translate(1px, -2px) rotate(-1deg); }
+}
+
+/* --- SHAME MODAL STYLES --- */
+
+#shameModal {
+    border-color: var(--red);
+    /* Keeps the dialog centered and sized automatically by default, 
+       but you can add max-width here if needed */
+}
+
+#shameTitle {
+    text-align: center;
+    color: var(--red);
+    font-family: var(--font-header);
+    margin-top: 0;
+}
+
+#shameCard {
+    background: #222;
+    padding: 15px;
+    border-radius: 4px;
+    margin: 15px 0;
+    border: 2px dashed #444; /* The "Wanted Poster" look */
+}
+
+#shameText {
+    white-space: pre-wrap; /* Keeps the line breaks from the JS */
+    line-height: 1.5;
+    font-family: monospace; /* Typewriter look */
+    color: #ccc;
+}
+
+#shameCard hr {
+    border: 0;
+    border-top: 1px solid #444;
+    margin: 15px 0;
+}
+
+.shame-quote {
+    text-align: center;
+    font-style: italic;
+    color: var(--gold);
+    font-size: 0.8rem;
+    margin-bottom: 0;
+}
+
+/* Custom Gold Button Class */
+.gold-btn {
+    background: var(--gold);
+    color: black;
+    border: none;
+}
+
+/* THE GLITCH EFFECT FOR BANKRUPT USERS */
+@keyframes glitch-skew {
+    0% { transform: skew(0deg); }
+    20% { transform: skew(-2deg); }
+    40% { transform: skew(2deg); }
+    60% { transform: skew(-1deg); }
+    80% { transform: skew(1deg); }
+    100% { transform: skew(0deg); }
+}
+
+@keyframes border-pulse {
+    0% { border-color: #ff4444; box-shadow: 0 0 5px #ff4444; }
+    50% { border-color: #880000; box-shadow: 0 0 20px #ff0000; }
+    100% { border-color: #ff4444; box-shadow: 0 0 5px #ff4444; }
+}
+
+.card.bankrupt {
+    /* Make it look unstable */
+    animation: border-pulse 2s infinite alternate;
+    position: relative;
+    overflow: hidden;
+}
+
+/* The "Static Noise" overlay */
+.card.bankrupt::after {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(255, 0, 0, 0.05) 4px,
+        rgba(255, 0, 0, 0.05) 4px
+    );
+    pointer-events: none; /* Let clicks pass through */
+    z-index: 0;
+}
+
+/* Occasional twitch */
+.card.bankrupt:hover {
+    animation: glitch-skew 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite;
+}
+
+
+/* DASHBOARD CONTAINER */
+.dashboard-container {
+    background: #1e1e1e;
+    border: 1px solid #333;
+    border-radius: 8px;
+    margin: 20px auto;
+    max-width: 600px; /* Match your grid width */
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+/* TOTAL DEBT BOX */
+.stat-box {
+    padding: 20px;
+    text-align: center;
+    border-bottom: 1px solid #333;
+    background: linear-gradient(180deg, #222 0%, #1a1a1a 100%);
+}
+.stat-label {
+    font-size: 0.7rem;
+    color: #888;
+    letter-spacing: 2px;
+    margin-bottom: 5px;
+}
+.stat-value {
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: #ffd700; /* Gold */
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+    font-family: 'Courier New', monospace;
+}
+
+/* TICKER ANIMATION */
+.ticker-wrap {
+    width: 100%;
+    overflow: hidden;
+    background-color: #000;
+    color: #00ff41; /* Hacker Green */
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    box-sizing: border-box;
+    padding: 8px 0;
+}
+.ticker {
+    display: inline-block;
+    padding-left: 100%;
+    animation: ticker 30s linear infinite;
+    will-change: transform; /* <--- PERFORMANCE BOOST */
+}
+
+@keyframes ticker {
+    0%   { transform: translate3d(0, 0, 0); }
+    100% { transform: translate3d(-100%, 0, 0); }
+}
+
+/* --- THE SAFE ZONE (Potclean Mode) --- */
+.card:not(.bankrupt) {
+    background: linear-gradient(145deg, #1e1e1e, #252525);
+    border: 1px solid #333;
+    border-left: 4px solid var(--green); /* Safe Status Bar */
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Subtle Tech Grid Background */
+.card:not(.bankrupt)::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 20px 20px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Hover: The "Force Field" Lift */
+.card:not(.bankrupt):hover {
+    transform: translateY(-5px) scale(1.01);
+    box-shadow: 0 10px 20px rgba(0, 230, 118, 0.1); /* Green Aura */
+    border-color: var(--green);
+}
+
+/* --- SOUL SCORE HUD --- */
+.soul-score-container {
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid #444;
+    border-radius: 4px;
+    padding: 6px 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.8);
+}
+
+.soul-label {
+    font-size: 0.55rem;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: var(--font-body);
+}
+
+.soul-value {
+    font-family: var(--font-header); /* 8-bit font */
+    font-size: 0.8rem;
+    text-shadow: 0 0 5px currentColor; /* Glowing numbers */
 }
