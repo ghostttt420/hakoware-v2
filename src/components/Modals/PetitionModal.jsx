@@ -1,0 +1,135 @@
+import { useRef, useState } from 'react';
+import html2canvas from 'html2canvas';
+import emailjs from '@emailjs/browser';
+import { calculateDebt } from '../../utils/gameLogic';
+
+const PetitionModal = ({ isOpen, onClose, contract }) => {
+  if (!isOpen || !contract) return null;
+
+  const [btnText, setBtnText] = useState("📱 Share Image");
+  const cardRef = useRef(null); // The invisible HTML card
+  
+  const stats = calculateDebt(contract);
+  const isBankrupt = stats.totalDebt >= stats.limit;
+  const isClean = stats.totalDebt === 0;
+
+  // --- 1. IMAGE GENERATOR LOGIC ---
+  const handleShare = async () => {
+    setBtnText("Generating...");
+    if (cardRef.current) {
+        try {
+            const canvas = await html2canvas(cardRef.current, { backgroundColor: null, scale: 2 });
+            canvas.toBlob(async (blob) => {
+                const file = new File([blob], "status.png", { type: 'image/png' });
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({ files: [file], title: 'Hakoware Status' });
+                } else {
+                    const link = document.createElement('a');
+                    link.download = 'status.png';
+                    link.href = canvas.toDataURL();
+                    link.click();
+                }
+                setBtnText("📱 Share Image");
+            });
+        } catch (e) {
+            alert("Error: " + e.message);
+            setBtnText("Error");
+        }
+    }
+  };
+
+  // --- 2. EMAIL LOGIC ---
+  const handleEmail = () => {
+      // Replace with YOUR Service ID and Template ID
+      const SERVICE_ID = "service_ciiisv3"; 
+      const TEMPLATE_ID = "template_c3miqvi";
+
+      emailjs.send(SERVICE_ID, TEMPLATE_ID, {
+          to_name: "Admin",
+          message_intro: isBankrupt ? "I beg for mercy." : "I vow to pay.",
+          debt: stats.totalDebt,
+          days: stats.daysMissed
+      }, "YOUR_PUBLIC_KEY_HERE") // <--- PASTE YOUR KEY HERE
+      .then(() => alert("Email Sent!"))
+      .catch((e) => alert("Failed: " + JSON.stringify(e)));
+  };
+
+  // --- DYNAMIC CONTENT ---
+  let title = "OFFICIAL PLEDGE";
+  let color = "#00e676"; // Green
+  let mascot = "📜🧚";
+  let excuse = "I vow to clear this debt.";
+
+  if (isBankrupt) {
+      title = "MERCY PETITION";
+      color = "#ff4444"; // Red
+      mascot = "🏳️👹";
+      excuse = "I acknowledge my failure.";
+  } else if (isClean) {
+      title = "HUNTER LICENSE";
+      color = "#33b5e5"; // Blue
+      mascot = "💎✨";
+      excuse = "Debt is a chain, and I have broken it.";
+  }
+
+  return (
+    <div style={overlayStyle}>
+      <div style={modalStyle}>
+        <h2 style={{color: color, margin: '0 0 10px 0'}}>{title}</h2>
+        <div style={{fontSize: '3rem', marginBottom: '10px'}}>{mascot}</div>
+        
+        <p style={{color: '#aaa', fontStyle: 'italic'}}>"{excuse}"</p>
+        
+        <button onClick={handleShare} className="action-btn" style={{marginBottom: '10px'}}>
+           {btnText}
+        </button>
+        
+        {!isClean && (
+            <button onClick={handleEmail} style={{background: 'transparent', color: '#888', border: '1px solid #444', width: '100%', padding: '10px'}}>
+               📧 Send Official Email
+            </button>
+        )}
+        
+        <button onClick={onClose} style={{marginTop: '20px', background: 'none', border: 'none', color: '#666', textDecoration: 'underline'}}>
+            Close
+        </button>
+
+        {/* --- HIDDEN TEMPLATE FOR IMAGE GEN --- */}
+        <div ref={cardRef} style={{
+            position: 'fixed', left: '-9999px', top: 0,
+            width: '400px', height: '600px', padding: '40px',
+            background: isBankrupt ? '#1a0000' : '#0a1a0a',
+            border: `4px solid ${color}`,
+            color: 'white', fontFamily: 'Courier New', textAlign: 'center',
+            display: 'flex', flexDirection: 'column', justifyContent: 'space-between'
+        }}>
+            <div>
+                <h2 style={{color: color, fontSize: '2rem', borderBottom: `2px solid ${color}`}}>{title}</h2>
+                <p>HAKOWARE CONSUMER FINANCE</p>
+            </div>
+            <div>
+                <div style={{fontSize: '5rem'}}>{mascot}</div>
+                <h1>{contract.name}</h1>
+                <h2 style={{fontSize: '3rem', color: color}}>{stats.totalDebt} APR</h2>
+            </div>
+            <div style={{border: `1px solid ${color}`, padding: '20px', background: 'rgba(0,0,0,0.3)'}}>
+                "{excuse}"
+            </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const overlayStyle = {
+  position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+  backgroundColor: 'rgba(0,0,0,0.9)', zIndex: 1000,
+  display: 'flex', alignItems: 'center', justifyContent: 'center'
+};
+
+const modalStyle = {
+  background: '#111', padding: '30px', borderRadius: '15px',
+  width: '90%', maxWidth: '350px', border: '1px solid #333', textAlign: 'center'
+};
+
+export default PetitionModal;
