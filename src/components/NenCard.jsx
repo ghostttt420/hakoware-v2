@@ -29,7 +29,7 @@ const NenCard = ({ contract, index, isAdmin, onAction, onPoke }) => {
       btnText = "✨ FLEX STATUS";
       btnClass += " flex-btn";
   } else if (isBankrupt) {
-      btnText = "🏳️ BEG FOR MERCY";
+      btnText = "🏳️ BEG FOR AURA";
   }
 
   return (
