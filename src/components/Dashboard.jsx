@@ -26,7 +26,7 @@ const Dashboard = ({ contracts }) => {
         </div>
       </div>
 
-      <div className="stat-box" style={{marginTop: '20px'}}>
+      <div className="stat-box" style={{marginBottom: '20px'}}>
          <div className="stat-label">TOTAL OUTSTANDING AURA</div>
          <div className="stat-value">
             {/* The Animated Counter */}
