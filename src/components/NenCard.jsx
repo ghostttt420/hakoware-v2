@@ -1,4 +1,7 @@
 import { calculateDebt, calculateCreditScore } from '../utils/gameLogic';
+import CountUp from './CountUp';
+
+
 
 const NenCard = ({ contract, index, isAdmin, onAction, onPoke }) => {
   const { totalDebt, daysMissed, limit } = calculateDebt(contract);
@@ -55,7 +58,8 @@ const NenCard = ({ contract, index, isAdmin, onAction, onPoke }) => {
       </div>
 
       <div className="debt-display">
-        {totalDebt} <span style={{fontSize: '0.5em'}}>APR</span>
+         <CountUp end={totalDebt} duration={2000} /> 
+        <span style={{fontSize: '0.5em'}}> APR</span>
       </div>
 
       <div style={{textAlign: 'center'}}>
