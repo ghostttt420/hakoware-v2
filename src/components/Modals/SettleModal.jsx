@@ -1,15 +1,18 @@
-import { updateContract, deleteContract } from '../../services/firebase'; // <--- FIXED: lowercase 'import'
-import { sendSystemEmail } from '../../services/emailService'; 
-
+import { updateContract, deleteContract } from '../../services/firebase';
+import { sendSystemEmail } from '../../services/emailService';
+import { calculateDebt } from '../../utils/gameLogic'; // <--- FIXED: Added missing import
 
 const SettleModal = ({ isOpen, onClose, contract, onRefresh, showToast }) => {
-   const isAdmin = true; 
+  // <--- FIXED: Added Safety Check (Prevents Crash)
+  if (!isOpen || !contract) return null;
+
+  const isAdmin = true; 
 
   const handleReset = async () => {
     if(confirm(`Reset timer for ${contract.name}?`)) {
         await updateContract(contract.id, contract.baseDebt, true);
         
-        // --- NEW CALL: Pass showToast and true (for isAdmin) ---
+        // Now calculateDebt works because we imported it
         const stats = calculateDebt(contract);
         sendSystemEmail('RESET', { ...contract, ...stats }, showToast, true);
 
@@ -23,7 +26,6 @@ const SettleModal = ({ isOpen, onClose, contract, onRefresh, showToast }) => {
     if(confirm(`Clear all debt?`)) {
         await updateContract(contract.id, 0, true);
         
-        // --- NEW CALL ---
         sendSystemEmail('PAID', { ...contract, debt: 0, days: 0 }, showToast, true);
 
         showToast("Debt Cleared!", "SUCCESS");
