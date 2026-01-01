@@ -48,6 +48,7 @@ const PetitionModal = ({ isOpen, onClose, contract, showToast }) => {
 
       // 1. Determine Dynamic Variables based on status
       let emailParams = {
+          to_email: "hakoware265@gmail.com",
           to_name: "Admin", 
           debt: stats.totalDebt,
           days: stats.daysMissed,
