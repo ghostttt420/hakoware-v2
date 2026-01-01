@@ -40,7 +40,7 @@ const PetitionModal = ({ isOpen, onClose, contract, showToast }) => {
     }
   };
 
-  // --- 2. EMAIL LOGIC (Updated with Personal Name) ---
+    // --- 2. EMAIL LOGIC (Corrected Syntax) ---
   const handleEmail = () => {
       const SERVICE_ID = "service_ciiisv3"; 
       const TEMPLATE_ID = "template_c3miqvi";
@@ -51,10 +51,8 @@ const PetitionModal = ({ isOpen, onClose, contract, showToast }) => {
           to_name: "Admin", 
           debt: stats.totalDebt,
           days: stats.daysMissed,
-          // Default: Active Vow (Green)
           theme_color: "#00e676", 
           title: "OFFICIAL VOW",
-          // NEW: "I, [Name], vow to pay..."
           message_intro: `I, ${contract.name}, vow to pay my debts. Please accept this digital pledge.`,
           status_text: "ACTIVE CONTRACT",
           status_label: "GOOD STANDING"
@@ -64,10 +62,11 @@ const PetitionModal = ({ isOpen, onClose, contract, showToast }) => {
       if (isBankrupt) {
           emailParams.theme_color = "#ff4444";
           emailParams.title = "CHAPTER 7 PETITION";
-          // NEW: "I, [Name], am insolvent..."
-          emailParams.message_intro: `I, ${contract.name}, am insolvent and begging for aura. The interest is too high.`;
-          emailParams.status_text: "BANKRUPTCY DECLARED";
-          emailParams.status_label: "COLLECTION NOTICE";
+          
+          // FIX: Used '=' instead of ':'
+          emailParams.message_intro = `I, ${contract.name}, am insolvent and begging for aura. The interest is too high.`;
+          emailParams.status_text = "BANKRUPTCY DECLARED";
+          emailParams.status_label = "COLLECTION NOTICE";
       }
 
       // 3. Send to EmailJS
@@ -83,6 +82,7 @@ const PetitionModal = ({ isOpen, onClose, contract, showToast }) => {
           setBtnText("Retry Email");
       });
   };
+
 
 
   // --- DYNAMIC CONTENT ---
