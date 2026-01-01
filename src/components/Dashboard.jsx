@@ -3,33 +3,31 @@ import CountUp from './CountUp';
 import { calculateDebt } from '../utils/gameLogic';
 
 const Dashboard = ({ contracts, recentActivity }) => {
-  // Switched to a standard MP3 that usually loads faster
   const sfxCoin = useRef(new Audio('https://www.myinstants.com/media/sounds/ka-ching.mp3'));
 
-  // 1. Calculate Total Debt
   const totalAPR = contracts.reduce((acc, curr) => {
     return acc + calculateDebt(curr).totalDebt;
   }, 0);
 
-  // 2. Find "Most Wanted" (Highest Debt)
   const mostWanted = [...contracts].sort((a, b) => 
     calculateDebt(b).totalDebt - calculateDebt(a).totalDebt
   )[0];
 
-  // 3. Find "Cleanest" (Debt Free)
   const cleanest = contracts.find(c => calculateDebt(c).totalDebt === 0);
 
   const handleFinish = () => {
     sfxCoin.current.volume = 1.0; 
-    // Try to play - browsers might block if no interaction happened yet
-    sfxCoin.current.play().catch(e => console.log("Sound blocked until click:", e));
+    sfxCoin.current.play().catch(e => console.log("Sound blocked:", e));
   };
 
-  // 4. Construct Ticker Strings
+  // Ticker Text Parts
   const msg1 = ":: NEN CONSUMER FINANCE :: INTEREST RATES AT 1% DAILY";
   const msg2 = mostWanted ? `👑 PUBLIC ENEMY #1: ${mostWanted.name.toUpperCase()} (${calculateDebt(mostWanted).totalDebt} APR)` : "";
   const msg3 = cleanest ? `💎 HUNTER STAR: ${cleanest.name.toUpperCase()}` : "";
   const msg4 = recentActivity ? ` // ${recentActivity} // ` : "";
+
+  // Combine them into one string
+  const fullText = `${msg1}   ${msg4}   ${msg2}   ${msg3}   :: FAILURE TO PAY WILL RESULT IN EXCOMMUNICATION ::`;
 
   return (
     <div className="dashboard-container">
@@ -42,10 +40,17 @@ const Dashboard = ({ contracts, recentActivity }) => {
          </div>
       </div>
 
-      {/* MOVED TICKER TO BOTTOM OF DASHBOARD */}
+      {/* Infinite Ticker Container */}
       <div className="ticker-wrap" style={{marginTop: '20px', borderTop: '1px solid #333', borderBottom: 'none'}}>
         <div className="ticker">
-           {msg1} &nbsp;&nbsp;&nbsp; {msg4} &nbsp;&nbsp;&nbsp; {msg2} &nbsp;&nbsp;&nbsp; {msg3} &nbsp;&nbsp;&nbsp; :: FAILURE TO PAY WILL RESULT IN EXCOMMUNICATION ::
+           {/* RENDER 1 */}
+           <span>{fullText}</span>
+           
+           {/* SPACER */}
+           <span style={{display: 'inline-block', width: '50px'}}></span>
+           
+           {/* RENDER 2 (Duplicate for Loop) */}
+           <span>{fullText}</span>
         </div>
       </div>
 
