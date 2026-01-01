@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { fetchContracts } from './services/firebase'
+import { fetchContracts, markBankruptcyNotified } from './services/firebase'
 import { sendSystemEmail } from './services/emailService';
 import './index.css' 
 import { calculateDebt } from './utils/gameLogic'
