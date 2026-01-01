@@ -314,3 +314,29 @@ button:active { transform: scale(0.98); }
   80% { clip: rect(50px, 9999px, 36px, 0); }
   100% { clip: rect(12px, 9999px, 1px, 0); }
 }
+
+/* --- NEW CARD STATES --- */
+
+/* Clean Record (Debt Free) */
+.card.clean-record {
+  background: linear-gradient(145deg, #001a00, #050505); /* Very Dark Green/Black */
+  border: 1px solid #00e676; /* Green Border */
+  box-shadow: 0 0 10px rgba(0, 230, 118, 0.1);
+}
+
+.card.clean-record .debt-display {
+  color: #00e676;
+  text-shadow: 0 0 5px rgba(0, 230, 118, 0.5);
+}
+
+/* Update Bankrupt (Make it scarier) */
+.card.bankrupt {
+  background: linear-gradient(145deg, #2a0000, #000);
+  border: 2px solid var(--red);
+  box-shadow: 0 0 15px rgba(255, 0, 0, 0.2);
+  animation: breathe 3s infinite ease-in-out;
+}
+
+.mascot-icon.angel {
+  filter: drop-shadow(0 0 5px #00e676);
+}
