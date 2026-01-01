@@ -4,26 +4,23 @@ const EMAIL_SERVICE = "service_ciiisv3";
 const EMAIL_TEMPLATE = "template_c3miqvi";
 const PUBLIC_KEY = "ePT35yP8-YeX6Ad7n";
 
-/**
- * Unified System Email Handler
- */
 export const sendSystemEmail = (type, data, showToast = null, isAdmin = false) => {
-    // 1. Validation
-    if (!data.email || data.email === "undefined" || data.email === "") {
-        console.warn(`[Email Service] Skipping ${type}: No email found for ${data.name}`);
+    // 1. Safety Check: Does email exist?
+    if (!data.email) {
+        console.warn(`[Email Service] Skipping ${type}: No email found.`);
         return; 
     }
 
-    // --- THE FIX IS HERE ---
-    // We check for 'totalDebt' (from App) OR 'debt' (from manual overrides)
-    const finalDebt = data.totalDebt !== undefined ? data.totalDebt : data.debt;
-    const finalDays = data.daysMissed !== undefined ? data.daysMissed : data.days;
+    // 2. Variable Mapping (The "Fix")
+    // We try to find data.totalDebt. If it doesn't exist, we look for data.debt. If neither, we default to 0.
+    const finalDebt = data.totalDebt !== undefined ? data.totalDebt : (data.debt || 0);
+    const finalDays = data.daysMissed !== undefined ? data.daysMissed : (data.days || 0);
 
     const params = {
-        to_name: data.name,
+        to_name: data.name || "User",
         to_email: data.email,
-        debt: finalDebt, // <--- Now uses the corrected variable
-        days: finalDays, // <--- Now uses the corrected variable
+        debt: finalDebt, 
+        days: finalDays,
         theme_color: "#ffffff",
         title: "NOTICE",
         message_intro: "",
@@ -31,7 +28,7 @@ export const sendSystemEmail = (type, data, showToast = null, isAdmin = false) =
         status_label: "ACTIVE"
     };
 
-    // 2. Configure Content based on Type
+    // 3. Content Configuration
     switch(type) {
         case 'BANKRUPTCY':
             params.theme_color = "#ff4444"; 
@@ -59,18 +56,20 @@ export const sendSystemEmail = (type, data, showToast = null, isAdmin = false) =
             return;
     }
 
-    // 3. Send Email
-    emailjs.send(EMAIL_SERVICE, EMAIL_TEMPLATE, params, PUBLIC_KEY)
+    // 4. Send
+     emailjs.send(EMAIL_SERVICE, EMAIL_TEMPLATE, params, PUBLIC_KEY)
         .then(() => {
             console.log(`[System] ${type} email sent to ${data.email}`);
             if (isAdmin && showToast) {
-                showToast(`📧 ${type} Notification Sent!`, "INFO");
+                showToast(`📧 ${type} Sent!`, "INFO");
             }
         })
         .catch(e => {
             console.error("System Email Failed:", e);
             if (isAdmin && showToast) {
-                showToast("⚠️ Email Failed (Check Console)", "ERROR");
+                // SHOW THE REAL REASON (e.text)
+                // Common errors: "Quota Exceeded", "Rate Limit Reached"
+                showToast(`⚠️ Email Error: ${e.text || "Unknown"}`, "ERROR");
             }
         });
 };
