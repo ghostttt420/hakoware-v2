@@ -3,7 +3,7 @@ import html2canvas from 'html2canvas';
 import emailjs from '@emailjs/browser';
 import { calculateDebt } from '../../utils/gameLogic';
 
-const PetitionModal = ({ isOpen, onClose, contract }) => {
+const PetitionModal = ({ isOpen, onClose, contract, showToast }) => {
   if (!isOpen || !contract) return null;
 
   const [btnText, setBtnText] = useState("📱 Share Image");
@@ -40,7 +40,6 @@ const PetitionModal = ({ isOpen, onClose, contract }) => {
 
   // --- 2. EMAIL LOGIC ---
   const handleEmail = () => {
-      // Replace with YOUR Service ID and Template ID
       const SERVICE_ID = "service_ciiisv3"; 
       const TEMPLATE_ID = "template_c3miqvi";
 
@@ -49,9 +48,9 @@ const PetitionModal = ({ isOpen, onClose, contract }) => {
           message_intro: isBankrupt ? "I beg for mercy." : "I vow to pay.",
           debt: stats.totalDebt,
           days: stats.daysMissed
-      }, "ePT35yP8-YeX6Ad7n") // <--- PASTE YOUR KEY HERE
-      .then(() => alert("Email Sent!"))
-      .catch((e) => alert("Failed: " + JSON.stringify(e)));
+      }, "ePT35yP8-YeX6Ad7n")
+      .then(() => showToast("Official Petition Sent", "MERCY")) // <--- NEW
+      .catch((e) => showToast("Email Failed", "ERROR"));       // <--- NEW
   };
 
   // --- DYNAMIC CONTENT ---
