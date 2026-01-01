@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
 import { fetchContracts, markBankruptcyNotified } from './services/firebase'
 import { sendSystemEmail } from './services/emailService'
-import { getRandomQuote } from './utils/quotes' // <--- NEW IMPORT
+import { getRandomQuote } from './utils/quotes' 
 import './index.css' 
 import { calculateDebt } from './utils/gameLogic'
 import Dashboard from './components/Dashboard'
 import NenCard from './components/NenCard'
 import AdminPanel from './components/AdminPanel'
-import AdminLock from './components/AdminLock' // <--- NEW IMPORT
+import AdminLock from './components/AdminLock'
 import Toast from './components/Toast'
 import SettleModal from './components/Modals/SettleModal'
 import PetitionModal from './components/Modals/PetitionModal'
@@ -16,12 +16,12 @@ function App() {
   const [contracts, setContracts] = useState([])
   const [loading, setLoading] = useState(true)
   
-  // Auth State
+  // --- AUTH STATE ---
   const [isAdmin, setIsAdmin] = useState(false)
-  const [adminUnlocked, setAdminUnlocked] = useState(false) // For PIN Lock
-  const [myIdentity, setMyIdentity] = useState(localStorage.getItem('hakoware_id')); // For User Lock
+  const [adminUnlocked, setAdminUnlocked] = useState(false) // Must be TRUE to see controls
+  const [myIdentity, setMyIdentity] = useState(localStorage.getItem('hakoware_id'));
 
-  // UI State
+  // --- UI STATE ---
   const [selectedContract, setSelectedContract] = useState(null)
   const [modalType, setModalType] = useState(null) 
   const [toast, setToast] = useState(null)
@@ -43,6 +43,7 @@ function App() {
     try {
         const data = await fetchContracts();
         
+        // Auto-Email Logic (Runs in background if Admin Mode is active, regardless of lock)
         if (isAdmin) {
             data.forEach(async (c) => {
                 const stats = calculateDebt(c);
@@ -73,7 +74,6 @@ function App() {
       sfxReset.current.currentTime = 0;
       sfxReset.current.play().catch(e => console.log("Audio Blocked:", e));
       
-      // NEW: Get Random Quote
       const msg = getRandomQuote(isBankrupt, isClean);
       const type = isBankrupt ? "ERROR" : isClean ? "SUCCESS" : "INFO";
       
@@ -81,18 +81,22 @@ function App() {
   };
 
   const handleAction = (type, contract) => {
-      // IDENTITY CHECK: If not Admin, enforce "My Card Only"
+      // 1. SECURITY CHECK: If Admin is present but locked, BLOCK EVERYTHING
+      if (isAdmin && !adminUnlocked) {
+          showToast("🔒 SYSTEM LOCKED: ENTER PIN", "ERROR");
+          return;
+      }
+
+      // 2. IDENTITY CHECK: If User (Not Admin), enforce "My Card Only"
       if (!isAdmin) {
           if (!myIdentity) {
-              // First time clicking: Claim this identity
               if (confirm(`Are you ${contract.name}? You can only manage this card from now on.`)) {
                   localStorage.setItem('hakoware_id', contract.id);
                   setMyIdentity(contract.id);
               } else {
-                  return; // Cancelled
+                  return; 
               }
           } else if (myIdentity !== contract.id) {
-              // Clicking someone else's card
               showToast("ACCESS DENIED: Not your card.", "ERROR");
               return;
           }
@@ -121,10 +125,14 @@ function App() {
       
       {!loading && <Dashboard contracts={contracts} recentActivity={recentActivity} />}
       
-      {/* ADMIN LOCK SYSTEM */}
+      {/* --- ADMIN LOCK SYSTEM --- */}
+      {/* If Admin Mode, show Lock. Only show Panel if Unlocked. */}
       {isAdmin && (
           !adminUnlocked ? (
-              <AdminLock onUnlock={() => setAdminUnlocked(true)} />
+              <AdminLock onUnlock={() => {
+                  setAdminUnlocked(true);
+                  showToast("ADMIN PRIVILEGES GRANTED", "SUCCESS");
+              }} />
           ) : (
               <AdminPanel onRefresh={() => handleRefreshData("SYSTEM: NEW CONTRACT ISSUED")} />
           )
@@ -137,9 +145,8 @@ function App() {
       ) : (
         <div className="grid-container">
           {contracts.map((c, index) => {
-             // Determine if interactive (Admin always yes, User only if matches ID or no ID selected yet)
+             // User Interaction Rules
              const isMine = myIdentity === c.id;
-             // We allow clicking "Claim" if no identity is set yet, otherwise disable interactions visually
              const isDisabled = !isAdmin && myIdentity && !isMine;
              
              return (
@@ -147,7 +154,8 @@ function App() {
                  <NenCard 
                     contract={c} 
                     index={index} 
-                    isAdmin={isAdmin}
+                    // SECURITY FIX: Only pass 'true' if actually unlocked
+                    isAdmin={isAdmin && adminUnlocked}
                     onAction={handleAction} 
                     onPoke={handlePoke}
                  />
@@ -157,7 +165,6 @@ function App() {
         </div>
       )}
 
-      {/* FOOTER TO RESET IDENTITY */}
       {!isAdmin && myIdentity && (
           <div style={{textAlign:'center', marginTop:'30px', opacity:0.5}}>
               <button onClick={() => {
@@ -170,13 +177,17 @@ function App() {
           </div>
       )}
 
-      <SettleModal 
-          isOpen={modalType === 'SETTLE'} 
-          contract={selectedContract} 
-          onClose={closeModal} 
-          onRefresh={handleRefreshData} 
-          showToast={showToast} 
-      />
+      {/* --- MODALS --- */}
+      {/* We only render SettleModal (Admin Tools) if actually unlocked */}
+      {(isAdmin && adminUnlocked) && (
+        <SettleModal 
+            isOpen={modalType === 'SETTLE'} 
+            contract={selectedContract} 
+            onClose={closeModal} 
+            onRefresh={handleRefreshData} 
+            showToast={showToast} 
+        />
+      )}
       
       <PetitionModal 
           isOpen={modalType === 'PETITION'} 
