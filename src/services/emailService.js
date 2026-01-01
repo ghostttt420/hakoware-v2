@@ -6,10 +6,6 @@ const PUBLIC_KEY = "ePT35yP8-YeX6Ad7n";
 
 /**
  * Unified System Email Handler
- * @param {string} type - 'BANKRUPTCY', 'RESET', or 'PAID'
- * @param {object} data - { name, email, debt, days }
- * @param {function} showToast - (Optional) Function to show notifications
- * @param {boolean} isAdmin - (Optional) If true, shows debug toasts
  */
 export const sendSystemEmail = (type, data, showToast = null, isAdmin = false) => {
     // 1. Validation
@@ -18,11 +14,16 @@ export const sendSystemEmail = (type, data, showToast = null, isAdmin = false) =
         return; 
     }
 
+    // --- THE FIX IS HERE ---
+    // We check for 'totalDebt' (from App) OR 'debt' (from manual overrides)
+    const finalDebt = data.totalDebt !== undefined ? data.totalDebt : data.debt;
+    const finalDays = data.daysMissed !== undefined ? data.daysMissed : data.days;
+
     const params = {
         to_name: data.name,
         to_email: data.email,
-        debt: data.debt,
-        days: data.days,
+        debt: finalDebt, // <--- Now uses the corrected variable
+        days: finalDays, // <--- Now uses the corrected variable
         theme_color: "#ffffff",
         title: "NOTICE",
         message_intro: "",
@@ -62,8 +63,6 @@ export const sendSystemEmail = (type, data, showToast = null, isAdmin = false) =
     emailjs.send(EMAIL_SERVICE, EMAIL_TEMPLATE, params, PUBLIC_KEY)
         .then(() => {
             console.log(`[System] ${type} email sent to ${data.email}`);
-
-            // --- PROFESSIONAL FIX: ONLY NOTIFY IF ADMIN ---
             if (isAdmin && showToast) {
                 showToast(`📧 ${type} Notification Sent!`, "INFO");
             }
