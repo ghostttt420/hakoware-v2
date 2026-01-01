@@ -4,6 +4,7 @@ import './index.css'
 import { calculateDebt } from './utils/gameLogic'
 import Dashboard from './components/Dashboard'
 import NenCard from './components/NenCard'
+import AdminPanel from './components/AdminPanel'
 
 function App() {
   const [contracts, setContracts] = useState([])
@@ -19,33 +20,32 @@ function App() {
     if (params.get('mode') === 'admin') setIsAdmin(true);
   }, []);
 
-  // 2. Load Data
+  // 2. Data Loader Function
+  const loadData = async () => {
+    setLoading(true);
+    const data = await fetchContracts();
+    // Sort: Highest debt first
+    const sorted = data.sort((a, b) => {
+       return calculateDebt(b).totalDebt - calculateDebt(a).totalDebt;
+    });
+    setContracts(sorted);
+    setLoading(false);
+  };
+
+  // Run Loader on Mount
   useEffect(() => {
-    async function loadData() {
-      const data = await fetchContracts();
-      // Sort: Highest debt first
-      const sorted = data.sort((a, b) => {
-         return calculateDebt(b).totalDebt - calculateDebt(a).totalDebt;
-      });
-      setContracts(sorted);
-      setLoading(false);
-    }
     loadData();
   }, [])
 
   // 3. Handlers
   const handlePoke = (name, isBankrupt) => {
-      // Play Sound
       sfxReset.current.volume = 0.5;
       sfxReset.current.currentTime = 0;
       sfxReset.current.play().catch(e => console.log("Audio blocked", e));
-      
-      // We will add the Toast logic later, for now just log it
       console.log(`Poked ${name}!`);
   };
 
   const handleAction = (type, contract) => {
-      // Placeholder for Modals (Next Step)
       if (type === 'MERCY') {
           alert(`Opening Mercy Modal for ${contract.name}`);
       } else if (type === 'RESET') {
@@ -53,21 +53,25 @@ function App() {
       }
   };
 
-    return (
+  return (
     <div className="app-container">
       <h1 className="glitch" style={{textAlign:'center', marginBottom:'20px'}}>HAKOWARE v2</h1>
       
       {!loading && <Dashboard contracts={contracts} />}
+      
+      {/* Admin Controls */}
+      {isAdmin && <AdminPanel onRefresh={loadData} />}
 
       {loading ? (
         <div style={{color: 'white', textAlign: 'center', marginTop: '50px'}}>Connecting to Nen Network...</div>
       ) : (
         <div className="grid-container">
-          {/* DEBUG MESSAGE: If 0 contracts, show this */}
+          {/* Empty State Message */}
           {contracts.length === 0 && (
              <div style={{textAlign: 'center', color: '#666', marginTop: '50px'}}>
                 <h2>No Contracts Found</h2>
                 <p>The database is connected but empty.</p>
+                {isAdmin && <p>Use the panel above to add your first friend.</p>}
              </div>
           )}
 
@@ -85,3 +89,6 @@ function App() {
       )}
     </div>
   )
+}
+
+export default App
