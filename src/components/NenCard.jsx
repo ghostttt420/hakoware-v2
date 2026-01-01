@@ -52,7 +52,7 @@ const NenCard = ({ contract, index, isAdmin, onAction, onPoke }) => {
           ) : isClean ? (
               <span className="mascot-icon angel">💎</span> 
           ) : (
-              <span className="mascot-icon fairy">🧚</span>
+              <span className="mascot-icon fairy floating">🧚</span>
           )}
         </div>
       </div>
