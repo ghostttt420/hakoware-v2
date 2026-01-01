@@ -42,7 +42,7 @@ export const fetchContracts = async () => {
 
 export const createContract = async (name, dateStr, limit, email) => {
     try {
-        await addDoc(collection(db, "contracts"), {
+        await addDoc(collection(db, "friends"), {
             name: name,
             email: email || "",
             baseDebt: 0,
@@ -56,7 +56,7 @@ export const createContract = async (name, dateStr, limit, email) => {
 };
 
 export const updateContract = async (id, currentDebt, resetTimer) => {
-    const ref = doc(db, "contracts", id);
+    const ref = doc(db, "friends", id);
     const updates = { baseDebt: currentDebt };
     
     if (resetTimer) {
