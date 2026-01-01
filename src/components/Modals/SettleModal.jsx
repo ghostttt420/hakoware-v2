@@ -1,34 +1,31 @@
-import { updateContract, deleteContract } from '../../services/firebase';
+import { updateContract, deleteContract } from '../../services/firebase'; // <--- FIXED: lowercase 'import'
 
-// Change the first line to this:
 const SettleModal = ({ isOpen, onClose, contract, onRefresh, showToast }) => {
+  // <--- FIXED: Added Safety Check (Prevents Crash)
+  if (!isOpen || !contract) return null;
 
-  // Update handleReset
   const handleReset = async () => {
     if(confirm(`Reset timer for ${contract.name}?`)) {
         await updateContract(contract.id, contract.baseDebt, true);
-        showToast("Interest Saved!", "SUCCESS"); // <--- NEW
+        showToast("Interest Saved!", "SUCCESS");
         onClose();
         onRefresh();
     }
   };
 
-  // Update handlePaid
   const handlePaid = async () => {
     if(confirm(`Clear all debt?`)) {
         await updateContract(contract.id, 0, true);
-        showToast("Debt Cleared!", "SUCCESS"); // <--- NEW
+        showToast("Debt Cleared!", "SUCCESS");
         onClose();
         onRefresh();
     }
   };
-
-  
-
 
   const handleDelete = async () => {
     if(confirm(`DELETE ${contract.name} FOREVER?`)) {
         await deleteContract(contract.id);
+        showToast("Contract Deleted", "ERROR"); // <--- ADDED: Toast for delete
         onClose();
         onRefresh();
     }
