@@ -1,66 +1,39 @@
+import { useRef } from 'react';
+import CountUp from './CountUp';
 import { calculateDebt } from '../utils/gameLogic';
 
 const Dashboard = ({ contracts }) => {
-  // 1. Calculate Global Stats
-  let grandTotal = 0;
-  let bankruptCount = 0;
-  let highestDebtor = { name: 'Nobody', debt: -1 };
-  
-  let liveActions = []; 
-  let warrants = [];    
-  let systemMsgs = []; 
+  // Sound Effect Ref
+  const sfxCoin = useRef(new Audio('https://www.myinstants.com/media/sounds/coin_1.mp3'));
 
-  contracts.forEach(c => {
-      const stats = calculateDebt(c);
-      grandTotal += stats.totalDebt;
-      
-      // Track High Score
-      if (stats.totalDebt > highestDebtor.debt) {
-          highestDebtor = { name: c.name, debt: stats.totalDebt };
-      }
+  // Calculate Total Debt
+  const totalAPR = contracts.reduce((acc, curr) => {
+    return acc + calculateDebt(curr).totalDebt;
+  }, 0);
 
-      // Live Activity (Today)
-      if (stats.daysMissed === 0) {
-          if (stats.totalDebt > 0) liveActions.push(`⏳ TIME DILATION: ${c.name} just secured a timer reset`);
-          else liveActions.push(`💸 LIQUIDITY INJECTION: ${c.name} has wiped their debt clean`);
-      }
-
-      // Bankruptcy
-      if (stats.totalDebt >= stats.limit) {
-          bankruptCount++;
-          warrants.push(`⚠️ BREACH OF CONTRACT: ${c.name} is insolvent (${stats.totalDebt} APR)`);
-      }
-  });
-
-  // Construct Ticker Feed
-  let feed = [];
-  if (liveActions.length > 0) feed.push(...liveActions);
-  if (highestDebtor.debt > 0) feed.push(`👑 PUBLIC ENEMY #1: ${highestDebtor.name}`);
-  if (warrants.length > 0) feed.push(...warrants);
-  
-  systemMsgs.push(`🏦 TOTAL RESERVE: ${grandTotal} APR`);
-  systemMsgs.push(`📉 MARKET UPDATE: Volatility Increasing`);
-  systemMsgs.push(`👹 SYSTEM NOTICE: The Demon is watching`);
-  feed.push(...systemMsgs);
+  // Play Sound when counting finishes
+  const handleFinish = () => {
+    sfxCoin.current.volume = 0.6; 
+    sfxCoin.current.currentTime = 0;
+    sfxCoin.current.play().catch(e => console.log("Audio blocked:", e));
+  };
 
   return (
     <div className="dashboard-container">
-        {/* BIG NUMBER */}
-        <div className="stat-box">
-            <div className="stat-label">TOTAL OUTSTANDING AURA</div>
-            <div className="stat-value">{grandTotal} <span style={{fontSize:'0.5em'}}>APR</span></div>
+      <div className="ticker-wrap">
+        <div className="ticker">
+           :: NEN CONSUMER FINANCE :: INTEREST RATES ADJUSTED TO 1% DAILY :: FAILURE TO PAY WILL RESULT IN SOCIAL CREDIT DEDUCTION ::
         </div>
-        
-        {/* TICKER */}
-        <div className="ticker-wrap">
-            <div className="ticker">
-                {feed.map((msg, i) => (
-                    <span key={i}>
-                        {msg} &nbsp;&nbsp;&nbsp; <span style={{color:'#555'}}>///</span> &nbsp;&nbsp;&nbsp;
-                    </span>
-                ))}
-            </div>
-        </div>
+      </div>
+
+      <div className="stat-box" style={{marginTop: '20px'}}>
+         <div className="stat-label">TOTAL OUTSTANDING AURA</div>
+         <div className="stat-value">
+            {/* The Animated Counter */}
+            <CountUp end={totalAPR} duration={2500} onFinish={handleFinish} />
+            <span style={{fontSize: '1rem', color: '#666', marginLeft:'10px'}}>APR</span>
+         </div>
+      </div>
     </div>
   );
 };
