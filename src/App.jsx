@@ -119,9 +119,16 @@ function App() {
 
   return (
     <div className="app-container">
-      <h1 className="glitch" data-text="HAKOWARE v2" style={{textAlign:'center', marginBottom:'20px'}}>
-          HAKOWARE v2
-      </h1>
+            {/* HEADER SECTION */}
+      <header style={{textAlign: 'center', marginBottom: '30px', marginTop: '10px'}}>
+          <h1 className="glitch" data-text="HAKOWARE" style={{marginBottom: '5px', lineHeight: '1'}}>
+              HAKOWARE 
+          </h1>
+          <div className="sub-header">
+              CHAPTER 7 BANKRUPTCY
+          </div>
+      </header>
+
       
       {!loading && <Dashboard contracts={contracts} recentActivity={recentActivity} />}
       
