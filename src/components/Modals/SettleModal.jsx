@@ -1,25 +1,34 @@
 import { updateContract, deleteContract } from '../../services/firebase'; // <--- FIXED: lowercase 'import'
+import { sendSystemEmail } from '../../services/emailService'; 
+
 
 const SettleModal = ({ isOpen, onClose, contract, onRefresh, showToast }) => {
-  if (!isOpen || !contract) return null;
+   const isAdmin = true; 
 
   const handleReset = async () => {
     if(confirm(`Reset timer for ${contract.name}?`)) {
         await updateContract(contract.id, contract.baseDebt, true);
+        
+        // --- NEW CALL: Pass showToast and true (for isAdmin) ---
+        const stats = calculateDebt(contract);
+        sendSystemEmail('RESET', { ...contract, ...stats }, showToast, true);
+
         showToast("Interest Saved!", "SUCCESS");
         onClose();
-        // Send the specific message to the Ticker
-        onRefresh(`⚠️ UPDATE: ${contract.name.toUpperCase()} JUST SECURED A TIMER RESET`); 
+        onRefresh(`⚠️ UPDATE: ${contract.name.toUpperCase()} TIMER RESET`); 
     }
   };
 
   const handlePaid = async () => {
     if(confirm(`Clear all debt?`)) {
         await updateContract(contract.id, 0, true);
+        
+        // --- NEW CALL ---
+        sendSystemEmail('PAID', { ...contract, debt: 0, days: 0 }, showToast, true);
+
         showToast("Debt Cleared!", "SUCCESS");
         onClose();
-        // Send the specific message to the Ticker
-        onRefresh(`💸 BREAKING: ${contract.name.toUpperCase()} HAS PAID THEIR DEBT IN FULL`);
+        onRefresh(`💸 BREAKING: ${contract.name.toUpperCase()} IS DEBT FREE`);
     }
   };
 
