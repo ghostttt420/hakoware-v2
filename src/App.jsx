@@ -6,10 +6,10 @@ import Dashboard from './components/Dashboard'
 import NenCard from './components/NenCard'
 
 // --- COMMENTED OUT TO PREVENT CRASH ---
-// import AdminPanel from './components/AdminPanel'
-// import SettleModal from './components/Modals/SettleModal'
+   import AdminPanel from './components/AdminPanel'
+   import SettleModal from './components/Modals/SettleModal'
 // import PetitionModal from './components/Modals/PetitionModal'
-// import Toast from './components/Toast'
+ import Toast from './components/Toast'
 
 function App() {
   const [contracts, setContracts] = useState([])
