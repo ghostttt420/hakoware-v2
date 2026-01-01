@@ -55,7 +55,7 @@ function App() {
 
   return (
     <div className="app-container">
-      <h1 className="glitch" style={{textAlign:'center', marginBottom:'20px'}}>HAKOWARE v2</h1>
+      <h1 className="glitch" style={{textAlign:'center', marginBottom:'20px'}}>HAKOWARE</h1>
       
       {!loading && <Dashboard contracts={contracts} />}
       
