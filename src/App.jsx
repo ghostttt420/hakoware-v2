@@ -45,15 +45,29 @@ function App() {
         
         // Auto-Email Logic (Runs in background if Admin Mode is active, regardless of lock)
         if (isAdmin) {
-            data.forEach(async (c) => {
+            // 1. Identify who needs an email first
+            const targets = data.filter(c => {
                 const stats = calculateDebt(c);
-                const isBankrupt = stats.totalDebt >= stats.limit;
-                if (isBankrupt && !c.bankruptcyNotified) {
-                    sendSystemEmail('BANKRUPTCY', { ...c, ...stats }, showToast, true);
-                    await markBankruptcyNotified(c.id);
-                }
+                return stats.totalDebt >= stats.limit && !c.bankruptcyNotified;
             });
+
+            // 2. Send ONE BY ONE (Sequential) to avoid Rate Limits
+            for (const c of targets) {
+                const stats = calculateDebt(c);
+                
+                console.log(`Processing bankruptcy notice for ${c.name}...`);
+                
+                // Send Email
+                await sendSystemEmail('BANKRUPTCY', { ...c, ...stats }, showToast, true);
+                
+                // Mark as notified in DB
+                await markBankruptcyNotified(c.id);
+
+                // 3. WAIT 1 SECOND before the next one (The "Gentle" Pause)
+                await new Promise(resolve => setTimeout(resolve, 1500));
+            }
         }
+        // ------------------------------------------
 
         const sorted = data.sort((a, b) => calculateDebt(b).totalDebt - calculateDebt(a).totalDebt);
         setContracts(sorted);
