@@ -4,20 +4,22 @@ import './index.css'
 import { calculateDebt } from './utils/gameLogic'
 import Dashboard from './components/Dashboard'
 import NenCard from './components/NenCard'
-
-// --- RE-ENABLING THESE TWO ---
 import AdminPanel from './components/AdminPanel'
 import Toast from './components/Toast'
 
-// --- KEEPING MODALS OFF FOR NOW ---
-// import SettleModal from './components/Modals/SettleModal'
-// import PetitionModal from './components/Modals/PetitionModal'
+// --- RESTORING MODALS ---
+import SettleModal from './components/Modals/SettleModal'
+import PetitionModal from './components/Modals/PetitionModal'
 
 function App() {
   const [contracts, setContracts] = useState([])
   const [loading, setLoading] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
-  const [toast, setToast] = useState(null) // State for Toast
+  
+  // State for Modals & Toasts
+  const [selectedContract, setSelectedContract] = useState(null)
+  const [modalType, setModalType] = useState(null) // 'SETTLE' or 'PETITION'
+  const [toast, setToast] = useState(null)
 
   const sfxReset = useRef(new Audio('https://www.myinstants.com/media/sounds/discord-notification.mp3'));
 
@@ -34,14 +36,12 @@ function App() {
         setContracts(sorted);
         setLoading(false);
     } catch (e) {
-        console.error(e);
-        setLoading(false);
+        showToast("Database Error", "ERROR");
     }
   };
 
   useEffect(() => { loadData(); }, [])
 
-  // Toast Helper
   const showToast = (msg, type = 'SUCCESS') => {
       setToast({ msg, type });
   };
@@ -50,11 +50,18 @@ function App() {
       sfxReset.current.volume = 0.5;
       sfxReset.current.currentTime = 0;
       sfxReset.current.play().catch(e => console.log(e));
-      showToast(`Poked ${name}!`, "MERCY"); // Testing the Toast
   };
 
+  // --- OPEN MODALS ---
   const handleAction = (type, contract) => {
-      alert("Modals are still OFF. Check back soon.");
+      setSelectedContract(contract);
+      if (type === 'RESET') setModalType('SETTLE');
+      if (type === 'MERCY' || type === 'SHAME') setModalType('PETITION');
+  };
+
+  const closeModal = () => {
+      setSelectedContract(null);
+      setModalType(null);
   };
 
   return (
@@ -63,13 +70,18 @@ function App() {
       
       {!loading && <Dashboard contracts={contracts} />}
       
-      {/* TEST: IS ADMIN PANEL WORKING? */}
       {isAdmin && <AdminPanel onRefresh={loadData} />}
 
       {loading ? (
         <div style={{color: 'white', textAlign: 'center', marginTop: '50px'}}>Connecting to Nen Network...</div>
       ) : (
         <div className="grid-container">
+          {contracts.length === 0 && (
+             <div style={{textAlign: 'center', color: '#666', marginTop: '50px'}}>
+                <h2>No Contracts Found</h2>
+             </div>
+          )}
+
           {contracts.map((c, index) => (
              <NenCard 
                 key={c.id} contract={c} index={index} isAdmin={isAdmin}
@@ -79,7 +91,22 @@ function App() {
         </div>
       )}
 
-      {/* TEST: IS TOAST WORKING? */}
+      {/* --- RENDER MODALS --- */}
+      <SettleModal 
+          isOpen={modalType === 'SETTLE'} 
+          contract={selectedContract} 
+          onClose={closeModal} 
+          onRefresh={loadData}
+          showToast={showToast} 
+      />
+      
+      <PetitionModal 
+          isOpen={modalType === 'PETITION'} 
+          contract={selectedContract} 
+          onClose={closeModal}
+          showToast={showToast}
+      />
+
       {toast && (
           <Toast 
             message={toast.msg} 
