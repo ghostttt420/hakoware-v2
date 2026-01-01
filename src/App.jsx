@@ -37,6 +37,20 @@ function App() {
     setLoading(true);
     try {
         const data = await fetchContracts();
+if (isAdmin) {
+    data.forEach(async (c) => {
+        const stats = calculateDebt(c);
+        const isBankrupt = stats.totalDebt >= stats.limit;
+
+        if (isBankrupt && !c.bankruptcyNotified) {
+            
+            // --- NEW CALL: Pass showToast and isAdmin (true) ---
+            sendSystemEmail('BANKRUPTCY', { ...c, ...stats }, showToast, true);
+            
+            await markBankruptcyNotified(c.id);
+        }
+    });
+}
         const sorted = data.sort((a, b) => calculateDebt(b).totalDebt - calculateDebt(a).totalDebt);
         setContracts(sorted);
         setLoading(false);
