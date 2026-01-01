@@ -3,20 +3,26 @@ import { calculateDebt, calculateCreditScore } from '../utils/gameLogic';
 const NenCard = ({ contract, index, isAdmin, onAction, onPoke }) => {
   const { totalDebt, daysMissed, limit } = calculateDebt(contract);
   const isBankrupt = totalDebt >= limit;
+  const isClean = totalDebt === 0;
   
-  // Ranking Logic
+  // Ranking Logic (Borders)
   let rankClass = '';
-  if (totalDebt > 0) {
+  if (!isClean && !isBankrupt) {
       if (index === 0) rankClass = 'rank-0'; // Gold
       else if (index === 1) rankClass = 'rank-1'; // Silver
       else if (index === 2) rankClass = 'rank-2'; // Bronze
   }
 
+  // State Class (Background Color)
+  let stateClass = '';
+  if (isBankrupt) stateClass = 'bankrupt';
+  else if (isClean) stateClass = 'clean-record'; // <--- NEW STYLE
+
   // Button Logic
   let btnText = "📜 MAKE A VOW";
   let btnClass = "notify-btn";
 
-  if (totalDebt === 0) {
+  if (isClean) {
       btnText = "✨ FLEX STATUS";
       btnClass += " flex-btn";
   } else if (isBankrupt) {
@@ -24,7 +30,7 @@ const NenCard = ({ contract, index, isAdmin, onAction, onPoke }) => {
   }
 
   return (
-    <div className={`card ${isBankrupt ? 'bankrupt' : ''} ${rankClass}`}>
+    <div className={`card ${stateClass} ${rankClass}`}>
       <div className="card-header">
         <div>
             <h3>{contract.name}</h3>
@@ -35,10 +41,13 @@ const NenCard = ({ contract, index, isAdmin, onAction, onPoke }) => {
         <div 
             className="mascot-icon-wrapper" 
             style={{cursor: 'pointer'}}
-            onClick={() => onPoke(contract.name, isBankrupt)}
+            // Pass the status to the Poke Handler
+            onClick={() => onPoke(contract.name, isBankrupt, isClean)}
         >
           {isBankrupt ? (
               <span className="mascot-icon demon">👹</span>
+          ) : isClean ? (
+              <span className="mascot-icon angel">💎</span> 
           ) : (
               <span className="mascot-icon fairy">🧚</span>
           )}
@@ -63,6 +72,7 @@ const NenCard = ({ contract, index, isAdmin, onAction, onPoke }) => {
       </div>
 
       {isBankrupt && <div style={{color:'var(--red)', fontWeight:'bold', textAlign:'center', marginBottom:'10px'}}>BANKRUPTCY!</div>}
+      {isClean && <div style={{color:'var(--blue)', fontWeight:'bold', textAlign:'center', marginBottom:'10px'}}>DEBT FREE</div>}
 
       {/* Action Buttons */}
       {isAdmin ? (
