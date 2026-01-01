@@ -44,16 +44,42 @@ const PetitionModal = ({ isOpen, onClose, contract, showToast }) => {
   const handleEmail = () => {
       const SERVICE_ID = "service_ciiisv3"; 
       const TEMPLATE_ID = "template_c3miqvi";
+      const PUBLIC_KEY = "ePT35yP8-YeX6Ad7n";
 
-      emailjs.send(SERVICE_ID, TEMPLATE_ID, {
-          to_email: "hakoware265@gmail.com",
-          to_name: "Hakoware Admin",
-          message_intro: isBankrupt ? "I beg for mercy." : "I vow to pay.",
+      // 1. Determine Dynamic Variables based on status
+      let emailParams = {
+          to_name: "Admin", // Sending TO the Admin
           debt: stats.totalDebt,
-          days: stats.daysMissed
-      }, "ePT35yP8-YeX6Ad7n")
-      .then(() => showToast("Official Petition Sent", "MERCY")) // <--- NEW
-      .catch((e) => showToast("Email Failed", "ERROR"));       // <--- NEW
+          days: stats.daysMissed,
+          // Default: Active Vow (Green)
+          theme_color: "#00e676", 
+          title: "OFFICIAL VOW",
+          message_intro: "I vow to pay my debts. Please accept this digital pledge.",
+          status_text: "ACTIVE CONTRACT",
+          status_label: "GOOD STANDING"
+      };
+
+      // 2. Overwrite if Bankrupt (Red)
+      if (isBankrupt) {
+          emailParams.theme_color = "#ff4444";
+          emailParams.title = "CHAPTER 7 PETITION";
+          emailParams.message_intro = "I am insolvent and begging for mercy. The interest is too high.";
+          emailParams.status_text = "BANKRUPTCY DECLARED";
+          emailParams.status_label = "COLLECTION NOTICE";
+      }
+
+      // 3. Send to EmailJS
+      setBtnText("Sending...");
+      emailjs.send(SERVICE_ID, TEMPLATE_ID, emailParams, PUBLIC_KEY)
+      .then(() => {
+          showToast("Official Petition Sent", "MERCY");
+          setBtnText("Email Sent ✅");
+      })
+      .catch((e) => {
+          console.error("Email Error:", e);
+          showToast("Email Failed: " + e.text, "ERROR"); // Shows exact error from EmailJS
+          setBtnText("Retry Email");
+      });
   };
 
   // --- DYNAMIC CONTENT ---
