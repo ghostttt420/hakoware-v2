@@ -46,7 +46,8 @@ const PetitionModal = ({ isOpen, onClose, contract, showToast }) => {
       const TEMPLATE_ID = "template_c3miqvi";
 
       emailjs.send(SERVICE_ID, TEMPLATE_ID, {
-          to_name: "Admin",
+          to_email: "hakoware265@gmail.com",
+          to_name: "Hakoware Admin",
           message_intro: isBankrupt ? "I beg for mercy." : "I vow to pay.",
           debt: stats.totalDebt,
           days: stats.daysMissed
