@@ -1,32 +1,32 @@
-import { useState, useEffect, useRef } from 'react' // <--- FIXED: lowercase 'import'
+import { useState, useEffect, useRef } from 'react'
 import { fetchContracts, markBankruptcyNotified } from './services/firebase'
 import { sendSystemEmail } from './services/emailService'
+import { getRandomQuote } from './utils/quotes' // <--- NEW IMPORT
 import './index.css' 
 import { calculateDebt } from './utils/gameLogic'
 import Dashboard from './components/Dashboard'
 import NenCard from './components/NenCard'
 import AdminPanel from './components/AdminPanel'
+import AdminLock from './components/AdminLock' // <--- NEW IMPORT
 import Toast from './components/Toast'
-
-// Modals
 import SettleModal from './components/Modals/SettleModal'
 import PetitionModal from './components/Modals/PetitionModal'
 
 function App() {
-  // --- STATE ---
   const [contracts, setContracts] = useState([])
   const [loading, setLoading] = useState(true)
-  const [isAdmin, setIsAdmin] = useState(false)
   
+  // Auth State
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [adminUnlocked, setAdminUnlocked] = useState(false) // For PIN Lock
+  const [myIdentity, setMyIdentity] = useState(localStorage.getItem('hakoware_id')); // For User Lock
+
   // UI State
   const [selectedContract, setSelectedContract] = useState(null)
   const [modalType, setModalType] = useState(null) 
   const [toast, setToast] = useState(null)
-  
-  // Ticker State
   const [recentActivity, setRecentActivity] = useState("SYSTEM: MONITORING TRANSACTIONS...");
 
-  // Audio
   const sfxReset = useRef(new Audio('https://www.myinstants.com/media/sounds/discord-notification.mp3'));
 
   useEffect(() => {
@@ -34,7 +34,6 @@ function App() {
     if (params.get('mode') === 'admin') setIsAdmin(true);
   }, []);
 
-  // --- MOVED UP: Define showToast BEFORE loadData uses it ---
   const showToast = (msg, type = 'SUCCESS') => {
       setToast({ msg, type });
   };
@@ -44,22 +43,16 @@ function App() {
     try {
         const data = await fetchContracts();
         
-        // --- AUTO-EMAIL CHECK ---
         if (isAdmin) {
             data.forEach(async (c) => {
                 const stats = calculateDebt(c);
                 const isBankrupt = stats.totalDebt >= stats.limit;
-
                 if (isBankrupt && !c.bankruptcyNotified) {
-                    // Send Email
                     sendSystemEmail('BANKRUPTCY', { ...c, ...stats }, showToast, true);
-                    
-                    // Mark Notified
                     await markBankruptcyNotified(c.id);
                 }
             });
         }
-        // ------------------------
 
         const sorted = data.sort((a, b) => calculateDebt(b).totalDebt - calculateDebt(a).totalDebt);
         setContracts(sorted);
@@ -71,28 +64,40 @@ function App() {
     }
   };
 
-  // --- FIXED: Add [isAdmin] so it re-runs when Admin Mode activates ---
   useEffect(() => { loadData(); }, [isAdmin]) 
+
+  // --- HANDLERS ---
 
   const handlePoke = (name, isBankrupt, isClean) => {
       sfxReset.current.volume = 0.5;
       sfxReset.current.currentTime = 0;
       sfxReset.current.play().catch(e => console.log("Audio Blocked:", e));
       
-      let msg = "🧚 POTCLEAN: Interest is compounding...";
-      let type = "INFO";
-
-      if (isBankrupt) {
-          msg = "👹 TORITATEN: Pay up or perish!";
-          type = "ERROR";
-      } else if (isClean) {
-          msg = "💎 SYSTEM: This user is untouchable.";
-          type = "SUCCESS";
-      }
+      // NEW: Get Random Quote
+      const msg = getRandomQuote(isBankrupt, isClean);
+      const type = isBankrupt ? "ERROR" : isClean ? "SUCCESS" : "INFO";
+      
       showToast(msg, type);
   };
 
   const handleAction = (type, contract) => {
+      // IDENTITY CHECK: If not Admin, enforce "My Card Only"
+      if (!isAdmin) {
+          if (!myIdentity) {
+              // First time clicking: Claim this identity
+              if (confirm(`Are you ${contract.name}? You can only manage this card from now on.`)) {
+                  localStorage.setItem('hakoware_id', contract.id);
+                  setMyIdentity(contract.id);
+              } else {
+                  return; // Cancelled
+              }
+          } else if (myIdentity !== contract.id) {
+              // Clicking someone else's card
+              showToast("ACCESS DENIED: Not your card.", "ERROR");
+              return;
+          }
+      }
+
       setSelectedContract(contract);
       if (type === 'RESET') setModalType('SETTLE');
       else if (type === 'MERCY' || type === 'SHAME') setModalType('PETITION');
@@ -116,7 +121,14 @@ function App() {
       
       {!loading && <Dashboard contracts={contracts} recentActivity={recentActivity} />}
       
-      {isAdmin && <AdminPanel onRefresh={() => handleRefreshData("SYSTEM: NEW CONTRACT ISSUED")} />}
+      {/* ADMIN LOCK SYSTEM */}
+      {isAdmin && (
+          !adminUnlocked ? (
+              <AdminLock onUnlock={() => setAdminUnlocked(true)} />
+          ) : (
+              <AdminPanel onRefresh={() => handleRefreshData("SYSTEM: NEW CONTRACT ISSUED")} />
+          )
+      )}
 
       {loading ? (
         <div style={{color: 'white', textAlign: 'center', marginTop: '50px', fontFamily: 'Courier New'}}>
@@ -124,22 +136,38 @@ function App() {
         </div>
       ) : (
         <div className="grid-container">
-          {contracts.length === 0 && (
-             <div style={{textAlign: 'center', color: '#666', marginTop: '50px'}}>
-                <h2>No Contracts Found</h2>
-             </div>
-          )}
-          {contracts.map((c, index) => (
-             <NenCard 
-                key={c.id} 
-                contract={c} 
-                index={index} 
-                isAdmin={isAdmin}
-                onAction={handleAction} 
-                onPoke={handlePoke}
-             />
-          ))}
+          {contracts.map((c, index) => {
+             // Determine if interactive (Admin always yes, User only if matches ID or no ID selected yet)
+             const isMine = myIdentity === c.id;
+             // We allow clicking "Claim" if no identity is set yet, otherwise disable interactions visually
+             const isDisabled = !isAdmin && myIdentity && !isMine;
+             
+             return (
+               <div key={c.id} style={{opacity: isDisabled ? 0.5 : 1, pointerEvents: isDisabled ? 'none' : 'auto'}}>
+                 <NenCard 
+                    contract={c} 
+                    index={index} 
+                    isAdmin={isAdmin}
+                    onAction={handleAction} 
+                    onPoke={handlePoke}
+                 />
+               </div>
+             );
+          })}
         </div>
+      )}
+
+      {/* FOOTER TO RESET IDENTITY */}
+      {!isAdmin && myIdentity && (
+          <div style={{textAlign:'center', marginTop:'30px', opacity:0.5}}>
+              <button onClick={() => {
+                  localStorage.removeItem('hakoware_id');
+                  setMyIdentity(null);
+                  window.location.reload();
+              }} style={{background:'none', border:'none', color:'#444', textDecoration:'underline'}}>
+                  Not you? Reset Identity
+              </button>
+          </div>
       )}
 
       <SettleModal 
