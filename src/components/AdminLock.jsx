@@ -4,7 +4,7 @@ const AdminLock = ({ onUnlock }) => {
   const [pin, setPin] = useState('');
   const [error, setError] = useState(false);
 
-  // --- SET YOUR PIN HERE ---
+  // --- 🔒 SET YOUR SECRET PIN HERE ---
   const SECRET_CODE = "1234"; 
 
   const handleCheck = () => {
@@ -19,33 +19,37 @@ const AdminLock = ({ onUnlock }) => {
 
   return (
     <div style={{
-        background: '#111', padding: '20px', borderRadius: '8px', 
+        background: '#111', padding: '30px', borderRadius: '12px', 
         border: `1px solid ${error ? 'red' : '#333'}`, 
-        textAlign: 'center', marginBottom: '20px',
-        animation: error ? 'shake 0.3s' : 'none'
+        textAlign: 'center', margin: '20px auto', maxWidth: '300px',
+        animation: error ? 'shake 0.3s' : 'none',
+        boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
     }}>
-        <h3 style={{color: '#ffd700', marginTop: 0}}>🔒 ADMIN LOCKED</h3>
+        <div style={{fontSize: '3rem', marginBottom: '10px'}}>🔒</div>
+        <h3 style={{color: '#ffd700', marginTop: 0, fontFamily: 'Courier New'}}>RESTRICTED ACCESS</h3>
+        <p style={{color: '#666', fontSize: '0.8rem'}}>ENTER ADMIN OVERRIDE CODE</p>
+        
         <input 
             type="password" 
             value={pin}
             onChange={(e) => setPin(e.target.value)}
-            placeholder="ENTER PIN"
+            placeholder="****"
             style={{
                 background: '#000', border: '1px solid #444', color: 'white',
-                padding: '10px', width: '100px', textAlign: 'center', fontSize: '1.2rem',
-                letterSpacing: '5px', marginBottom: '10px'
+                padding: '15px', width: '120px', textAlign: 'center', fontSize: '1.5rem',
+                letterSpacing: '8px', marginBottom: '20px', borderRadius: '8px', outline: 'none'
             }}
         />
         <br/>
-        <button onClick={handleCheck} className="action-btn" style={{width: 'auto', padding: '5px 20px'}}>
-            UNLOCK
+        <button onClick={handleCheck} className="action-btn" style={{width: '100%'}}>
+            UNLOCK TERMINAL
         </button>
         
         <style>{`
           @keyframes shake {
             0% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
             100% { transform: translateX(0); }
           }
         `}</style>
