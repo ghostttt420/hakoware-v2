@@ -22,7 +22,7 @@ const Dashboard = ({ contracts, recentActivity }) => {
 
   // Ticker Text Parts
   const msg1 = ":: NEN CONSUMER FINANCE :: INTEREST RATES AT 1% DAILY";
-  const msg2 = mostWanted ? `👑 PUBLIC ENEMY #1: ${mostWanted.name.toUpperCase()} (${calculateDebt(mostWanted).totalDebt} APR)` : "";
+  const msg2 = mostWanted ? `👑 MOST WANTED: ${mostWanted.name.toUpperCase()} (${calculateDebt(mostWanted).totalDebt} APR)` : "";
   const msg3 = cleanest ? `💎 HUNTER STAR: ${cleanest.name.toUpperCase()}` : "";
   const msg4 = recentActivity ? ` // ${recentActivity} // ` : "";
 
