@@ -28,13 +28,16 @@ const db = getFirestore(app);
 
 export const fetchContracts = async () => {
     try {
-        const querySnapshot = await getDocs(collection(db, "contracts"));
+        // CHANGED: "contracts" -> "friends"
+        const querySnapshot = await getDocs(collection(db, "friends"));
         const data = [];
         querySnapshot.forEach((doc) => {
             data.push({ id: doc.id, ...doc.data() });
         });
         return data;
     } catch (e) {
+        // Show alert so you know if it fails on mobile
+        alert("DATABASE ERROR: " + e.message);
         console.error("Error fetching documents: ", e);
         return [];
     }
@@ -42,31 +45,46 @@ export const fetchContracts = async () => {
 
 export const createContract = async (name, dateStr, limit, email) => {
     try {
+        // CHANGED: "contracts" -> "friends"
         await addDoc(collection(db, "friends"), {
             name: name,
             email: email || "",
             baseDebt: 0,
             bankruptcyLimit: parseInt(limit) || 50,
-            lastInteraction: Timestamp.fromDate(new Date(dateStr)),
+            // Safe Date Handling
+            lastInteraction: Timestamp.fromDate(dateStr ? new Date(dateStr) : new Date()),
             bankruptcyNotified: false
         });
     } catch (e) {
         console.error("Error adding document: ", e);
+        throw e; // Throw so UI knows it failed
     }
 };
 
 export const updateContract = async (id, currentDebt, resetTimer) => {
-    const ref = doc(db, "friends", id);
-    const updates = { baseDebt: currentDebt };
-    
-    if (resetTimer) {
-        updates.lastInteraction = Timestamp.now();
-        updates.bankruptcyNotified = false; // Reset the email flag
+    try {
+        // CHANGED: "contracts" -> "friends"
+        const ref = doc(db, "friends", id);
+        const updates = { baseDebt: currentDebt };
+        
+        if (resetTimer) {
+            updates.lastInteraction = Timestamp.now();
+            updates.bankruptcyNotified = false; 
+        }
+        
+        await updateDoc(ref, updates);
+    } catch (e) {
+        console.error("Error updating: ", e);
+        throw e;
     }
-    
-    await updateDoc(ref, updates);
 };
 
 export const deleteContract = async (id) => {
-    await deleteDoc(doc(db, "contracts", id));
+    try {
+        // CHANGED: "contracts" -> "friends"
+        await deleteDoc(doc(db, "friends", id));
+    } catch (e) {
+        console.error("Error deleting: ", e);
+        throw e;
+    }
 };
