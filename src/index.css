@@ -64,29 +64,43 @@ body {
   text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
 }
 
-/* NEWS TICKER ANIMATION */
+/* --- INFINITE TICKER ANIMATION --- */
+
 .ticker-wrap {
   width: 100%;
   overflow: hidden;
+  white-space: nowrap;
   background: #000;
-  border-top: 1px solid #333;
-  border-bottom: 1px solid #333;
-  height: 30px;
-  line-height: 30px;
+  padding: 8px 0;
+  position: relative;
+  mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent); /* Fades edges */
+  -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
 }
 
 .ticker {
   display: inline-block;
-  white-space: nowrap;
-  animation: ticker 30s linear infinite;
-  font-size: 0.8rem;
-  color: var(--green);
+  color: #00e676; /* Hacker Green */
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  font-size: 0.9rem;
+  
+  /* Reset padding from previous version */
+  padding-left: 0; 
+  
+  /* Run infinite loop */
+  animation: ticker-infinite 30s linear infinite;
 }
 
-@keyframes ticker {
-  0% { transform: translateX(100%); }
-  100% { transform: translateX(-100%); }
+@keyframes ticker-infinite {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    /* Move exactly half way (since we duplicated the text) */
+    transform: translateX(-50%);
+  }
 }
+
 
 /* --- CARD GRID (SMART LAYOUT) --- */
 .grid-container {
