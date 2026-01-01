@@ -1,7 +1,6 @@
 import { updateContract, deleteContract } from '../../services/firebase'; // <--- FIXED: lowercase 'import'
 
 const SettleModal = ({ isOpen, onClose, contract, onRefresh, showToast }) => {
-  // <--- FIXED: Added Safety Check (Prevents Crash)
   if (!isOpen || !contract) return null;
 
   const handleReset = async () => {
@@ -9,7 +8,8 @@ const SettleModal = ({ isOpen, onClose, contract, onRefresh, showToast }) => {
         await updateContract(contract.id, contract.baseDebt, true);
         showToast("Interest Saved!", "SUCCESS");
         onClose();
-        onRefresh();
+        // Send the specific message to the Ticker
+        onRefresh(`⚠️ UPDATE: ${contract.name.toUpperCase()} JUST SECURED A TIMER RESET`); 
     }
   };
 
@@ -18,16 +18,17 @@ const SettleModal = ({ isOpen, onClose, contract, onRefresh, showToast }) => {
         await updateContract(contract.id, 0, true);
         showToast("Debt Cleared!", "SUCCESS");
         onClose();
-        onRefresh();
+        // Send the specific message to the Ticker
+        onRefresh(`💸 BREAKING: ${contract.name.toUpperCase()} HAS PAID THEIR DEBT IN FULL`);
     }
   };
 
   const handleDelete = async () => {
     if(confirm(`DELETE ${contract.name} FOREVER?`)) {
         await deleteContract(contract.id);
-        showToast("Contract Deleted", "ERROR"); // <--- ADDED: Toast for delete
+        showToast("Contract Deleted", "ERROR");
         onClose();
-        onRefresh();
+        onRefresh(`🗑️ SYSTEM: CONTRACT FOR ${contract.name.toUpperCase()} TERMINATED`);
     }
   };
 
