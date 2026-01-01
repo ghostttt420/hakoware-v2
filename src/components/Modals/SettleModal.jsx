@@ -1,23 +1,30 @@
 import { updateContract, deleteContract } from '../../services/firebase';
 
-const SettleModal = ({ isOpen, onClose, contract, onRefresh }) => {
-  if (!isOpen || !contract) return null;
+// Change the first line to this:
+const SettleModal = ({ isOpen, onClose, contract, onRefresh, showToast }) => {
 
+  // Update handleReset
   const handleReset = async () => {
-    if(confirm(`Reset timer for ${contract.name}? (Debt stays)`)) {
+    if(confirm(`Reset timer for ${contract.name}?`)) {
         await updateContract(contract.id, contract.baseDebt, true);
+        showToast("Interest Saved!", "SUCCESS"); // <--- NEW
         onClose();
         onRefresh();
     }
   };
 
+  // Update handlePaid
   const handlePaid = async () => {
-    if(confirm(`Clear all debt for ${contract.name}?`)) {
+    if(confirm(`Clear all debt?`)) {
         await updateContract(contract.id, 0, true);
+        showToast("Debt Cleared!", "SUCCESS"); // <--- NEW
         onClose();
         onRefresh();
     }
   };
+
+  
+
 
   const handleDelete = async () => {
     if(confirm(`DELETE ${contract.name} FOREVER?`)) {
