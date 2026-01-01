@@ -40,7 +40,7 @@ const PetitionModal = ({ isOpen, onClose, contract, showToast }) => {
     }
   };
 
-  // --- 2. EMAIL LOGIC ---
+  // --- 2. EMAIL LOGIC (Updated with Personal Name) ---
   const handleEmail = () => {
       const SERVICE_ID = "service_ciiisv3"; 
       const TEMPLATE_ID = "template_c3miqvi";
@@ -48,14 +48,14 @@ const PetitionModal = ({ isOpen, onClose, contract, showToast }) => {
 
       // 1. Determine Dynamic Variables based on status
       let emailParams = {
-          to_email: "hakoware265@gmail.com",
-          to_name: "Hakoware Admin", // Sending TO the Admin
+          to_name: "Admin", 
           debt: stats.totalDebt,
           days: stats.daysMissed,
           // Default: Active Vow (Green)
           theme_color: "#00e676", 
           title: "OFFICIAL VOW",
-          message_intro: "I vow to pay my debts. Please accept this digital pledge.",
+          // NEW: "I, [Name], vow to pay..."
+          message_intro: `I, ${contract.name}, vow to pay my debts. Please accept this digital pledge.`,
           status_text: "ACTIVE CONTRACT",
           status_label: "GOOD STANDING"
       };
@@ -64,9 +64,10 @@ const PetitionModal = ({ isOpen, onClose, contract, showToast }) => {
       if (isBankrupt) {
           emailParams.theme_color = "#ff4444";
           emailParams.title = "CHAPTER 7 PETITION";
-          emailParams.message_intro = "I am insolvent and begging for mercy. The interest is too high.";
-          emailParams.status_text = "BANKRUPTCY DECLARED";
-          emailParams.status_label = "COLLECTION NOTICE";
+          // NEW: "I, [Name], am insolvent..."
+          emailParams.message_intro: `I, ${contract.name}, am insolvent and begging for aura. The interest is too high.`;
+          emailParams.status_text: "BANKRUPTCY DECLARED";
+          emailParams.status_label: "COLLECTION NOTICE";
       }
 
       // 3. Send to EmailJS
@@ -78,10 +79,11 @@ const PetitionModal = ({ isOpen, onClose, contract, showToast }) => {
       })
       .catch((e) => {
           console.error("Email Error:", e);
-          showToast("Email Failed: " + e.text, "ERROR"); // Shows exact error from EmailJS
+          showToast("Email Failed: " + (e.text || "Unknown"), "ERROR"); 
           setBtnText("Retry Email");
       });
   };
+
 
   // --- DYNAMIC CONTENT ---
   let title = "OFFICIAL PLEDGE";
@@ -93,7 +95,7 @@ const PetitionModal = ({ isOpen, onClose, contract, showToast }) => {
       title = "MERCY PETITION";
       color = "#ff4444"; // Red
       mascot = "🏳️👹";
-      excuse = "I acknowledge my failure.";
+      excuse = "I acknowledge my aura debts.";
   } else if (isClean) {
       title = "HUNTER LICENSE";
       color = "#33b5e5"; // Blue
