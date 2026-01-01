@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react' // <--- FIXED: lowercase 'import'
 import { fetchContracts, markBankruptcyNotified } from './services/firebase'
 import { sendSystemEmail } from './services/emailService'
 import './index.css' 
@@ -23,7 +23,7 @@ function App() {
   const [modalType, setModalType] = useState(null) 
   const [toast, setToast] = useState(null)
   
-  // NEW: Live Ticker State
+  // Ticker State
   const [recentActivity, setRecentActivity] = useState("SYSTEM: MONITORING TRANSACTIONS...");
 
   // Audio
@@ -34,38 +34,45 @@ function App() {
     if (params.get('mode') === 'admin') setIsAdmin(true);
   }, []);
 
+  // --- MOVED UP: Define showToast BEFORE loadData uses it ---
+  const showToast = (msg, type = 'SUCCESS') => {
+      setToast({ msg, type });
+  };
+
   const loadData = async () => {
     setLoading(true);
     try {
         const data = await fetchContracts();
-if (isAdmin) {
-    data.forEach(async (c) => {
-        const stats = calculateDebt(c);
-        const isBankrupt = stats.totalDebt >= stats.limit;
+        
+        // --- AUTO-EMAIL CHECK ---
+        if (isAdmin) {
+            data.forEach(async (c) => {
+                const stats = calculateDebt(c);
+                const isBankrupt = stats.totalDebt >= stats.limit;
 
-        if (isBankrupt && !c.bankruptcyNotified) {
-            
-            // --- NEW CALL: Pass showToast and isAdmin (true) ---
-            sendSystemEmail('BANKRUPTCY', { ...c, ...stats }, showToast, true);
-            
-            await markBankruptcyNotified(c.id);
+                if (isBankrupt && !c.bankruptcyNotified) {
+                    // Send Email
+                    sendSystemEmail('BANKRUPTCY', { ...c, ...stats }, showToast, true);
+                    
+                    // Mark Notified
+                    await markBankruptcyNotified(c.id);
+                }
+            });
         }
-    });
-}
+        // ------------------------
+
         const sorted = data.sort((a, b) => calculateDebt(b).totalDebt - calculateDebt(a).totalDebt);
         setContracts(sorted);
         setLoading(false);
     } catch (e) {
+        console.error(e);
         showToast("Database Error", "ERROR");
         setLoading(false);
     }
   };
 
-  useEffect(() => { loadData(); }, [])
-
-  const showToast = (msg, type = 'SUCCESS') => {
-      setToast({ msg, type });
-  };
+  // --- FIXED: Add [isAdmin] so it re-runs when Admin Mode activates ---
+  useEffect(() => { loadData(); }, [isAdmin]) 
 
   const handlePoke = (name, isBankrupt, isClean) => {
       sfxReset.current.volume = 0.5;
@@ -91,10 +98,9 @@ if (isAdmin) {
       else if (type === 'MERCY' || type === 'SHAME') setModalType('PETITION');
   };
 
-  // --- NEW: Callback when Admin/User finishes an action
   const handleRefreshData = (actionMsg) => {
-      if(actionMsg) setRecentActivity(actionMsg); // Update the ticker
-      loadData(); // Reload DB
+      if(actionMsg) setRecentActivity(actionMsg); 
+      loadData(); 
   };
 
   const closeModal = () => {
@@ -108,7 +114,6 @@ if (isAdmin) {
           HAKOWARE v2
       </h1>
       
-      {/* PASS RECENT ACTIVITY TO DASHBOARD */}
       {!loading && <Dashboard contracts={contracts} recentActivity={recentActivity} />}
       
       {isAdmin && <AdminPanel onRefresh={() => handleRefreshData("SYSTEM: NEW CONTRACT ISSUED")} />}
@@ -137,12 +142,11 @@ if (isAdmin) {
         </div>
       )}
 
-      {/* Modals with Activity Callbacks */}
       <SettleModal 
           isOpen={modalType === 'SETTLE'} 
           contract={selectedContract} 
           onClose={closeModal} 
-          onRefresh={handleRefreshData} // Pass the new handler
+          onRefresh={handleRefreshData} 
           showToast={showToast} 
       />
       
