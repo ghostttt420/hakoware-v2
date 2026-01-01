@@ -6,8 +6,11 @@ import { calculateDebt } from '../../utils/gameLogic';
 const PetitionModal = ({ isOpen, onClose, contract, showToast }) => {
   if (!isOpen || !contract) return null;
 
-  const [btnText, setBtnText] = useState("📱 Share Image");
-  const cardRef = useRef(null); // The invisible HTML card
+  // --- SEPARATE STATES FOR BUTTONS ---
+  const [shareBtnText, setShareBtnText] = useState("📱 Share Image");
+  const [emailBtnText, setEmailBtnText] = useState("📧 Send Official Email");
+  
+  const cardRef = useRef(null); 
   
   const stats = calculateDebt(contract);
   const isBankrupt = stats.totalDebt >= stats.limit;
@@ -15,7 +18,7 @@ const PetitionModal = ({ isOpen, onClose, contract, showToast }) => {
 
   // --- 1. IMAGE GENERATOR LOGIC ---
   const handleShare = async () => {
-    setBtnText("Generating...");
+    setShareBtnText("Generating..."); // Updates Share Button
     if (cardRef.current) {
         try {
             const canvas = await html2canvas(cardRef.current, { backgroundColor: null, scale: 2 });
@@ -29,24 +32,23 @@ const PetitionModal = ({ isOpen, onClose, contract, showToast }) => {
                     link.href = canvas.toDataURL();
                     link.click();
                 }
-                setBtnText("📱 Share Image");
+                setShareBtnText("📱 Share Image");
             });
         } catch (e) {
-    showToast("Image Gen Failed", "ERROR"); // New way
-    console.error(e);
-    setBtnText("Error");
-}
-
+            showToast("Image Gen Failed", "ERROR");
+            console.error(e);
+            setShareBtnText("Error");
+        }
     }
   };
 
-    // --- 2. EMAIL LOGIC (Corrected Syntax) ---
+  // --- 2. EMAIL LOGIC ---
   const handleEmail = () => {
       const SERVICE_ID = "service_ciiisv3"; 
       const TEMPLATE_ID = "template_c3miqvi";
       const PUBLIC_KEY = "ePT35yP8-YeX6Ad7n";
 
-      // 1. Determine Dynamic Variables based on status
+      // 1. Determine Dynamic Variables
       let emailParams = {
           to_email: "hakoware265@gmail.com",
           to_name: "Admin", 
@@ -59,32 +61,30 @@ const PetitionModal = ({ isOpen, onClose, contract, showToast }) => {
           status_label: "GOOD STANDING"
       };
 
-      // 2. Overwrite if Bankrupt (Red)
+      // 2. Overwrite if Bankrupt
       if (isBankrupt) {
           emailParams.theme_color = "#ff4444";
           emailParams.title = "CHAPTER 7 PETITION";
-          
-          // FIX: Used '=' instead of ':'
+          // "Aura" text preserved here:
           emailParams.message_intro = `I, ${contract.name}, am insolvent and begging for aura. The interest is too high.`;
           emailParams.status_text = "BANKRUPTCY DECLARED";
           emailParams.status_label = "COLLECTION NOTICE";
       }
 
       // 3. Send to EmailJS
-      setBtnText("Sending...");
+      setEmailBtnText("Sending..."); // Updates Email Button
+      
       emailjs.send(SERVICE_ID, TEMPLATE_ID, emailParams, PUBLIC_KEY)
       .then(() => {
           showToast("Official Petition Sent", "MERCY");
-          setBtnText("Email Sent ✅");
+          setEmailBtnText("Email Sent ✅");
       })
       .catch((e) => {
           console.error("Email Error:", e);
           showToast("Email Failed: " + (e.text || "Unknown"), "ERROR"); 
-          setBtnText("Retry Email");
+          setEmailBtnText("Retry Email");
       });
   };
-
-
 
   // --- DYNAMIC CONTENT ---
   let title = "OFFICIAL PLEDGE";
@@ -112,13 +112,25 @@ const PetitionModal = ({ isOpen, onClose, contract, showToast }) => {
         
         <p style={{color: '#aaa', fontStyle: 'italic'}}>"{excuse}"</p>
         
+        {/* SHARE BUTTON */}
         <button onClick={handleShare} className="action-btn" style={{marginBottom: '10px'}}>
-           {btnText}
+           {shareBtnText}
         </button>
         
+        {/* EMAIL BUTTON (Only if not clean) */}
         {!isClean && (
-            <button onClick={handleEmail} style={{background: 'transparent', color: '#888', border: '1px solid #444', width: '100%', padding: '10px'}}>
-               📧 Send Official Email
+            <button 
+                onClick={handleEmail} 
+                style={{
+                    background: 'transparent', 
+                    color: '#888', 
+                    border: '1px solid #444', 
+                    width: '100%', 
+                    padding: '10px',
+                    cursor: 'pointer'
+                }}
+            >
+               {emailBtnText}
             </button>
         )}
         
