@@ -426,3 +426,14 @@ button:active { transform: scale(0.98); }
   text-shadow: 0px 2px 4px rgba(0,0,0,0.5); /* Subtle depth */
 }
 
+/* --- FLOATING ANIMATION --- */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); } /* Moves up */
+  100% { transform: translateY(0px); }
+}
+
+.floating {
+  animation: float 3s ease-in-out infinite;
+  display: inline-block;
+}
