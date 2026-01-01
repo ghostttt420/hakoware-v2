@@ -88,3 +88,17 @@ export const deleteContract = async (id) => {
         throw e;
     }
 };
+
+
+
+// ADD THIS AT THE BOTTOM
+export const markBankruptcyNotified = async (id) => {
+    try {
+        const ref = doc(db, "friends", id);
+        await updateDoc(ref, { 
+            bankruptcyNotified: true 
+        });
+    } catch (e) {
+        console.error("Error marking notified:", e);
+    }
+};
