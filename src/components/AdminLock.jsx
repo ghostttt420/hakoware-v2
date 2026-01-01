@@ -5,7 +5,7 @@ const AdminLock = ({ onUnlock }) => {
   const [error, setError] = useState(false);
 
   // --- 🔒 SET YOUR SECRET PIN HERE ---
-  const SECRET_CODE = "1234"; 
+  const SECRET_CODE = "685160"; 
 
   const handleCheck = () => {
     if (pin === SECRET_CODE) {
