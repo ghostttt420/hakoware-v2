@@ -49,7 +49,7 @@ const PetitionModal = ({ isOpen, onClose, contract }) => {
           message_intro: isBankrupt ? "I beg for mercy." : "I vow to pay.",
           debt: stats.totalDebt,
           days: stats.daysMissed
-      }, "YOUR_PUBLIC_KEY_HERE") // <--- PASTE YOUR KEY HERE
+      }, "ePT35yP8-YeX6Ad7n") // <--- PASTE YOUR KEY HERE
       .then(() => alert("Email Sent!"))
       .catch((e) => alert("Failed: " + JSON.stringify(e)));
   };
