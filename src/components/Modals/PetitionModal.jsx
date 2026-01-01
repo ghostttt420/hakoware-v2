@@ -32,9 +32,11 @@ const PetitionModal = ({ isOpen, onClose, contract, showToast }) => {
                 setBtnText("📱 Share Image");
             });
         } catch (e) {
-            alert("Error: " + e.message);
-            setBtnText("Error");
-        }
+    showToast("Image Gen Failed", "ERROR"); // New way
+    console.error(e);
+    setBtnText("Error");
+}
+
     }
   };
 
