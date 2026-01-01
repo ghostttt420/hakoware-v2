@@ -53,7 +53,7 @@ function App() {
       }
   };
 
-  return (
+    return (
     <div className="app-container">
       <h1 className="glitch" style={{textAlign:'center', marginBottom:'20px'}}>HAKOWARE v2</h1>
       
@@ -63,6 +63,14 @@ function App() {
         <div style={{color: 'white', textAlign: 'center', marginTop: '50px'}}>Connecting to Nen Network...</div>
       ) : (
         <div className="grid-container">
+          {/* DEBUG MESSAGE: If 0 contracts, show this */}
+          {contracts.length === 0 && (
+             <div style={{textAlign: 'center', color: '#666', marginTop: '50px'}}>
+                <h2>No Contracts Found</h2>
+                <p>The database is connected but empty.</p>
+             </div>
+          )}
+
           {contracts.map((c, index) => (
              <NenCard 
                 key={c.id} 
@@ -77,6 +85,3 @@ function App() {
       )}
     </div>
   )
-}
-
-export default App
