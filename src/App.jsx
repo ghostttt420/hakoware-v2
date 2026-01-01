@@ -5,17 +5,20 @@ import { calculateDebt } from './utils/gameLogic'
 import Dashboard from './components/Dashboard'
 import NenCard from './components/NenCard'
 
-// --- COMMENTED OUT TO PREVENT CRASH ---
-   import AdminPanel from './components/AdminPanel'
-   import SettleModal from './components/Modals/SettleModal'
+// --- RE-ENABLING THESE TWO ---
+import AdminPanel from './components/AdminPanel'
+import Toast from './components/Toast'
+
+// --- KEEPING MODALS OFF FOR NOW ---
+// import SettleModal from './components/Modals/SettleModal'
 // import PetitionModal from './components/Modals/PetitionModal'
- import Toast from './components/Toast'
 
 function App() {
   const [contracts, setContracts] = useState([])
   const [loading, setLoading] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
-  
+  const [toast, setToast] = useState(null) // State for Toast
+
   const sfxReset = useRef(new Audio('https://www.myinstants.com/media/sounds/discord-notification.mp3'));
 
   useEffect(() => {
@@ -38,15 +41,20 @@ function App() {
 
   useEffect(() => { loadData(); }, [])
 
+  // Toast Helper
+  const showToast = (msg, type = 'SUCCESS') => {
+      setToast({ msg, type });
+  };
+
   const handlePoke = (name) => {
       sfxReset.current.volume = 0.5;
       sfxReset.current.currentTime = 0;
       sfxReset.current.play().catch(e => console.log(e));
+      showToast(`Poked ${name}!`, "MERCY"); // Testing the Toast
   };
 
-  // Simplified Handler (Alerts only for now)
   const handleAction = (type, contract) => {
-      alert("Modals are currently disabled for debugging.");
+      alert("Modals are still OFF. Check back soon.");
   };
 
   return (
@@ -55,7 +63,8 @@ function App() {
       
       {!loading && <Dashboard contracts={contracts} />}
       
-      {/* {isAdmin && <AdminPanel onRefresh={loadData} />} */}
+      {/* TEST: IS ADMIN PANEL WORKING? */}
+      {isAdmin && <AdminPanel onRefresh={loadData} />}
 
       {loading ? (
         <div style={{color: 'white', textAlign: 'center', marginTop: '50px'}}>Connecting to Nen Network...</div>
@@ -68,6 +77,15 @@ function App() {
              />
           ))}
         </div>
+      )}
+
+      {/* TEST: IS TOAST WORKING? */}
+      {toast && (
+          <Toast 
+            message={toast.msg} 
+            type={toast.type} 
+            onClose={() => setToast(null)} 
+          />
       )}
     </div>
   )
