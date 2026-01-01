@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { fetchContracts } from './services/firebase'
+import { sendSystemEmail } from './services/emailService';
 import './index.css' 
 import { calculateDebt } from './utils/gameLogic'
 import Dashboard from './components/Dashboard'
