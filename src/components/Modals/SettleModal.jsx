@@ -9,14 +9,18 @@ const SettleModal = ({ isOpen, onClose, contract, onRefresh, showToast }) => {
   const isAdmin = true; 
 
   const handleReset = async () => {
-    if(confirm(`Reset timer for ${contract.name}?`)) {
-        await updateContract(contract.id, contract.baseDebt, true);
+    // 1. Calculate the CURRENT total (Base + Interest)
+    const stats = calculateDebt(contract);
+    const currentTotal = stats.totalDebt;
+
+    if(confirm(`Reset timer for ${contract.name}? (Debt will stay at ${currentTotal})`)) {
+        // 2. Save the CURRENT TOTAL to the database, effectively "locking in" the interest
+        await updateContract(contract.id, currentTotal, true);
         
-        // Now calculateDebt works because we imported it
-        const stats = calculateDebt(contract);
+        // 3. Send Email
         sendSystemEmail('RESET', { ...contract, ...stats }, showToast, true);
 
-        showToast("Interest Saved!", "SUCCESS");
+        showToast("Timer Reset (Interest Baked In)", "SUCCESS");
         onClose();
         onRefresh(`⚠️ UPDATE: ${contract.name.toUpperCase()} TIMER RESET`); 
     }
