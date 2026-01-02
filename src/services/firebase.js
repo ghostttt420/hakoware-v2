@@ -30,22 +30,27 @@ export const fetchContracts = async () => {
   }
 };
 
-// --- THE V1 MATCHING FUNCTION ---
-// Order: Name -> Date -> Limit -> Email -> (Timer)
+// --- RAW INPUT FUNCTION ---
+// 1. Name, 2. Date, 3. Limit, 4. Email, 5. Timer
 export const createContract = async (name, lastSpoke, limit, email, lastBankruptcyEmail) => {
     try {
-        console.log(`📝 Saving: ${name}, Limit: ${limit}`);
+        console.log(`📝 SAVING RAW DATA -> Limit: ${limit}`);
+
+        // STRICT CONVERSION:
+        // whatever comes in, we turn it into a Number.
+        // If it's invalid, it becomes 0. IT WILL NEVER BE 50 AUTOMATICALLY.
+        let finalLimit = Number(limit);
+        if (isNaN(finalLimit)) finalLimit = 0;
 
         await addDoc(collection(db, "friends"), {
             name: name,
-            // V1 passed date as 2nd arg
-            lastSpoke: lastSpoke || new Date().toISOString(), 
-            // V1 passed limit as 3rd arg (Force Number!)
-            limit: Number(limit) || 50, 
-            // V1 passed email as 4th arg
             email: email || "",
-            
             baseDebt: 0,
+            
+            // NO DEFAULT OF 50 HERE. 
+            limit: finalLimit, 
+            
+            lastSpoke: lastSpoke || new Date().toISOString(),
             lastBankruptcyEmail: lastBankruptcyEmail || null
         });
     } catch (e) {
