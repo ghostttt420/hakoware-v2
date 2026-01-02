@@ -4,9 +4,9 @@ import {
   updateDoc, deleteDoc, doc 
 } from "firebase/firestore";
 
-// ... Keep your firebaseConfig here ...
+// REPLACE WITH YOUR KEYS
 const firebaseConfig = {
-  apiKey: "AIzaSyAtxWdL4TVqgPmQJFd_UcPcDMm7_QbGBWw", 
+    apiKey: "AIzaSyAtxWdL4TVqgPmQJFd_UcPcDMm7_QbGBWw", 
   authDomain: "hakoware-92809.firebaseapp.com",
     projectId: "hakoware-92809",
     storageBucket: "hakoware-92809.firebasestorage.app",
@@ -25,17 +25,19 @@ export const fetchContracts = async () => {
   }));
 };
 
-// FIX: Renamed to 'createContract' to match AdminPanel
-// FIX: Accepts 'data' object to handle the new email timestamps
+// --- THIS IS THE FIX ---
+// Accepts an OBJECT now, so it knows which value is the Limit and which is the Name
 export const createContract = async (data) => {
     try {
         await addDoc(collection(db, "friends"), {
             name: data.name,
             email: data.email || "",
             baseDebt: Number(data.baseDebt) || 0,
-            limit: Number(data.limit) || 50,
+            
+            // This reads the correct Limit you typed
+            limit: Number(data.limit) || 50, 
+            
             lastSpoke: data.lastSpoke || new Date().toISOString(),
-            // This is the key part for avoiding duplicates:
             lastBankruptcyEmail: data.lastBankruptcyEmail || null
         });
     } catch (e) {
