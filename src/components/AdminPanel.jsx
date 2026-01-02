@@ -9,25 +9,26 @@ const AdminPanel = ({ onRefresh }) => {
   // Form State
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [limit, setLimit] = useState(''); // Empty string by default (forces you to type)
+  const [limit, setLimit] = useState(''); // Empty by default
   const [dateStr, setDateStr] = useState(new Date().toISOString().split('T')[0]); 
 
   const handleAdd = async () => {
       if (!name) return;
       
       const finalDate = dateStr ? new Date(dateStr).toISOString() : new Date().toISOString();
-      
-      // If you leave it empty, we assume 50 just for the UI calculation, 
-      // BUT for the database, we send exactly what is in the 'limit' state.
-      const uiLimit = limit === '' ? 50 : Number(limit);
+      const uiLimit = limit === '' ? 50 : Number(limit); // For instant math only
       
       // 1. Logic Check
       const mockContract = {
           baseDebt: 0,
-          limit: uiLimit,
+          bankruptcyLimit: uiLimit, // Use V1 name for calc
+          limit: uiLimit,           // Use V2 name just in case
           lastSpoke: finalDate 
       };
-      const stats = calculateDebt(mockContract);
+      
+      // We pass 50 as default to UI just for the check, 
+      // but the DB save below uses the REAL input.
+      const stats = calculateDebt(mockContract); 
       const isImmediateBankruptcy = stats.totalDebt >= uiLimit;
 
       // 2. Email Check
@@ -40,13 +41,11 @@ const AdminPanel = ({ onRefresh }) => {
           }, null, true); 
       }
 
-      // 3. DATABASE SAVE (RAW ARGUMENTS)
-      // Name, Date, Limit, Email, Timer
+      // 3. DATABASE SAVE
       await createContract(
           name, 
           finalDate, 
-          // If typed '3', sends 3. If typed '', sends 0.
-          limit === '' ? 0 : Number(limit), 
+          limit === '' ? 0 : Number(limit), // Sends exactly what you typed
           email,
           isImmediateBankruptcy ? new Date().toISOString() : null
       );
@@ -60,7 +59,7 @@ const AdminPanel = ({ onRefresh }) => {
   };
 
   return (
-    <div className="controls" style={{margin: '20px', textAlign: 'center'}}>
+    <div style={{margin: '20px', textAlign: 'center'}}>
       {!isOpen ? (
           <button onClick={() => setIsOpen(true)} className="action-btn" style={{width: '100%'}}>
              + LEND AURA
@@ -86,7 +85,7 @@ const AdminPanel = ({ onRefresh }) => {
                     <label style={{fontSize:'0.7rem', color:'#888'}}>Bankruptcy Limit</label>
                     <input 
                         type="number" 
-                        placeholder="Default: 0"
+                        placeholder="Limit (e.g. 3)"
                         value={limit} onChange={e => setLimit(e.target.value)} 
                         style={inputStyle}
                     />
