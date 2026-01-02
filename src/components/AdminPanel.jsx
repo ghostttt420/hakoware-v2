@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { createContract } from '../services/firebase';
+import { createContract } from '../services/firebase'; // We are using the Object version now
 import { sendSystemEmail } from '../services/emailService'; 
 import { calculateDebt } from '../utils/gameLogic';
 
@@ -16,9 +16,10 @@ const AdminPanel = ({ onRefresh }) => {
       if (!name) return;
       
       const finalDate = dateStr ? new Date(dateStr).toISOString() : new Date().toISOString();
-      const finalLimit = Number(limit); // Ensure number
+      // FORCE NUMBER CONVERSION
+      const finalLimit = Number(limit); 
 
-      // 1. Check for Instant Bankruptcy
+      // 1. Math Check
       const mockContract = {
           baseDebt: 0,
           limit: finalLimit,
@@ -27,9 +28,8 @@ const AdminPanel = ({ onRefresh }) => {
       const stats = calculateDebt(mockContract);
       const isImmediateBankruptcy = stats.totalDebt >= finalLimit;
 
-      // 2. Send Email if Needed
+      // 2. Email Trigger
       if (isImmediateBankruptcy && email) {
-          console.log(`Instant Bankruptcy! (${stats.totalDebt} >= ${finalLimit})`);
           sendSystemEmail('BANKRUPTCY', {
               name: name,
               email: email,
@@ -38,16 +38,21 @@ const AdminPanel = ({ onRefresh }) => {
           }, null, true); 
       }
 
-      // 3. Save to Database (THE FIX)
-      // We pass 5 Separate Arguments to match firebase.js exactly
-      await createContract(
-          name, 
-          finalDate, 
-          finalLimit, 
-          email, 
-          // 5th Argument: The Timer Date (or null)
-          isImmediateBankruptcy ? new Date().toISOString() : null
-      );
+      // --- DEBUG POPUP ---
+      // This will show you exactly what is being sent.
+      // If this says 500, the Admin Panel is working perfectly.
+      // alert(`DEBUG CHECK:\nName: ${name}\nLimit: ${finalLimit}`); 
+      // (Commented out the alert for production, but uncomment if you want to see it)
+
+      // 3. Save to Database (Sending a SINGLE OBJECT)
+      await createContract({
+          name: name,
+          email: email,
+          baseDebt: 0,
+          limit: finalLimit, // <--- This MUST be the number you typed
+          lastSpoke: finalDate,
+          lastBankruptcyEmail: isImmediateBankruptcy ? new Date().toISOString() : null
+      });
       
       // Reset
       setName('');
@@ -58,13 +63,13 @@ const AdminPanel = ({ onRefresh }) => {
   };
 
   return (
-    <div className="controls" style={{margin: '20px', textAlign: 'center'}}>
+    <div style={{margin: '20px', textAlign: 'center'}}>
       {!isOpen ? (
           <button onClick={() => setIsOpen(true)} className="action-btn" style={{width: '100%'}}>
              + LEND AURA
           </button>
       ) : (
-          <div style={{background: '#222', padding: '15px', border: '1px solid #444', borderRadius:'8px'}}>
+          <div style={{background: '#222', padding: '15px', border: '1px solid #444', borderRadius:'8px', textAlign:'left'}}>
               <h3 style={{marginTop:0, color:'#ffd700'}}>NEW CONTRACT</h3>
               
               <input 
