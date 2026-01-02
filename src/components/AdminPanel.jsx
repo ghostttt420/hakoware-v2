@@ -1,5 +1,7 @@
-Import { useState } from 'react';
+import { useState } from 'react';
 import { createContract } from '../services/firebase';
+import { sendSystemEmail } from '../services/emailService'; 
+import { calculateDebt } from '../utils/gameLogic';
 
 const AdminPanel = ({ onRefresh }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -7,23 +9,55 @@ const AdminPanel = ({ onRefresh }) => {
   // Form State
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [limit, setLimit] = useState(50); // Default limit
-  const [dateStr, setDateStr] = useState(new Date().toISOString().split('T')[0]); // Default to Today (YYYY-MM-DD)
+  const [limit, setLimit] = useState(50); 
+  const [dateStr, setDateStr] = useState(new Date().toISOString().split('T')[0]); 
 
   const handleAdd = async () => {
       if (!name) return;
       
-      // Use the picked date, or fallback to now
+      // 1. Prepare Data
       const finalDate = dateStr ? new Date(dateStr).toISOString() : new Date().toISOString();
-      
-      await createContract(name, finalDate, limit, email);
+      const finalLimit = Number(limit); // Ensures "500" becomes the number 500
+
+      // 2. CHECK: Instant Bankruptcy?
+      // We simulate the debt right now to see if they are already underwater.
+      const mockContract = {
+          baseDebt: 0, 
+          limit: finalLimit,
+          lastSpoke: finalDate 
+      };
+      const stats = calculateDebt(mockContract);
+      const isImmediateBankruptcy = stats.totalDebt >= finalLimit;
+
+      // 3. SEND: Instant Email Trigger
+      if (isImmediateBankruptcy && email) {
+          console.log(`🚨 Instant Bankruptcy Detected! (${stats.totalDebt} >= ${finalLimit})`);
+          sendSystemEmail('BANKRUPTCY', {
+              name: name,
+              email: email,
+              totalDebt: stats.totalDebt, 
+              daysMissed: stats.daysMissed
+          }, null, true); 
+      }
+
+      // 4. SAVE: Send as a Package (Object)
+      // The new Universal Firebase function will catch this perfectly.
+      await createContract({
+          name: name,
+          email: email,
+          baseDebt: 0,
+          limit: finalLimit, // <--- This sends YOUR custom limit
+          lastSpoke: finalDate,
+          // If we sent an email just now, save the date so we don't spam them tomorrow
+          lastBankruptcyEmail: isImmediateBankruptcy ? new Date().toISOString() : null
+      });
       
       // Reset & Refresh
       setName('');
       setEmail('');
       setLimit(50);
       setIsOpen(false);
-      onRefresh(); 
+      onRefresh("SYSTEM: NEW CONTRACT ISSUED"); 
   };
 
   return (
