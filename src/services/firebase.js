@@ -4,10 +4,10 @@ import {
   updateDoc, deleteDoc, doc 
 } from "firebase/firestore";
 
-// --- PASTE YOUR REAL KEYS HERE ---
+// --- YOUR REAL CONFIGURATION ---
 const firebaseConfig = {
-     apiKey: "AIzaSyAtxWdL4TVqgPmQJFd_UcPcDMm7_QbGBWw", 
-  authDomain: "hakoware-92809.firebaseapp.com",
+    apiKey: "AIzaSyAtxWdL4TVqgPmQJFd_UcPcDMm7_QbGBWw", 
+    authDomain: "hakoware-92809.firebaseapp.com",
     projectId: "hakoware-92809",
     storageBucket: "hakoware-92809.firebasestorage.app",
     messagingSenderId: "161827009254",
@@ -17,6 +17,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// --- FETCH CONTRACTS ---
 export const fetchContracts = async () => {
   try {
     const querySnapshot = await getDocs(collection(db, "friends"));
@@ -30,28 +31,32 @@ export const fetchContracts = async () => {
   }
 };
 
-// --- THE FIX: EXPLICIT 5 ARGUMENTS ---
-// We list them out one by one so there is NO confusion.
-export const createContract = async (name, lastSpoke, limit, email, lastBankruptcyEmail) => {
+// --- THE FIX: OBJECT HANDLER ---
+// This accepts the single "package" of data from your Admin Panel.
+// This ensures 'limit', 'name', and 'email' never get mixed up.
+export const createContract = async (contractData) => {
     try {
+        console.log("🔥 SAVING CONTRACT:", contractData);
+
         await addDoc(collection(db, "friends"), {
-            name: name,
-            email: email || "",
+            // Pulling data directly from the object
+            name: contractData.name,
+            email: contractData.email || "",
             baseDebt: 0,
             
-            // FORCE IT TO BE A NUMBER
-            limit: Number(limit), 
+            // CRITICAL: We grab the limit you typed.
+            // If you typed 500, this saves 500.
+            limit: Number(contractData.limit) || 50, 
             
-            lastSpoke: lastSpoke || new Date().toISOString(),
-            // The 5th argument (The Email Timer)
-            lastBankruptcyEmail: lastBankruptcyEmail || null
+            lastSpoke: contractData.lastSpoke || new Date().toISOString(),
+            lastBankruptcyEmail: contractData.lastBankruptcyEmail || null
         });
-        console.log(`Saved Contract: ${name} with Limit: ${limit}`);
     } catch (e) {
         console.error("Error adding contract: ", e);
     }
 };
 
+// --- UPDATE DEBT ---
 export const updateContract = async (id, currentTotalDebt, resetTimer = false) => {
     const ref = doc(db, "friends", id);
     const updates = { baseDebt: currentTotalDebt };
@@ -59,6 +64,7 @@ export const updateContract = async (id, currentTotalDebt, resetTimer = false) =
     await updateDoc(ref, updates);
 };
 
+// --- MARK NOTIFIED ---
 export const markBankruptcyNotified = async (id) => {
     try {
         const contractRef = doc(db, "friends", id);
@@ -70,6 +76,7 @@ export const markBankruptcyNotified = async (id) => {
     }
 };
 
+// --- DELETE CONTRACT ---
 export const deleteContract = async (id) => {
     await deleteDoc(doc(db, "friends", id));
 };
