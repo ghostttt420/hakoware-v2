@@ -4,9 +4,9 @@ import {
   updateDoc, deleteDoc, doc 
 } from "firebase/firestore";
 
-// REPLACE WITH YOUR KEYS
+// --- CONFIGURATION (PUT YOUR REAL KEYS BACK HERE) ---
 const firebaseConfig = {
-    apiKey: "AIzaSyAtxWdL4TVqgPmQJFd_UcPcDMm7_QbGBWw", 
+  apiKey: "AIzaSyAtxWdL4TVqgPmQJFd_UcPcDMm7_QbGBWw", 
   authDomain: "hakoware-92809.firebaseapp.com",
     projectId: "hakoware-92809",
     storageBucket: "hakoware-92809.firebasestorage.app",
@@ -18,28 +18,36 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 export const fetchContracts = async () => {
-  const querySnapshot = await getDocs(collection(db, "friends"));
-  return querySnapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data()
-  }));
+  try {
+    const querySnapshot = await getDocs(collection(db, "friends"));
+    return querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+  } catch (e) {
+    console.error("Fetch Error:", e);
+    return [];
+  }
 };
 
-// --- THIS IS THE FIX ---
-// Accepts an OBJECT now, so it knows which value is the Limit and which is the Name
-export const createContract = async (data) => {
+// --- THE FIX: UNIVERSAL CREATE FUNCTION ---
+export const createContract = async (arg1) => {
     try {
+        // We force 'data' to be the object passed from AdminPanel
+        const data = arg1;
+
         await addDoc(collection(db, "friends"), {
             name: data.name,
             email: data.email || "",
-            baseDebt: Number(data.baseDebt) || 0,
+            baseDebt: 0, // Debt is calculated by time, so base is 0
             
-            // This reads the correct Limit you typed
-            limit: Number(data.limit) || 50, 
+            // FIX: Explicitly grab the limit, or crash if missing (no more default 50 hiding bugs)
+            limit: Number(data.limit), 
             
             lastSpoke: data.lastSpoke || new Date().toISOString(),
             lastBankruptcyEmail: data.lastBankruptcyEmail || null
         });
+        console.log("Contract Created. Limit set to:", data.limit);
     } catch (e) {
         console.error("Error adding contract: ", e);
     }
