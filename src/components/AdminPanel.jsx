@@ -1,5 +1,4 @@
 import { useState } from 'react';
-// FIX: Imported 'createContract' (Old Name)
 import { createContract } from '../services/firebase'; 
 import { sendSystemEmail } from '../services/emailService';
 import { calculateDebt } from '../utils/gameLogic';
@@ -7,10 +6,12 @@ import { calculateDebt } from '../utils/gameLogic';
 const AdminPanel = ({ onRefresh }) => {
   const [isOpen, setIsOpen] = useState(false);
   
+  // Form State
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     limit: 50,
+    // Default to Today's date string (YYYY-MM-DD)
     dateStr: new Date().toISOString().split('T')[0] 
   });
 
@@ -18,20 +19,29 @@ const AdminPanel = ({ onRefresh }) => {
     e.preventDefault();
     
     const limitVal = parseFloat(formData.limit) || 50;
-    const finalDate = formData.dateStr ? new Date(formData.dateStr).toISOString() : new Date().toISOString();
+    
+    // 1. Force the Time to Midnight for accurate day counting
+    // (This prevents timezone issues making it look like 0 days)
+    const finalDate = formData.dateStr 
+        ? new Date(formData.dateStr).toISOString() 
+        : new Date().toISOString();
 
-    // 1. Simulate Debt
+    // 2. Simulate Debt (Debt = Days Missed)
     const mockContract = {
-        baseDebt: 0,
+        baseDebt: 0, 
         limit: limitVal,
         lastSpoke: finalDate 
     };
+    
     const stats = calculateDebt(mockContract); 
     const isImmediateBankruptcy = stats.totalDebt >= limitVal;
 
-    // 2. Instant Email
+    // Debugging: Check console to see if days are being counted
+    console.log(`Simulation: ${stats.daysMissed} Days Missed = ${stats.totalDebt} Debt`);
+
+    // 3. Instant Email
     if (isImmediateBankruptcy && formData.email) {
-        console.log(`Instant Bankruptcy! Sending email...`);
+        console.log(`Instant Bankruptcy! (${stats.totalDebt} >= ${limitVal})`);
         sendSystemEmail('BANKRUPTCY', {
             name: formData.name,
             email: formData.email,
@@ -40,12 +50,11 @@ const AdminPanel = ({ onRefresh }) => {
         }, null, true); 
     }
 
-    // 3. Save to Database (Using 'createContract')
-    // We pass an OBJECT now so we can include 'lastBankruptcyEmail'
+    // 4. Save to Database
     await createContract({
         name: formData.name,
         email: formData.email,
-        baseDebt: 0,
+        baseDebt: 0, // Always 0 because Debt comes from Time
         limit: limitVal,
         lastSpoke: finalDate, 
         lastBankruptcyEmail: isImmediateBankruptcy ? new Date().toISOString() : null 
@@ -60,7 +69,7 @@ const AdminPanel = ({ onRefresh }) => {
     <div style={{margin: '20px', textAlign: 'center'}}>
       {!isOpen ? (
           <button onClick={() => setIsOpen(true)} className="action-btn" style={{width: '100%'}}>
-             + LEND AURA (ADD FRIEND)
+             + LEND AURA
           </button>
       ) : (
           <div style={{background: '#222', padding: '15px', border: '1px solid #444', borderRadius:'8px', textAlign:'left'}}>
@@ -71,11 +80,13 @@ const AdminPanel = ({ onRefresh }) => {
                      value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} 
                      style={inputStyle}
                   />
+                  
                   <input 
                      type="email" placeholder="Email (Required)" 
                      value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} 
                      style={inputStyle}
                   />
+
                   <div style={{display:'flex', gap:'10px', marginBottom:'10px'}}>
                       <div style={{flex:1}}>
                         <label style={{fontSize:'0.7rem', color:'#888'}}>Bankruptcy Limit</label>
@@ -86,6 +97,7 @@ const AdminPanel = ({ onRefresh }) => {
                         <input type="date" value={formData.dateStr} onChange={e => setFormData({...formData, dateStr: e.target.value})} style={inputStyle} />
                       </div>
                   </div>
+                  
                   <div style={{display:'flex', gap:'10px'}}>
                       <button type="submit" style={{flex:1, background:'green', color:'white', padding:'10px', border:'none', borderRadius:'4px'}}>CONFIRM</button>
                       <button type="button" onClick={() => setIsOpen(false)} style={{flex:1, background:'red', color:'white', padding:'10px', border:'none', borderRadius:'4px'}}>CANCEL</button>
@@ -98,7 +110,7 @@ const AdminPanel = ({ onRefresh }) => {
 };
 
 const inputStyle = {
-    display:'block', width:'100%', marginBottom:'10px', padding:'8px', 
+    display:'block', width:'100%', marginBottom:'5px', padding:'8px', 
     background:'#111', border:'1px solid #444', color:'white', borderRadius:'4px',
     fontFamily: 'Courier New'
 };
