@@ -15,23 +15,21 @@ const AdminPanel = ({ onRefresh }) => {
   const handleAdd = async () => {
       if (!name) return;
       
-      // 1. Prepare Data
       const finalDate = dateStr ? new Date(dateStr).toISOString() : new Date().toISOString();
-      const finalLimit = Number(limit); // Ensures "500" becomes the number 500
+      const finalLimit = Number(limit); // Ensure number
 
-      // 2. CHECK: Instant Bankruptcy?
-      // We simulate the debt right now to see if they are already underwater.
+      // 1. Check for Instant Bankruptcy
       const mockContract = {
-          baseDebt: 0, 
+          baseDebt: 0,
           limit: finalLimit,
           lastSpoke: finalDate 
       };
       const stats = calculateDebt(mockContract);
       const isImmediateBankruptcy = stats.totalDebt >= finalLimit;
 
-      // 3. SEND: Instant Email Trigger
+      // 2. Send Email if Needed
       if (isImmediateBankruptcy && email) {
-          console.log(`🚨 Instant Bankruptcy Detected! (${stats.totalDebt} >= ${finalLimit})`);
+          console.log(`Instant Bankruptcy! (${stats.totalDebt} >= ${finalLimit})`);
           sendSystemEmail('BANKRUPTCY', {
               name: name,
               email: email,
@@ -40,19 +38,18 @@ const AdminPanel = ({ onRefresh }) => {
           }, null, true); 
       }
 
-      // 4. SAVE: Send as a Package (Object)
-      // The new Universal Firebase function will catch this perfectly.
-      await createContract({
-          name: name,
-          email: email,
-          baseDebt: 0,
-          limit: finalLimit, // <--- This sends YOUR custom limit
-          lastSpoke: finalDate,
-          // If we sent an email just now, save the date so we don't spam them tomorrow
-          lastBankruptcyEmail: isImmediateBankruptcy ? new Date().toISOString() : null
-      });
+      // 3. Save to Database (THE FIX)
+      // We pass 5 Separate Arguments to match firebase.js exactly
+      await createContract(
+          name, 
+          finalDate, 
+          finalLimit, 
+          email, 
+          // 5th Argument: The Timer Date (or null)
+          isImmediateBankruptcy ? new Date().toISOString() : null
+      );
       
-      // Reset & Refresh
+      // Reset
       setName('');
       setEmail('');
       setLimit(50);
