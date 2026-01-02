@@ -6,7 +6,7 @@ import {
 
 // ... Keep your firebaseConfig here ...
 const firebaseConfig = {
-  apiKey: "AIzaSyD-YOUR-API-KEY", 
+  apiKey: "AIzaSyAtxWdL4TVqgPmQJFd_UcPcDMm7_QbGBWw", 
   authDomain: "hakoware-v2.firebaseapp.com",
   projectId: "hakoware-v2",
   storageBucket: "hakoware-v2.firebasestorage.app",
