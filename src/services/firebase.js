@@ -7,11 +7,11 @@ import {
 // ... Keep your firebaseConfig here ...
 const firebaseConfig = {
   apiKey: "AIzaSyAtxWdL4TVqgPmQJFd_UcPcDMm7_QbGBWw", 
-  authDomain: "hakoware-v2.firebaseapp.com",
-  projectId: "hakoware-v2",
-  storageBucket: "hakoware-v2.firebasestorage.app",
-  messagingSenderId: "148408336306",
-  appId: "1:148408336306:web:6e10080644365737d0460c"
+  authDomain: "hakoware-92809.firebaseapp.com",
+    projectId: "hakoware-92809",
+    storageBucket: "hakoware-92809.firebasestorage.app",
+    messagingSenderId: "161827009254",
+    appId: "1:161827009254:web:84302cd63650563a50c127"
 };
 
 const app = initializeApp(firebaseConfig);
