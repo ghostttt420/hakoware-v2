@@ -91,14 +91,16 @@ export const deleteContract = async (id) => {
 
 
 
-// ADD THIS AT THE BOTTOM
+// UPDATED: Saves the current timestamp instead of just a boolean
 export const markBankruptcyNotified = async (id) => {
     try {
-        const ref = doc(db, "friends", id);
-        await updateDoc(ref, { 
-            bankruptcyNotified: true 
+        const contractRef = doc(db, "friends", id);
+        await updateDoc(contractRef, {
+            // We save the EXACT TIME we sent the email
+            lastBankruptcyEmail: new Date().toISOString()
         });
     } catch (e) {
-        console.error("Error marking notified:", e);
+        console.error("Error updating notification status: ", e);
     }
 };
+
