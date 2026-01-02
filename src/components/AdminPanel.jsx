@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { createContract } from '../services/firebase'; // We are using the Object version now
+import { createContract } from '../services/firebase';
 import { sendSystemEmail } from '../services/emailService'; 
 import { calculateDebt } from '../utils/gameLogic';
 
@@ -16,10 +16,9 @@ const AdminPanel = ({ onRefresh }) => {
       if (!name) return;
       
       const finalDate = dateStr ? new Date(dateStr).toISOString() : new Date().toISOString();
-      // FORCE NUMBER CONVERSION
       const finalLimit = Number(limit); 
 
-      // 1. Math Check
+      // 1. Logic Check
       const mockContract = {
           baseDebt: 0,
           limit: finalLimit,
@@ -28,7 +27,7 @@ const AdminPanel = ({ onRefresh }) => {
       const stats = calculateDebt(mockContract);
       const isImmediateBankruptcy = stats.totalDebt >= finalLimit;
 
-      // 2. Email Trigger
+      // 2. Email Check
       if (isImmediateBankruptcy && email) {
           sendSystemEmail('BANKRUPTCY', {
               name: name,
@@ -38,21 +37,15 @@ const AdminPanel = ({ onRefresh }) => {
           }, null, true); 
       }
 
-      // --- DEBUG POPUP ---
-      // This will show you exactly what is being sent.
-      // If this says 500, the Admin Panel is working perfectly.
-      // alert(`DEBUG CHECK:\nName: ${name}\nLimit: ${finalLimit}`); 
-      // (Commented out the alert for production, but uncomment if you want to see it)
-
-      // 3. Save to Database (Sending a SINGLE OBJECT)
-      await createContract({
-          name: name,
-          email: email,
-          baseDebt: 0,
-          limit: finalLimit, // <--- This MUST be the number you typed
-          lastSpoke: finalDate,
-          lastBankruptcyEmail: isImmediateBankruptcy ? new Date().toISOString() : null
-      });
+      // 3. DATABASE SAVE (MATCHING V1 ORDER)
+      // Order: Name, Date, Limit, Email, Timer
+      await createContract(
+          name,           // 1. Name
+          finalDate,      // 2. Date
+          finalLimit,     // 3. Limit (The one you typed!)
+          email,          // 4. Email
+          isImmediateBankruptcy ? new Date().toISOString() : null // 5. Timer
+      );
       
       // Reset
       setName('');
@@ -63,7 +56,7 @@ const AdminPanel = ({ onRefresh }) => {
   };
 
   return (
-    <div style={{margin: '20px', textAlign: 'center'}}>
+    <div className="controls" style={{margin: '20px', textAlign: 'center'}}>
       {!isOpen ? (
           <button onClick={() => setIsOpen(true)} className="action-btn" style={{width: '100%'}}>
              + LEND AURA
