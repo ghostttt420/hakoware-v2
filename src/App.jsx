@@ -43,27 +43,36 @@ function App() {
     try {
         const data = await fetchContracts();
         
-        // Auto-Email Logic (Runs in background if Admin Mode is active, regardless of lock)
+             
         if (isAdmin) {
-            // 1. Identify who needs an email first
+            const now = new Date();
+
             const targets = data.filter(c => {
                 const stats = calculateDebt(c);
-                return stats.totalDebt >= stats.limit && !c.bankruptcyNotified;
+                const isBankrupt = stats.totalDebt >= stats.limit;
+
+                if (!isBankrupt) return false;
+
+                // LOGIC: Check time since last email
+                if (!c.lastBankruptcyEmail) {
+                    // Never sent? Send it now.
+                    return true; 
+                }
+
+                const lastSentDate = new Date(c.lastBankruptcyEmail);
+                const diffTime = Math.abs(now - lastSentDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+
+                // Sent more than 10 days ago? Send again.
+                return diffDays >= 10;
             });
 
-            // 2. Send ONE BY ONE (Sequential) to avoid Rate Limits
+            // Send Loop (No changes here, just processes the targets)
             for (const c of targets) {
                 const stats = calculateDebt(c);
-                
-                console.log(`Processing bankruptcy notice for ${c.name}...`);
-                
-                // Send Email
+                console.log(`Sending recurring notice to ${c.name}...`);
                 await sendSystemEmail('BANKRUPTCY', { ...c, ...stats }, showToast, true);
-                
-                // Mark as notified in DB
                 await markBankruptcyNotified(c.id);
-
-                // 3. WAIT 1 SECOND before the next one (The "Gentle" Pause)
                 await new Promise(resolve => setTimeout(resolve, 1500));
             }
         }
