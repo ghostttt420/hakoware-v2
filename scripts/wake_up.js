@@ -11,7 +11,7 @@ import puppeteer from 'puppeteer';
   const page = await browser.newPage();
 
   // REPLACE WITH YOUR REAL VERCEL URL
-  const TARGET_URL = 'https://YOUR-APP-NAME.vercel.app/?mode=admin'; 
+  const TARGET_URL = 'https://hakoware.vercel.app/?mode=admin'; 
   
   console.log(`Visiting: ${TARGET_URL}`);
   await page.goto(TARGET_URL);
