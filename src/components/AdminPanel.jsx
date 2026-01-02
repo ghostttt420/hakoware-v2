@@ -1,7 +1,5 @@
-import { useState } from 'react';
+Import { useState } from 'react';
 import { createContract } from '../services/firebase';
-import { sendSystemEmail } from '../services/emailService'; 
-import { calculateDebt } from '../utils/gameLogic';
 
 const AdminPanel = ({ onRefresh }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -9,52 +7,23 @@ const AdminPanel = ({ onRefresh }) => {
   // Form State
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [limit, setLimit] = useState(50); 
-  const [dateStr, setDateStr] = useState(new Date().toISOString().split('T')[0]); 
+  const [limit, setLimit] = useState(50); // Default limit
+  const [dateStr, setDateStr] = useState(new Date().toISOString().split('T')[0]); // Default to Today (YYYY-MM-DD)
 
   const handleAdd = async () => {
       if (!name) return;
       
-      // 1. Prepare Valid Data
+      // Use the picked date, or fallback to now
       const finalDate = dateStr ? new Date(dateStr).toISOString() : new Date().toISOString();
-      const finalLimit = Number(limit); // Explicitly convert to Number
-
-      // 2. Run the Math (Instant Bankruptcy Check)
-      const mockContract = {
-          baseDebt: 0,
-          limit: finalLimit,
-          lastSpoke: finalDate 
-      };
-      const stats = calculateDebt(mockContract);
-      const isImmediateBankruptcy = stats.totalDebt >= finalLimit;
-
-      // 3. Send Email Trigger
-      if (isImmediateBankruptcy && email) {
-          console.log(`Instant Bankruptcy! (${stats.totalDebt} >= ${finalLimit})`);
-          sendSystemEmail('BANKRUPTCY', {
-              name: name,
-              email: email,
-              totalDebt: stats.totalDebt, 
-              daysMissed: stats.daysMissed
-          }, null, true); 
-      }
-
-      // 4. Save to DB (Passing the Object correctly)
-      await createContract({
-          name: name,
-          email: email,
-          baseDebt: 0,
-          limit: finalLimit, // <--- This now sends YOUR limit (e.g., 500)
-          lastSpoke: finalDate,
-          lastBankruptcyEmail: isImmediateBankruptcy ? new Date().toISOString() : null
-      });
       
-      // Reset
+      await createContract(name, finalDate, limit, email);
+      
+      // Reset & Refresh
       setName('');
       setEmail('');
       setLimit(50);
       setIsOpen(false);
-      onRefresh("SYSTEM: NEW CONTRACT ISSUED"); 
+      onRefresh(); 
   };
 
   return (
