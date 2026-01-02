@@ -15,11 +15,11 @@ const AdminPanel = ({ onRefresh }) => {
   const handleAdd = async () => {
       if (!name) return;
       
-      // 1. Prepare Data
+      // 1. Prepare Valid Data
       const finalDate = dateStr ? new Date(dateStr).toISOString() : new Date().toISOString();
-      const finalLimit = Number(limit); // Ensure this is a Number, not text
+      const finalLimit = Number(limit); // Explicitly convert to Number
 
-      // 2. Simulate Debt (Check for Instant Bankruptcy)
+      // 2. Run the Math (Instant Bankruptcy Check)
       const mockContract = {
           baseDebt: 0,
           limit: finalLimit,
@@ -28,7 +28,7 @@ const AdminPanel = ({ onRefresh }) => {
       const stats = calculateDebt(mockContract);
       const isImmediateBankruptcy = stats.totalDebt >= finalLimit;
 
-      // 3. Send Email Immediately if needed
+      // 3. Send Email Trigger
       if (isImmediateBankruptcy && email) {
           console.log(`Instant Bankruptcy! (${stats.totalDebt} >= ${finalLimit})`);
           sendSystemEmail('BANKRUPTCY', {
@@ -39,23 +39,22 @@ const AdminPanel = ({ onRefresh }) => {
           }, null, true); 
       }
 
-      // 4. Create Contract
-      // We send an OBJECT now so we can save the 'lastBankruptcyEmail' timer
+      // 4. Save to DB (Passing the Object correctly)
       await createContract({
           name: name,
           email: email,
           baseDebt: 0,
-          limit: finalLimit, // <--- This passes your custom limit correctly
+          limit: finalLimit, // <--- This now sends YOUR limit (e.g., 500)
           lastSpoke: finalDate,
           lastBankruptcyEmail: isImmediateBankruptcy ? new Date().toISOString() : null
       });
       
-      // Reset & Refresh
+      // Reset
       setName('');
       setEmail('');
       setLimit(50);
       setIsOpen(false);
-      onRefresh(); 
+      onRefresh("SYSTEM: NEW CONTRACT ISSUED"); 
   };
 
   return (
