@@ -4,7 +4,7 @@ import {
   updateDoc, deleteDoc, doc 
 } from "firebase/firestore";
 
-// --- YOUR REAL CONFIGURATION ---
+// --- YOUR REAL KEYS (DO NOT DELETE) ---
 const firebaseConfig = {
     apiKey: "AIzaSyAtxWdL4TVqgPmQJFd_UcPcDMm7_QbGBWw", 
     authDomain: "hakoware-92809.firebaseapp.com",
@@ -32,20 +32,20 @@ export const fetchContracts = async () => {
 };
 
 // --- THE FIX: OBJECT HANDLER ---
-// This accepts the single "package" of data from your Admin Panel.
-// This ensures 'limit', 'name', and 'email' never get mixed up.
+// We changed this to accept ONE argument (the data object)
+// instead of 5 separate arguments. This matches your Admin Panel.
 export const createContract = async (contractData) => {
     try {
         console.log("🔥 SAVING CONTRACT:", contractData);
 
         await addDoc(collection(db, "friends"), {
-            // Pulling data directly from the object
+            // We unpack the 'Box' here:
             name: contractData.name,
             email: contractData.email || "",
             baseDebt: 0,
             
-            // CRITICAL: We grab the limit you typed.
-            // If you typed 500, this saves 500.
+            // CRITICAL: We grab the limit from inside the box.
+            // If contractData.limit is 500, this writes 500.
             limit: Number(contractData.limit) || 50, 
             
             lastSpoke: contractData.lastSpoke || new Date().toISOString(),
