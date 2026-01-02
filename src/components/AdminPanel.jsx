@@ -9,23 +9,26 @@ const AdminPanel = ({ onRefresh }) => {
   // Form State
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [limit, setLimit] = useState(50); 
+  const [limit, setLimit] = useState(''); // Empty string by default (forces you to type)
   const [dateStr, setDateStr] = useState(new Date().toISOString().split('T')[0]); 
 
   const handleAdd = async () => {
       if (!name) return;
       
       const finalDate = dateStr ? new Date(dateStr).toISOString() : new Date().toISOString();
-      const finalLimit = Number(limit); 
-
+      
+      // If you leave it empty, we assume 50 just for the UI calculation, 
+      // BUT for the database, we send exactly what is in the 'limit' state.
+      const uiLimit = limit === '' ? 50 : Number(limit);
+      
       // 1. Logic Check
       const mockContract = {
           baseDebt: 0,
-          limit: finalLimit,
+          limit: uiLimit,
           lastSpoke: finalDate 
       };
       const stats = calculateDebt(mockContract);
-      const isImmediateBankruptcy = stats.totalDebt >= finalLimit;
+      const isImmediateBankruptcy = stats.totalDebt >= uiLimit;
 
       // 2. Email Check
       if (isImmediateBankruptcy && email) {
@@ -37,20 +40,21 @@ const AdminPanel = ({ onRefresh }) => {
           }, null, true); 
       }
 
-      // 3. DATABASE SAVE (MATCHING V1 ORDER)
-      // Order: Name, Date, Limit, Email, Timer
+      // 3. DATABASE SAVE (RAW ARGUMENTS)
+      // Name, Date, Limit, Email, Timer
       await createContract(
-          name,           // 1. Name
-          finalDate,      // 2. Date
-          finalLimit,     // 3. Limit (The one you typed!)
-          email,          // 4. Email
-          isImmediateBankruptcy ? new Date().toISOString() : null // 5. Timer
+          name, 
+          finalDate, 
+          // If typed '3', sends 3. If typed '', sends 0.
+          limit === '' ? 0 : Number(limit), 
+          email,
+          isImmediateBankruptcy ? new Date().toISOString() : null
       );
       
       // Reset
       setName('');
       setEmail('');
-      setLimit(50);
+      setLimit('');
       setIsOpen(false);
       onRefresh("SYSTEM: NEW CONTRACT ISSUED"); 
   };
@@ -82,6 +86,7 @@ const AdminPanel = ({ onRefresh }) => {
                     <label style={{fontSize:'0.7rem', color:'#888'}}>Bankruptcy Limit</label>
                     <input 
                         type="number" 
+                        placeholder="Default: 0"
                         value={limit} onChange={e => setLimit(e.target.value)} 
                         style={inputStyle}
                     />
