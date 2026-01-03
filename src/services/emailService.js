@@ -1,4 +1,4 @@
-Import emailjs from '@emailjs/browser';
+import emailjs from '@emailjs/browser';
 
 const EMAIL_SERVICE = "service_ciiisv3";
 const EMAIL_TEMPLATE = "template_c3miqvi";
