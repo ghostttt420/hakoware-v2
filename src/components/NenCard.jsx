@@ -11,8 +11,10 @@ const NenCard = ({
   onPoke 
 }) => {
   // Support both old "contract" format and new "friendship" format
-  let displayName, email, totalDebt, daysMissed, limit, isBankrupt, isClean, streak;
+  let displayName, email, streak;
   let myData, friendData, friend;
+  let myStats, friendStats;
+  let iAmBankrupt, iAmClean, friendIsBankrupt;
 
   if (friendship && currentUserId) {
     // New friendship format
@@ -25,55 +27,60 @@ const NenCard = ({
     email = friend.email;
     streak = friendship.streak || 0;
 
-    const stats = calculateDebt({
+    // Calculate MY debt (what I owe to this friend)
+    myStats = calculateDebt({
       baseDebt: myData.baseDebt,
       lastInteraction: myData.lastInteraction,
       bankruptcyLimit: myData.limit
     });
     
-    totalDebt = stats.totalDebt;
-    daysMissed = stats.daysMissed;
-    limit = myData.limit;
-    isBankrupt = totalDebt >= limit;
-    isClean = totalDebt === 0;
+    // Calculate FRIEND's debt (what they owe to me)
+    friendStats = calculateDebt({
+      baseDebt: friendData.baseDebt,
+      lastInteraction: friendData.lastInteraction,
+      bankruptcyLimit: friendData.limit
+    });
+    
+    iAmBankrupt = myStats.totalDebt >= myStats.limit;
+    iAmClean = myStats.totalDebt === 0;
+    friendIsBankrupt = friendStats.totalDebt >= friendStats.limit;
   } else {
     // Old contract format (fallback)
-    const stats = calculateDebt(contract);
-    totalDebt = stats.totalDebt;
-    daysMissed = stats.daysMissed;
-    limit = stats.limit;
-    isBankrupt = totalDebt >= limit;
-    isClean = totalDebt === 0;
+    myStats = calculateDebt(contract);
+    iAmBankrupt = myStats.totalDebt >= myStats.limit;
+    iAmClean = myStats.totalDebt === 0;
+    friendIsBankrupt = false;
     displayName = contract.name;
     email = contract.email;
     streak = 0;
     myData = { baseDebt: contract.baseDebt || 0 };
     friendData = null;
+    friendStats = { totalDebt: 0 };
   }
   
-  // Ranking Logic (Borders)
+  // Ranking Logic (Borders) - based on MY debt
   let rankClass = '';
-  if (!isClean && !isBankrupt) {
+  if (!iAmClean && !iAmBankrupt) {
     if (index === 0) rankClass = 'rank-0'; // Gold
     else if (index === 1) rankClass = 'rank-1'; // Silver
     else if (index === 2) rankClass = 'rank-2'; // Bronze
   }
 
-  // State Class (Background Color)
+  // State Class (Background Color) - based on MY status
   let stateClass = '';
-  if (isBankrupt) stateClass = 'bankrupt';
-  else if (isClean) stateClass = 'clean-record';
+  if (iAmBankrupt) stateClass = 'bankrupt';
+  else if (iAmClean) stateClass = 'clean-record';
 
-  // Button Logic
+  // Button Logic - based on MY status (what I should do)
   let btnText = "📜 CHECK IN";
   let btnClass = "notify-btn";
   let actionType = 'CHECKIN';
 
-  if (isClean) {
+  if (iAmClean) {
     btnText = "✨ FLEX STATUS";
     btnClass += " flex-btn";
     actionType = 'MERCY';
-  } else if (isBankrupt) {
+  } else if (iAmBankrupt) {
     btnText = "🏳️ BEG FOR AURA";
     actionType = 'BEG';
   }
@@ -88,15 +95,15 @@ const NenCard = ({
           {isAdmin && <div style={{fontSize:'0.6rem', color:'#666'}}>{email}</div>}
         </div>
         
-        {/* Mascot / Poke Area */}
+        {/* Mascot - shows MY status to this friend */}
         <div 
           className="mascot-icon-wrapper" 
           style={{cursor: 'pointer'}}
-          onClick={() => onPoke(displayName, isBankrupt, isClean)}
+          onClick={() => onPoke(displayName, iAmBankrupt, iAmClean)}
         >
-          {isBankrupt ? (
+          {iAmBankrupt ? (
             <span className="mascot-icon demon">👹</span>
-          ) : isClean ? (
+          ) : iAmClean ? (
             <span className="mascot-icon angel">💎</span> 
           ) : (
             <span className="mascot-icon fairy floating">🧚</span>
@@ -104,60 +111,65 @@ const NenCard = ({
         </div>
       </div>
 
-      {/* Main Debt Display */}
-      <div className="debt-display">
-        <CountUp end={totalDebt} duration={2000} />
-        <span style={{fontSize: '0.5em'}}> APR</span>
+      {/* MY Debt Section (What I owe to this friend) */}
+      <div style={{
+        background: iAmBankrupt ? 'rgba(255,68,68,0.1)' : iAmClean ? 'rgba(0,230,118,0.1)' : 'rgba(255,215,0,0.05)',
+        border: `1px solid ${iAmBankrupt ? '#ff4444' : iAmClean ? '#00e676' : '#333'}`,
+        borderRadius: '8px',
+        padding: '15px',
+        marginBottom: '10px'
+      }}>
+        <div style={{ fontSize: '0.7rem', color: '#666', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+          You owe {displayName}
+        </div>
+        <div className="debt-display" style={{ fontSize: '2rem', margin: 0 }}>
+          <CountUp end={myStats.totalDebt} duration={2000} />
+          <span style={{fontSize: '0.5em'}}> APR</span>
+        </div>
+        {iAmBankrupt && (
+          <div style={{color: '#ff4444', fontSize: '0.75rem', marginTop: '5px', fontWeight: 'bold'}}>
+            💀 YOU ARE BANKRUPT
+          </div>
+        )}
       </div>
 
-      {/* Mutual Tracking - Show what friend owes you */}
-      {friendData && (
-        <div style={{ 
-          textAlign: 'center', 
-          padding: '8px 12px', 
-          background: 'rgba(0,0,0,0.3)',
-          borderRadius: '6px',
-          margin: '10px 0',
-          fontSize: '0.85rem'
+      {/* FRIEND's Debt Section (What they owe to me) */}
+      {friendData && friendStats.totalDebt > 0 && (
+        <div style={{
+          background: friendIsBankrupt ? 'rgba(255,68,68,0.05)' : 'rgba(0,230,118,0.05)',
+          border: `1px solid ${friendIsBankrupt ? '#ff4444' : '#00e676'}`,
+          borderRadius: '8px',
+          padding: '12px',
+          marginBottom: '10px'
         }}>
-          <span style={{ color: '#666' }}>They owe you: </span>
-          {(() => {
-            const friendStats = calculateDebt({
-              baseDebt: friendData.baseDebt,
-              lastInteraction: friendData.lastInteraction,
-              bankruptcyLimit: friendData.limit
-            });
-            const friendBankrupt = friendStats.totalDebt >= friendStats.limit;
-            return (
-              <span style={{ 
-                color: friendBankrupt ? '#ff4444' : friendStats.totalDebt > 0 ? '#ffd700' : '#00e676',
-                fontWeight: 'bold'
-              }}>
-                {friendStats.totalDebt} APR
-                {friendBankrupt && <span style={{ fontSize: '0.7rem', marginLeft: '5px' }}>(BANKRUPT)</span>}
-              </span>
-            );
-          })()}
+          <div style={{ fontSize: '0.7rem', color: '#666', marginBottom: '3px' }}>
+            {displayName} owes you
+          </div>
+          <div style={{ 
+            fontSize: '1.3rem', 
+            fontWeight: 'bold',
+            color: friendIsBankrupt ? '#ff4444' : '#00e676'
+          }}>
+            {friendStats.totalDebt} APR
+            {friendIsBankrupt && <span style={{ fontSize: '0.7rem', marginLeft: '8px' }}>💀 THEY'RE BANKRUPT</span>}
+          </div>
         </div>
       )}
 
-      <div style={{textAlign: 'center'}}>
+      <div style={{textAlign: 'center', marginBottom: '10px'}}>
         <div className="soul-score-container">
           <span className="soul-label">AURA SCORE</span>
-          <span className="soul-value" style={{color: calculateCreditScore(totalDebt, daysMissed) > 700 ? '#00e676' : '#ff4444'}}>
-            {calculateCreditScore(totalDebt, daysMissed)}
+          <span className="soul-value" style={{color: calculateCreditScore(myStats.totalDebt, myStats.daysMissed) > 700 ? '#00e676' : '#ff4444'}}>
+            {calculateCreditScore(myStats.totalDebt, myStats.daysMissed)}
           </span>
         </div>
       </div>
 
       <div className="info">
         Interest: +1/day<br/>
-        Limit: {limit} • Ghosted: {daysMissed}d
+        Your Limit: {myData.limit} • You've ghosted: {myStats.daysMissed}d
         {streak > 0 && <><br/>🔥 Streak: {streak} days</>}
       </div>
-
-      {isBankrupt && <div style={{color:'var(--red)', fontWeight:'bold', textAlign:'center', marginBottom:'10px'}}>BANKRUPTCY!</div>}
-      {isClean && <div style={{color:'var(--blue)', fontWeight:'bold', textAlign:'center', marginBottom:'10px'}}>DEBT FREE</div>}
 
       {/* Action Buttons */}
       {isAdmin ? (
@@ -179,39 +191,30 @@ const NenCard = ({
         </div>
       ) : (
         <div className="action-row" style={{display:'flex', gap:'10px', marginTop:'10px'}}>
+          {/* MY Action Button (what I should do about MY debt) */}
           <button 
             className={`action-btn ${btnClass}`}
-            style={{flex: isBankrupt ? 2 : 1}}
+            style={{flex: iAmBankrupt ? 2 : 1}}
             onClick={() => onAction(actionType, data)}
           >
             {btnText}
           </button>
           
-          {/* Aura Marketplace - Bail out friend */}
-          {friendData && (() => {
-            const friendStats = calculateDebt({
-              baseDebt: friendData.baseDebt,
-              lastInteraction: friendData.lastInteraction,
-              bankruptcyLimit: friendData.limit
-            });
-            if (friendStats.totalDebt > 0) {
-              return (
-                <button 
-                  className="action-btn"
-                  style={{
-                    flex: 1,
-                    background: '#004d40',
-                    color: '#00e676',
-                    border: '1px solid #00e676'
-                  }}
-                  onClick={() => onAction('BAILOUT', data)}
-                >
-                  💸 BAIL
-                </button>
-              );
-            }
-            return null;
-          })()}
+          {/* Bailout Button - only show if FRIEND owes me money */}
+          {friendData && friendStats.totalDebt > 0 && (
+            <button 
+              className="action-btn"
+              style={{
+                flex: 1,
+                background: friendIsBankrupt ? '#330000' : '#004d40',
+                color: friendIsBankrupt ? '#ff4444' : '#00e676',
+                border: `1px solid ${friendIsBankrupt ? '#ff4444' : '#00e676'}`
+              }}
+              onClick={() => onAction('BAILOUT', data)}
+            >
+              {friendIsBankrupt ? '💸 SAVE THEM' : '💸 BAIL'}
+            </button>
+          )}
         </div>
       )}
     </div>
