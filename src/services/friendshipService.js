@@ -44,30 +44,31 @@ export const sendFriendInvitation = async (fromUserId, toEmail) => {
       };
     }
 
-    // Check if invitation already exists
-    const existingInviteQuery = query(
+    // Check if invitation already exists (check both directions)
+    const existingInviteQuery1 = query(
       collection(db, INVITATIONS_COLLECTION),
-      where('fromUserId', 'in', [fromUserId, toUserId]),
-      where('toUserId', 'in', [fromUserId, toUserId])
+      where('fromUserId', '==', fromUserId),
+      where('toUserId', '==', toUserId),
+      where('status', '==', 'pending')
     );
-    const existingInvites = await getDocs(existingInviteQuery);
+    const existingInviteQuery2 = query(
+      collection(db, INVITATIONS_COLLECTION),
+      where('fromUserId', '==', toUserId),
+      where('toUserId', '==', fromUserId),
+      where('status', '==', 'pending')
+    );
+    
+    const [existingInvites1, existingInvites2] = await Promise.all([
+      getDocs(existingInviteQuery1),
+      getDocs(existingInviteQuery2)
+    ]);
 
-    if (!existingInvites.empty) {
-      const existing = existingInvites.docs[0].data();
-      if (existing.status === 'pending') {
-        return { 
-          success: false, 
-          error: 'INVITE_EXISTS',
-          message: 'An invitation already exists between you and this user.' 
-        };
-      }
-      if (existing.status === 'accepted') {
-        return { 
-          success: false, 
-          error: 'ALREADY_FRIENDS',
-          message: 'You are already friends with this user.' 
-        };
-      }
+    if (!existingInvites1.empty || !existingInvites2.empty) {
+      return { 
+        success: false, 
+        error: 'INVITE_EXISTS',
+        message: 'An invitation already exists between you and this user.' 
+      };
     }
 
     // Check if friendship already exists
@@ -97,7 +98,7 @@ export const sendFriendInvitation = async (fromUserId, toEmail) => {
     };
   } catch (error) {
     console.error('Error sending invitation:', error);
-    return { success: false, error: error.message };
+    return { success: false, error: error.code || error.message, message: error.message };
   }
 };
 
