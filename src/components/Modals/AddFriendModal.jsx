@@ -22,7 +22,8 @@ const AddFriendModal = ({ isOpen, onClose, showToast }) => {
       setEmail('');
       onClose();
     } else {
-      showToast(result.message || 'Failed to send invitation', 'ERROR');
+      console.error('Invitation error:', result);
+      showToast(result.message || result.error || 'Failed to send invitation', 'ERROR');
     }
   };
 
