@@ -20,6 +20,8 @@ import AdminPanel from './components/AdminPanel'
 import AdminLock from './components/AdminLock'
 import Toast from './components/Toast'
 import AddFriendModal from './components/Modals/AddFriendModal'
+import CheckinModal from './components/Modals/CheckinModal'
+import MercyRequestModal from './components/Modals/MercyRequestModal'
 import SettleModal from './components/Modals/SettleModal'
 import PetitionModal from './components/Modals/PetitionModal'
 
