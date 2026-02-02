@@ -7,27 +7,38 @@ import './index.css'
 import { calculateDebt } from './utils/gameLogic'
 
 // Pages
+import LandingPage from './pages/LandingPage'
 import Login from './pages/auth/Login'
 import Signup from './pages/auth/Signup'
 import VerificationRequired from './pages/auth/VerificationRequired'
 
 // Components
 import Dashboard from './components/Dashboard'
-import FriendshipCard from './components/FriendshipCard'
+import NenCard from './components/NenCard'
 import InvitationsPanel from './components/InvitationsPanel'
 import MercyPanel from './components/MercyPanel'
+import AuraMarketplace from './components/AuraMarketplace'
 import AdminPanel from './components/AdminPanel'
 import AdminLock from './components/AdminLock'
 import Toast from './components/Toast'
 import AddFriendModal from './components/Modals/AddFriendModal'
 import CheckinModal from './components/Modals/CheckinModal'
 import MercyRequestModal from './components/Modals/MercyRequestModal'
+import BailoutModal from './components/Modals/BailoutModal'
 import SettleModal from './components/Modals/SettleModal'
 import PetitionModal from './components/Modals/PetitionModal'
 
 function App() {
   const { user, isAuthenticated, isEmailVerified, logout } = useAuth();
+  const [hasEntered, setHasEntered] = useState(() => {
+    return localStorage.getItem('hakoware_visited') === 'true';
+  });
   const [showSignup, setShowSignup] = useState(false);
+
+  const handleEnter = () => {
+    localStorage.setItem('hakoware_visited', 'true');
+    setHasEntered(true);
+  };
   
   // App state
   const [friendships, setFriendships] = useState([])
@@ -120,6 +131,8 @@ function App() {
         setModalType('CHECKIN');
       } else if (type === 'BEG') {
         setModalType('MERCY_REQUEST');
+      } else if (type === 'BAILOUT') {
+        setModalType('BAILOUT');
       } else if (type === 'SETTINGS') {
         // TODO: Implement friendship settings
         showToast("Settings feature coming soon!", "INFO");
@@ -135,6 +148,11 @@ function App() {
       setSelectedFriendship(null);
       setModalType(null);
   };
+
+  // Show landing page if first visit
+  if (!hasEntered) {
+    return <LandingPage onEnter={handleEnter} />;
+  }
 
   // Show auth screens if not logged in
   if (!isAuthenticated) {
@@ -204,9 +222,10 @@ function App() {
           </div>
       </header>
 
-      {/* Invitations & Mercy Panels */}
+      {/* Invitations, Mercy & Marketplace Panels */}
       <InvitationsPanel onUpdate={loadData} />
       <MercyPanel onUpdate={loadData} />
+      <AuraMarketplace onBailout={(friendship) => handleAction('BAILOUT', friendship)} />
 
       {/* Stats Dashboard */}
       {!loading && <Dashboard friendships={friendships} recentActivity={recentActivity} />}
@@ -241,11 +260,12 @@ function App() {
       ) : (
         <div className="grid-container">
           {friendships.map((friendship, index) => (
-            <FriendshipCard 
+            <NenCard 
               key={friendship.id}
               friendship={friendship}
-              index={index}
               currentUserId={user.uid}
+              index={index}
+              isAdmin={isAdmin && adminUnlocked}
               onAction={handleAction}
               onPoke={handlePoke}
             />
@@ -284,6 +304,14 @@ function App() {
         friendship={selectedFriendship}
         showToast={showToast}
         onRequestComplete={loadData}
+      />
+
+      <BailoutModal
+        isOpen={modalType === 'BAILOUT'}
+        onClose={closeModal}
+        friendship={selectedFriendship}
+        showToast={showToast}
+        onBailoutComplete={loadData}
       />
 
       <PetitionModal 
