@@ -18,6 +18,7 @@ import NenCard from './components/NenCard'
 import InvitationsPanel from './components/InvitationsPanel'
 import MercyPanel from './components/MercyPanel'
 import AuraMarketplace from './components/AuraMarketplace'
+import HamburgerMenu from './components/HamburgerMenu'
 import AdminPanel from './components/AdminPanel'
 import AdminLock from './components/AdminLock'
 import Toast from './components/Toast'
@@ -29,7 +30,7 @@ import SettleModal from './components/Modals/SettleModal'
 import PetitionModal from './components/Modals/PetitionModal'
 
 function App() {
-  const { user, isAuthenticated, isEmailVerified, logout } = useAuth();
+  const { user, isAuthenticated, isEmailVerified } = useAuth();
   const [hasEntered, setHasEntered] = useState(() => {
     return localStorage.getItem('hakoware_visited') === 'true';
   });
@@ -171,55 +172,29 @@ function App() {
   return (
     <div className="app-container">
       {/* HEADER SECTION */}
-      <header style={{textAlign: 'center', marginBottom: '30px', marginTop: '10px'}}>
-          <h1 className="glitch" data-text="HAKOWARE" style={{marginBottom: '5px', lineHeight: '1'}}>
-              HAKOWARE 
+      <header style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        padding: '20px 30px',
+        marginBottom: '20px',
+        borderBottom: '1px solid #222'
+      }}>
+        {/* Logo */}
+        <div style={{ textAlign: 'left' }}>
+          <h1 className="glitch" data-text="HAKOWARE" style={{margin: 0, fontSize: '1.5rem', letterSpacing: '4px'}}>
+            HAKOWARE 
           </h1>
-          <div className="sub-header">
-              CHAPTER 7 BANKRUPTCY
+          <div className="sub-header" style={{fontSize: '0.7rem', marginTop: '2px'}}>
+            CHAPTER 7 BANKRUPTCY
           </div>
-          
-          {/* User Info Bar */}
-          <div style={{ 
-            marginTop: '15px', 
-            padding: '10px 20px', 
-            background: '#111', 
-            border: '1px solid #333',
-            borderRadius: '8px',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '15px'
-          }}>
-            <span style={{ color: '#888', fontSize: '0.85rem' }}>
-              👤 {user?.displayName || user?.email}
-            </span>
-            <span style={{ color: '#444' }}>|</span>
-            <button 
-              onClick={() => setShowAddFriend(true)}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: '#00e676',
-                cursor: 'pointer',
-                fontSize: '0.8rem'
-              }}
-            >
-              + Add Friend
-            </button>
-            <span style={{ color: '#444' }}>|</span>
-            <button 
-              onClick={logout}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: '#666',
-                cursor: 'pointer',
-                fontSize: '0.8rem'
-              }}
-            >
-              Sign Out
-            </button>
-          </div>
+        </div>
+
+        {/* Hamburger Menu */}
+        <HamburgerMenu 
+          onAddFriend={() => setShowAddFriend(true)}
+          onRefresh={loadData}
+        />
       </header>
 
       {/* Invitations, Mercy & Marketplace Panels */}
