@@ -120,15 +120,8 @@ const LandingPage = ({ onEnter }) => {
       <div className="bg-grid"></div>
       <div className="bg-glow"></div>
       
-      {/* Header */}
+      {/* Header - minimal */}
       <header className="landing-header">
-        <div className="logo">
-          <span className="logo-icon">💀</span>
-          <span className="logo-text">HAKOWARE</span>
-        </div>
-        <button className="enter-btn-small" onClick={onEnter}>
-          ENTER SYSTEM →
-        </button>
       </header>
 
       {/* Main Content */}

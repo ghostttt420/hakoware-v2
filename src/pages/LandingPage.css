@@ -35,10 +35,10 @@
   pointer-events: none;
 }
 
-/* Header */
+/* Header - minimal */
 .landing-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   padding: 30px 50px;
   position: relative;
@@ -53,29 +53,6 @@
 
 .logo-icon {
   font-size: 1.5rem;
-}
-
-.logo-text {
-  font-size: 1.2rem;
-  font-weight: 900;
-  letter-spacing: 4px;
-}
-
-.enter-btn-small {
-  background: transparent;
-  border: 1px solid #333;
-  color: #888;
-  padding: 10px 20px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.8rem;
-  letter-spacing: 2px;
-  transition: all 0.3s;
-}
-
-.enter-btn-small:hover {
-  border-color: #ffd700;
-  color: #ffd700;
 }
 
 /* Main Content */
