@@ -1,34 +1,50 @@
 import { useState, useEffect, useRef } from 'react'
-import { fetchContracts, markBankruptcyNotified } from './services/firebase'
+import { useAuth } from './contexts/AuthContext'
+import { getUserFriendships } from './services/friendshipService'
 import { sendSystemEmail } from './services/emailService'
 import { getRandomQuote } from './utils/quotes' 
 import './index.css' 
 import { calculateDebt } from './utils/gameLogic'
+
+// Pages
+import Login from './pages/auth/Login'
+import Signup from './pages/auth/Signup'
+import VerificationRequired from './pages/auth/VerificationRequired'
+
+// Components
 import Dashboard from './components/Dashboard'
-import NenCard from './components/NenCard'
+import FriendshipCard from './components/FriendshipCard'
+import InvitationsPanel from './components/InvitationsPanel'
+import MercyPanel from './components/MercyPanel'
 import AdminPanel from './components/AdminPanel'
 import AdminLock from './components/AdminLock'
 import Toast from './components/Toast'
+import AddFriendModal from './components/Modals/AddFriendModal'
 import SettleModal from './components/Modals/SettleModal'
 import PetitionModal from './components/Modals/PetitionModal'
 
 function App() {
-  const [contracts, setContracts] = useState([])
+  const { user, isAuthenticated, isEmailVerified, logout } = useAuth();
+  const [showSignup, setShowSignup] = useState(false);
+  
+  // App state
+  const [friendships, setFriendships] = useState([])
   const [loading, setLoading] = useState(true)
   
   // --- AUTH STATE ---
   const [isAdmin, setIsAdmin] = useState(false)
-  const [adminUnlocked, setAdminUnlocked] = useState(false) // Must be TRUE to see controls
-  const [myIdentity, setMyIdentity] = useState(localStorage.getItem('hakoware_id'));
+  const [adminUnlocked, setAdminUnlocked] = useState(false)
 
   // --- UI STATE ---
-  const [selectedContract, setSelectedContract] = useState(null)
+  const [selectedFriendship, setSelectedFriendship] = useState(null)
   const [modalType, setModalType] = useState(null) 
+  const [showAddFriend, setShowAddFriend] = useState(false)
   const [toast, setToast] = useState(null)
   const [recentActivity, setRecentActivity] = useState("SYSTEM: MONITORING TRANSACTIONS...");
 
   const sfxReset = useRef(new Audio('https://www.myinstants.com/media/sounds/discord-notification.mp3'));
 
+  // Check for admin mode
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('mode') === 'admin') setIsAdmin(true);
@@ -39,47 +55,31 @@ function App() {
   };
 
   const loadData = async () => {
+    if (!isAuthenticated || !user) {
+      setLoading(false);
+      return;
+    }
+    
     setLoading(true);
     try {
-        const data = await fetchContracts();
+        // Load friendships using the new service
+        const userFriendships = await getUserFriendships(user.uid);
         
-             
-        if (isAdmin) {
-            const now = new Date();
+        // Calculate total APR for sorting
+        const friendshipsWithStats = userFriendships.map(f => {
+          const isUser1 = f.myPerspective === 'user1';
+          const myData = isUser1 ? f.user1Perspective : f.user2Perspective;
+          const stats = calculateDebt({
+            baseDebt: myData.baseDebt,
+            lastInteraction: myData.lastInteraction,
+            bankruptcyLimit: myData.limit
+          });
+          return { ...f, myDebt: stats.totalDebt };
+        });
 
-            const targets = data.filter(c => {
-                const stats = calculateDebt(c);
-                const isBankrupt = stats.totalDebt >= stats.limit;
-
-                if (!isBankrupt) return false;
-
-                // LOGIC: Check time since last email
-                if (!c.lastBankruptcyEmail) {
-                    // Never sent? Send it now.
-                    return true; 
-                }
-
-                const lastSentDate = new Date(c.lastBankruptcyEmail);
-                const diffTime = Math.abs(now - lastSentDate);
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-
-                // Sent more than 10 days ago? Send again.
-                return diffDays >= 10;
-            });
-
-            // Send Loop (No changes here, just processes the targets)
-            for (const c of targets) {
-                const stats = calculateDebt(c);
-                console.log(`Sending recurring notice to ${c.name}...`);
-                await sendSystemEmail('BANKRUPTCY', { ...c, ...stats }, showToast, true);
-                await markBankruptcyNotified(c.id);
-                await new Promise(resolve => setTimeout(resolve, 1500));
-            }
-        }
-        // ------------------------------------------
-
-        const sorted = data.sort((a, b) => calculateDebt(b).totalDebt - calculateDebt(a).totalDebt);
-        setContracts(sorted);
+        // Sort by urgency (highest debt first)
+        const sorted = friendshipsWithStats.sort((a, b) => b.myDebt - a.myDebt);
+        setFriendships(sorted);
         setLoading(false);
     } catch (e) {
         console.error(e);
@@ -88,7 +88,9 @@ function App() {
     }
   };
 
-  useEffect(() => { loadData(); }, [isAdmin]) 
+  useEffect(() => { 
+    loadData(); 
+  }, [isAuthenticated, user]) 
 
   // --- HANDLERS ---
 
@@ -103,31 +105,23 @@ function App() {
       showToast(msg, type);
   };
 
-  const handleAction = (type, contract) => {
-      // 1. SECURITY CHECK: If Admin is present but locked, BLOCK EVERYTHING
+  const handleAction = (type, friendship) => {
+      // SECURITY CHECK: If Admin is present but locked, BLOCK EVERYTHING
       if (isAdmin && !adminUnlocked) {
           showToast("🔒 SYSTEM LOCKED: ENTER PIN", "ERROR");
           return;
       }
 
-      // 2. IDENTITY CHECK: If User (Not Admin), enforce "My Card Only"
-      if (!isAdmin) {
-          if (!myIdentity) {
-              if (confirm(`Are you ${contract.name}? You can only manage this card from now on.`)) {
-                  localStorage.setItem('hakoware_id', contract.id);
-                  setMyIdentity(contract.id);
-              } else {
-                  return; 
-              }
-          } else if (myIdentity !== contract.id) {
-              showToast("ACCESS DENIED: Not your card.", "ERROR");
-              return;
-          }
+      setSelectedFriendship(friendship);
+      
+      if (type === 'CHECKIN') {
+        setModalType('CHECKIN');
+      } else if (type === 'BEG') {
+        setModalType('MERCY_REQUEST');
+      } else if (type === 'SETTINGS') {
+        // TODO: Implement friendship settings
+        showToast("Settings feature coming soon!", "INFO");
       }
-
-      setSelectedContract(contract);
-      if (type === 'RESET') setModalType('SETTLE');
-      else if (type === 'MERCY' || type === 'SHAME') setModalType('PETITION');
   };
 
   const handleRefreshData = (actionMsg) => {
@@ -136,13 +130,27 @@ function App() {
   };
 
   const closeModal = () => {
-      setSelectedContract(null);
+      setSelectedFriendship(null);
       setModalType(null);
   };
 
+  // Show auth screens if not logged in
+  if (!isAuthenticated) {
+    return showSignup ? (
+      <Signup onToggle={() => setShowSignup(false)} />
+    ) : (
+      <Login onToggle={() => setShowSignup(true)} />
+    );
+  }
+
+  // Show verification required screen if email not verified
+  if (!isEmailVerified()) {
+    return <VerificationRequired />;
+  }
+
   return (
     <div className="app-container">
-            {/* HEADER SECTION */}
+      {/* HEADER SECTION */}
       <header style={{textAlign: 'center', marginBottom: '30px', marginTop: '10px'}}>
           <h1 className="glitch" data-text="HAKOWARE" style={{marginBottom: '5px', lineHeight: '1'}}>
               HAKOWARE 
@@ -150,13 +158,58 @@ function App() {
           <div className="sub-header">
               CHAPTER 7 BANKRUPTCY
           </div>
+          
+          {/* User Info Bar */}
+          <div style={{ 
+            marginTop: '15px', 
+            padding: '10px 20px', 
+            background: '#111', 
+            border: '1px solid #333',
+            borderRadius: '8px',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '15px'
+          }}>
+            <span style={{ color: '#888', fontSize: '0.85rem' }}>
+              👤 {user?.displayName || user?.email}
+            </span>
+            <span style={{ color: '#444' }}>|</span>
+            <button 
+              onClick={() => setShowAddFriend(true)}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#00e676',
+                cursor: 'pointer',
+                fontSize: '0.8rem'
+              }}
+            >
+              + Add Friend
+            </button>
+            <span style={{ color: '#444' }}>|</span>
+            <button 
+              onClick={logout}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#666',
+                cursor: 'pointer',
+                fontSize: '0.8rem'
+              }}
+            >
+              Sign Out
+            </button>
+          </div>
       </header>
 
-      
-      {!loading && <Dashboard contracts={contracts} recentActivity={recentActivity} />}
+      {/* Invitations & Mercy Panels */}
+      <InvitationsPanel onUpdate={loadData} />
+      <MercyPanel onUpdate={loadData} />
+
+      {/* Stats Dashboard */}
+      {!loading && <Dashboard friendships={friendships} recentActivity={recentActivity} />}
       
       {/* --- ADMIN LOCK SYSTEM --- */}
-      {/* If Admin Mode, show Lock. Only show Panel if Unlocked. */}
       {isAdmin && (
           !adminUnlocked ? (
               <AdminLock onUnlock={() => {
@@ -172,56 +225,68 @@ function App() {
         <div style={{color: 'white', textAlign: 'center', marginTop: '50px', fontFamily: 'Courier New'}}>
             Connecting to Nen Network...
         </div>
+      ) : friendships.length === 0 ? (
+        <div style={{
+          color: '#666', 
+          textAlign: 'center', 
+          marginTop: '50px', 
+          fontFamily: 'Courier New',
+          padding: '40px'
+        }}>
+          <p style={{ fontSize: '1.2rem', marginBottom: '20px' }}>No friendships yet.</p>
+          <p>Click "+ Add Friend" to get started!</p>
+        </div>
       ) : (
         <div className="grid-container">
-          {contracts.map((c, index) => {
-             // User Interaction Rules
-             const isMine = myIdentity === c.id;
-             const isDisabled = !isAdmin && myIdentity && !isMine;
-             
-             return (
-               <div key={c.id} style={{opacity: isDisabled ? 0.5 : 1, pointerEvents: isDisabled ? 'none' : 'auto'}}>
-                 <NenCard 
-                    contract={c} 
-                    index={index} 
-                    // SECURITY FIX: Only pass 'true' if actually unlocked
-                    isAdmin={isAdmin && adminUnlocked}
-                    onAction={handleAction} 
-                    onPoke={handlePoke}
-                 />
-               </div>
-             );
-          })}
+          {friendships.map((friendship, index) => (
+            <FriendshipCard 
+              key={friendship.id}
+              friendship={friendship}
+              index={index}
+              currentUserId={user.uid}
+              onAction={handleAction}
+              onPoke={handlePoke}
+            />
+          ))}
         </div>
       )}
 
-      {!isAdmin && myIdentity && (
-          <div style={{textAlign:'center', marginTop:'30px', opacity:0.5}}>
-              <button onClick={() => {
-                  localStorage.removeItem('hakoware_id');
-                  setMyIdentity(null);
-                  window.location.reload();
-              }} style={{background:'none', border:'none', color:'#444', textDecoration:'underline'}}>
-                  Not you? Reset Identity
-              </button>
-          </div>
-      )}
-
       {/* --- MODALS --- */}
-      {/* We only render SettleModal (Admin Tools) if actually unlocked */}
+      <AddFriendModal 
+        isOpen={showAddFriend}
+        onClose={() => setShowAddFriend(false)}
+        showToast={showToast}
+      />
+
       {(isAdmin && adminUnlocked) && (
         <SettleModal 
             isOpen={modalType === 'SETTLE'} 
-            contract={selectedContract} 
+            contract={selectedFriendship} 
             onClose={closeModal} 
             onRefresh={handleRefreshData} 
             showToast={showToast} 
         />
       )}
       
+      <CheckinModal
+        isOpen={modalType === 'CHECKIN'}
+        onClose={closeModal}
+        friendship={selectedFriendship}
+        showToast={showToast}
+        onCheckinComplete={loadData}
+      />
+
+      <MercyRequestModal
+        isOpen={modalType === 'MERCY_REQUEST'}
+        onClose={closeModal}
+        friendship={selectedFriendship}
+        showToast={showToast}
+        onRequestComplete={loadData}
+      />
+
       <PetitionModal 
           isOpen={modalType === 'PETITION'} 
-          contract={selectedContract} 
+          contract={selectedFriendship} 
           onClose={closeModal}
           showToast={showToast}
       />
