@@ -1,5 +1,6 @@
 import { calculateDebt, calculateCreditScore } from '../utils/gameLogic';
 import CountUp from './CountUp';
+import { SkullIcon, CrownIcon, DollarIcon, FlameIcon } from './icons/Icons';
 
 const NenCard = ({ 
   contract, 
@@ -72,16 +73,16 @@ const NenCard = ({
   else if (iAmClean) stateClass = 'clean-record';
 
   // Button Logic - based on MY status (what I should do)
-  let btnText = "📜 CHECK IN";
+  let btnText = "CHECK IN";
   let btnClass = "notify-btn";
   let actionType = 'CHECKIN';
 
   if (iAmClean) {
-    btnText = "✨ FLEX STATUS";
+    btnText = "FLEX STATUS";
     btnClass += " flex-btn";
     actionType = 'MERCY';
   } else if (iAmBankrupt) {
-    btnText = "🏳️ BEG FOR AURA";
+    btnText = "BEG FOR AURA";
     actionType = 'BEG';
   }
 
@@ -102,11 +103,11 @@ const NenCard = ({
           onClick={() => onPoke(displayName, iAmBankrupt, iAmClean)}
         >
           {iAmBankrupt ? (
-            <span className="mascot-icon demon">👹</span>
+            <SkullIcon size={40} color="#ff4444" />
           ) : iAmClean ? (
-            <span className="mascot-icon angel">💎</span> 
+            <CrownIcon size={40} color="#ffd700" />
           ) : (
-            <span className="mascot-icon fairy floating">🧚</span>
+            <FlameIcon size={40} color="#888" />
           )}
         </div>
       </div>
@@ -128,7 +129,7 @@ const NenCard = ({
         </div>
         {iAmBankrupt && (
           <div style={{color: '#ff4444', fontSize: '0.75rem', marginTop: '5px', fontWeight: 'bold'}}>
-            💀 YOU ARE BANKRUPT
+            YOU ARE BANKRUPT
           </div>
         )}
       </div>
@@ -151,7 +152,7 @@ const NenCard = ({
             color: friendIsBankrupt ? '#ff4444' : '#00e676'
           }}>
             {friendStats.totalDebt} APR
-            {friendIsBankrupt && <span style={{ fontSize: '0.7rem', marginLeft: '8px' }}>💀 THEY'RE BANKRUPT</span>}
+            {friendIsBankrupt && <span style={{ fontSize: '0.7rem', marginLeft: '8px' }}>BANKRUPT</span>}
           </div>
         </div>
       )}
@@ -168,7 +169,15 @@ const NenCard = ({
       <div className="info">
         Interest: +1/day<br/>
         Your Limit: {myData.limit} • You've ghosted: {myStats.daysMissed}d
-        {streak > 0 && <><br/>🔥 Streak: {streak} days</>}
+        {streak > 0 && (
+          <>
+            <br/>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+              <FlameIcon size={12} color="#ffd700" />
+              Streak: {streak} days
+            </span>
+          </>
+        )}
       </div>
 
       {/* Action Buttons */}
@@ -212,7 +221,7 @@ const NenCard = ({
               }}
               onClick={() => onAction('BAILOUT', data)}
             >
-              {friendIsBankrupt ? '💸 SAVE THEM' : '💸 BAIL'}
+              {friendIsBankrupt ? 'SAVE THEM' : 'BAIL'}
             </button>
           )}
         </div>

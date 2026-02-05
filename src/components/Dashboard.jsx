@@ -63,10 +63,10 @@ const Dashboard = ({ friendships, recentActivity }) => {
 
   // Ticker Text Parts
   const msg1 = ":: NEN CONSUMER FINANCE :: INTEREST RATES AT 1% DAILY";
-  const msg2 = mostWanted ? `👑 MOST WANTED: ${mostWanted.friend?.displayName?.toUpperCase() || 'UNKNOWN'} (${mostWanted.myDebt || 0} APR)` : "";
-  const msg3 = cleanest ? `💎 HUNTER STAR: ${cleanest.friend?.displayName?.toUpperCase() || 'UNKNOWN'}` : "";
+  const msg2 = mostWanted ? `MOST WANTED: ${mostWanted.friend?.displayName?.toUpperCase() || 'UNKNOWN'} (${mostWanted.myDebt || 0} APR)` : "";
+  const msg3 = cleanest ? `HUNTER STAR: ${cleanest.friend?.displayName?.toUpperCase() || 'UNKNOWN'}` : "";
   const msg4 = recentActivity ? ` // ${recentActivity} // ` : "";
-  const msg5 = `📊 STATS: ${totalFriends} Friends | ${activeStreaks} Active Streaks | ${bankruptcies} Bankruptcies`;
+  const msg5 = `STATS: ${totalFriends} FRIENDS | ${activeStreaks} STREAKS | ${bankruptcies} BANKRUPTCIES`;
 
   // Combine them into one string
   const fullText = `${msg1}   ${msg4}   ${msg2}   ${msg3}   ${msg5}   :: FAILURE TO PAY WILL RESULT IN EXCOMMUNICATION ::`;

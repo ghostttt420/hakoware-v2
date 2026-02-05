@@ -1,19 +1,18 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { UserIcon, PlusIcon, RefreshIcon, LogoutIcon, MenuIcon, DollarIcon } from './icons/Icons';
 
-const HamburgerMenu = ({ onAddFriend, onRefresh }) => {
+const HamburgerMenu = ({ onAddFriend, onRefresh, onOpenMarketplace }) => {
   const { user, logout, userProfile } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
 
-  // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
         setIsOpen(false);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
@@ -30,32 +29,33 @@ const HamburgerMenu = ({ onAddFriend, onRefresh }) => {
 
   return (
     <div ref={menuRef} style={{ position: 'relative' }}>
-      {/* Hamburger Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '10px',
-          background: 'transparent',
-          border: 'none',
+          gap: '12px',
+          background: isOpen ? 'rgba(255, 215, 0, 0.1)' : 'transparent',
+          border: `1px solid ${isOpen ? '#ffd700' : '#333'}`,
+          borderRadius: '8px',
           cursor: 'pointer',
-          padding: '5px'
+          padding: '8px 12px',
+          transition: 'all 0.2s'
         }}
       >
-        {/* Avatar */}
         <div style={{
-          width: '40px',
-          height: '40px',
+          width: '32px',
+          height: '32px',
           borderRadius: '50%',
           background: userProfile?.avatar ? 'transparent' : 'linear-gradient(135deg, #333 0%, #111 100%)',
-          border: '2px solid #444',
+          border: `2px solid ${isOpen ? '#ffd700' : '#444'}`,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          fontSize: '0.9rem',
+          fontSize: '0.8rem',
           fontWeight: 'bold',
-          color: '#fff'
+          color: isOpen ? '#ffd700' : '#fff',
+          transition: 'all 0.2s'
         }}>
           {userProfile?.avatar ? (
             <img 
@@ -68,154 +68,112 @@ const HamburgerMenu = ({ onAddFriend, onRefresh }) => {
           )}
         </div>
 
-        {/* Hamburger Icon */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          <span style={{
-            width: '20px',
-            height: '2px',
-            background: isOpen ? '#ffd700' : '#666',
-            transition: 'all 0.3s',
-            transform: isOpen ? 'rotate(45deg) translate(4px, 4px)' : 'none'
-          }} />
-          <span style={{
-            width: '20px',
-            height: '2px',
-            background: isOpen ? '#ffd700' : '#666',
-            transition: 'all 0.3s',
-            opacity: isOpen ? 0 : 1
-          }} />
-          <span style={{
-            width: '20px',
-            height: '2px',
-            background: isOpen ? '#ffd700' : '#666',
-            transition: 'all 0.3s',
-            transform: isOpen ? 'rotate(-45deg) translate(4px, -4px)' : 'none'
-          }} />
-        </div>
+        <MenuIcon size={20} color={isOpen ? '#ffd700' : '#666'} isOpen={isOpen} />
       </button>
 
-      {/* Dropdown Menu */}
       {isOpen && (
         <div style={{
           position: 'absolute',
-          top: '100%',
+          top: 'calc(100% + 8px)',
           right: 0,
-          marginTop: '10px',
-          background: '#111',
-          border: '1px solid #333',
+          background: '#0a0a0a',
+          border: '1px solid #222',
           borderRadius: '12px',
-          padding: '10px',
-          minWidth: '220px',
-          boxShadow: '0 10px 40px rgba(0,0,0,0.8)',
+          padding: '8px',
+          minWidth: '240px',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.9)',
           zIndex: 1000,
           animation: 'slideDown 0.2s ease-out'
         }}>
           {/* User Info */}
           <div style={{
-            padding: '15px',
-            borderBottom: '1px solid #222',
-            marginBottom: '10px'
+            padding: '16px',
+            borderBottom: '1px solid #1a1a1a',
+            marginBottom: '8px'
           }}>
-            <div style={{ color: '#fff', fontWeight: '600', fontSize: '1rem' }}>
+            <div style={{ color: '#fff', fontWeight: 600, fontSize: '0.95rem', marginBottom: '4px' }}>
               {user?.displayName}
             </div>
-            <div style={{ color: '#666', fontSize: '0.8rem' }}>
+            <div style={{ color: '#555', fontSize: '0.75rem' }}>
               {user?.email}
             </div>
             {userProfile?.auraScore && (
               <div style={{ 
-                color: '#ffd700', 
-                fontSize: '0.75rem', 
-                marginTop: '5px',
-                display: 'flex',
+                marginTop: '10px',
+                padding: '6px 10px',
+                background: 'rgba(255, 215, 0, 0.1)',
+                borderRadius: '6px',
+                display: 'inline-flex',
                 alignItems: 'center',
-                gap: '5px'
+                gap: '6px'
               }}>
-                <span>✨</span>
-                <span>Aura Score: {userProfile.auraScore}</span>
+                <span style={{ color: '#ffd700', fontSize: '0.7rem', fontWeight: 600 }}>
+                  AURA: {userProfile.auraScore}
+                </span>
               </div>
             )}
           </div>
 
           {/* Menu Items */}
-          <button
-            onClick={() => { onAddFriend(); setIsOpen(false); }}
-            style={menuItemStyle}
-          >
-            <span>👤</span>
+          <MenuItem onClick={() => { onAddFriend(); setIsOpen(false); }}>
+            <PlusIcon size={18} color="#00e676" />
             <span>Add Friend</span>
-          </button>
+          </MenuItem>
 
-          <button
-            onClick={() => { onRefresh(); setIsOpen(false); }}
-            style={menuItemStyle}
-          >
-            <span>🔄</span>
+          <MenuItem onClick={() => { onRefresh(); setIsOpen(false); }}>
+            <RefreshIcon size={18} color="#888" />
             <span>Refresh</span>
-          </button>
+          </MenuItem>
 
-          <div style={{ borderTop: '1px solid #222', margin: '10px 0' }} />
+          <MenuItem onClick={() => { onOpenMarketplace(); setIsOpen(false); }}>
+            <DollarIcon size={18} color="#ffd700" />
+            <span>Aura Market</span>
+          </MenuItem>
 
-          <button
-            onClick={handleLogout}
-            style={{
-              ...menuItemStyle,
-              color: '#ff4444'
-            }}
-          >
-            <span>🚪</span>
+          <div style={{ borderTop: '1px solid #1a1a1a', margin: '8px 0' }} />
+
+          <MenuItem onClick={handleLogout} danger>
+            <LogoutIcon size={18} color="#ff4444" />
             <span>Sign Out</span>
-          </button>
+          </MenuItem>
         </div>
       )}
 
       <style>{`
         @keyframes slideDown {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+          from { opacity: 0; transform: translateY(-8px); }
+          to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
     </div>
   );
 };
 
-const menuItemStyle = {
-  width: '100%',
-  display: 'flex',
-  alignItems: 'center',
-  gap: '12px',
-  padding: '12px 15px',
-  background: 'transparent',
-  border: 'none',
-  color: '#aaa',
-  fontSize: '0.9rem',
-  cursor: 'pointer',
-  borderRadius: '8px',
-  transition: 'all 0.2s',
-  textAlign: 'left'
-};
-
-// Hover effect via inline style won't work, use CSS-in-JS approach
 const MenuItem = ({ children, onClick, danger }) => (
   <button
     onClick={onClick}
+    style={{
+      width: '100%',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '12px',
+      padding: '12px 16px',
+      background: 'transparent',
+      border: 'none',
+      color: danger ? '#ff4444' : '#aaa',
+      fontSize: '0.9rem',
+      cursor: 'pointer',
+      borderRadius: '8px',
+      transition: 'all 0.15s',
+      textAlign: 'left'
+    }}
     onMouseEnter={(e) => {
-      e.target.style.background = '#222';
-      e.target.style.color = danger ? '#ff4444' : '#fff';
+      e.currentTarget.style.background = danger ? 'rgba(255, 68, 68, 0.1)' : '#1a1a1a';
+      e.currentTarget.style.color = danger ? '#ff4444' : '#fff';
     }}
     onMouseLeave={(e) => {
-      e.target.style.background = 'transparent';
-      e.target.style.color = danger ? '#ff4444' : '#aaa';
-    }}
-    style={{
-      ...menuItemStyle,
-      color: danger ? '#ff4444' : '#aaa'
+      e.currentTarget.style.background = 'transparent';
+      e.currentTarget.style.color = danger ? '#ff4444' : '#aaa';
     }}
   >
     {children}

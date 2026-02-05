@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getPendingMercyRequests, respondToMercyRequest } from '../services/bankruptcyService';
 import { useAuth } from '../contexts/AuthContext';
+import { ShieldIcon, CheckIcon, XIcon, MessageIcon, ChevronDownIcon, ChevronUpIcon } from './icons/Icons';
 
 const MercyPanel = ({ onUpdate }) => {
   const { user } = useAuth();
@@ -63,13 +64,18 @@ const MercyPanel = ({ onUpdate }) => {
         onClick={() => setExpanded(!expanded)}
         style={headerStyle}
       >
-        <span>🏳️ MERCY PETITIONS</span>
-        <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <ShieldIcon size={18} color="#ff4444" />
+          <span style={{ color: '#ff6666' }}>MERCY PETITIONS</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <span style={badgeStyle}>{requests.length}</span>
-          <span style={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }}>
-            ▼
-          </span>
-        </span>
+          {expanded ? (
+            <ChevronUpIcon size={18} color="#666" />
+          ) : (
+            <ChevronDownIcon size={18} color="#666" />
+          )}
+        </div>
       </button>
 
       {expanded && (
@@ -77,26 +83,35 @@ const MercyPanel = ({ onUpdate }) => {
           {requests.map((request) => (
             <div key={request.id} style={requestItemStyle}>
               <div style={{ marginBottom: '12px' }}>
-                <div style={{ color: '#fff', fontWeight: '600', fontSize: '1rem' }}>
+                <div style={{ color: '#fff', fontWeight: 600, fontSize: '1rem' }}>
                   {request.requesterName}
                 </div>
-                <div style={{ color: '#ff4444', fontSize: '0.75rem', marginTop: '4px' }}>
-                  💀 BANKRUPT - Seeking mercy
+                <div style={{ 
+                  color: '#ff4444', 
+                  fontSize: '0.7rem', 
+                  marginTop: '4px',
+                  textTransform: 'uppercase',
+                  letterSpacing: '1px'
+                }}>
+                  BANKRUPT — Seeking Mercy
                 </div>
               </div>
 
               {request.message && (
                 <div style={{
-                  background: '#0a0a0a',
-                  padding: '12px',
-                  borderRadius: '6px',
-                  marginBottom: '12px',
-                  fontStyle: 'italic',
-                  color: '#aaa',
-                  fontSize: '0.9rem',
+                  background: 'rgba(0,0,0,0.3)',
+                  padding: '14px',
+                  borderRadius: '8px',
+                  marginBottom: '14px',
                   borderLeft: '3px solid #ff4444'
                 }}>
-                  "{request.message}"
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                    <MessageIcon size={14} color="#555" />
+                    <span style={{ fontSize: '0.7rem', color: '#555', textTransform: 'uppercase' }}>Their Plea</span>
+                  </div>
+                  <p style={{ margin: 0, color: '#aaa', fontSize: '0.9rem', fontStyle: 'italic' }}>
+                    "{request.message}"
+                  </p>
                 </div>
               )}
 
@@ -106,31 +121,34 @@ const MercyPanel = ({ onUpdate }) => {
                     type="text"
                     value={condition}
                     onChange={(e) => setCondition(e.target.value)}
-                    placeholder="e.g., Buy me lunch this week"
+                    placeholder="Set a condition (e.g., Buy me lunch)"
+                    autoFocus
                     style={{
                       width: '100%',
-                      padding: '10px',
+                      padding: '12px',
                       background: '#0a0a0a',
                       border: '1px solid #ffd700',
-                      borderRadius: '6px',
+                      borderRadius: '8px',
                       color: '#fff',
-                      marginBottom: '8px',
-                      boxSizing: 'border-box'
+                      marginBottom: '10px',
+                      boxSizing: 'border-box',
+                      fontSize: '0.9rem'
                     }}
                   />
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <button
                       onClick={handleCounterSubmit}
-                      disabled={responding === 'submitting'}
+                      disabled={responding === 'submitting' || !condition.trim()}
                       style={{
                         flex: 1,
-                        padding: '8px',
-                        background: '#443300',
+                        padding: '10px',
+                        background: responding === 'submitting' ? '#333' : 'rgba(255, 215, 0, 0.1)',
                         color: '#ffd700',
                         border: '1px solid #ffd700',
-                        borderRadius: '6px',
-                        cursor: 'pointer',
-                        fontSize: '0.8rem'
+                        borderRadius: '8px',
+                        cursor: responding === 'submitting' || !condition.trim() ? 'not-allowed' : 'pointer',
+                        fontSize: '0.8rem',
+                        fontWeight: 600
                       }}
                     >
                       {responding === 'submitting' ? 'Sending...' : 'Send Condition'}
@@ -141,11 +159,11 @@ const MercyPanel = ({ onUpdate }) => {
                         setResponding(null);
                       }}
                       style={{
-                        padding: '8px 12px',
+                        padding: '10px 16px',
                         background: 'transparent',
-                        color: '#888',
-                        border: '1px solid #444',
-                        borderRadius: '6px',
+                        color: '#666',
+                        border: '1px solid #333',
+                        borderRadius: '8px',
                         cursor: 'pointer',
                         fontSize: '0.8rem'
                       }}
@@ -156,54 +174,26 @@ const MercyPanel = ({ onUpdate }) => {
                 </div>
               ) : (
                 <div style={{ display: 'flex', gap: '8px' }}>
-                  <button
+                  <ActionButton
                     onClick={() => handleResponse(request.id, 'granted')}
                     disabled={responding === request.id}
-                    style={{
-                      flex: 1,
-                      padding: '10px',
-                      background: '#004d40',
-                      color: '#00e676',
-                      border: 'none',
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      fontSize: '0.8rem',
-                      fontWeight: '600'
-                    }}
-                  >
-                    {responding === request.id ? '...' : 'GRANT MERCY'}
-                  </button>
-                  <button
+                    label={responding === request.id ? '...' : 'Grant Mercy'}
+                    variant="success"
+                    icon={<CheckIcon size={16} color="#00e676" />}
+                  />
+                  <ActionButton
                     onClick={() => handleResponse(request.id, 'countered')}
                     disabled={responding === request.id}
-                    style={{
-                      flex: 1,
-                      padding: '10px',
-                      background: '#443300',
-                      color: '#ffd700',
-                      border: 'none',
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      fontSize: '0.8rem'
-                    }}
-                  >
-                    COUNTER
-                  </button>
-                  <button
+                    label="Counter"
+                    variant="warning"
+                  />
+                  <ActionButton
                     onClick={() => handleResponse(request.id, 'declined')}
                     disabled={responding === request.id}
-                    style={{
-                      padding: '10px',
-                      background: '#330000',
-                      color: '#ff4444',
-                      border: 'none',
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      fontSize: '0.8rem'
-                    }}
-                  >
-                    ✕
-                  </button>
+                    label=""
+                    variant="danger"
+                    icon={<XIcon size={16} color="#ff4444" />}
+                  />
                 </div>
               )}
             </div>
@@ -214,47 +204,108 @@ const MercyPanel = ({ onUpdate }) => {
   );
 };
 
+const ActionButton = ({ onClick, disabled, label, variant, icon }) => {
+  const styles = {
+    success: {
+      bg: 'rgba(0, 230, 118, 0.1)',
+      border: '#00e676',
+      color: '#00e676'
+    },
+    warning: {
+      bg: 'rgba(255, 215, 0, 0.1)',
+      border: '#ffd700',
+      color: '#ffd700'
+    },
+    danger: {
+      bg: 'rgba(255, 68, 68, 0.1)',
+      border: '#ff4444',
+      color: '#ff4444',
+      width: '40px'
+    }
+  };
+
+  const style = styles[variant];
+
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        flex: variant === 'danger' ? 'none' : 1,
+        width: style.width,
+        padding: '10px',
+        background: disabled ? '#1a1a1a' : style.bg,
+        color: disabled ? '#444' : style.color,
+        border: `1px solid ${disabled ? '#333' : style.border}`,
+        borderRadius: '8px',
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        fontSize: '0.8rem',
+        fontWeight: 600,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '6px',
+        transition: 'all 0.2s'
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) {
+          e.currentTarget.style.background = style.bg.replace('0.1', '0.2');
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) {
+          e.currentTarget.style.background = style.bg;
+        }
+      }}
+    >
+      {icon}
+      {label}
+    </button>
+  );
+};
+
 const containerStyle = {
-  margin: '20px',
-  background: '#111',
-  border: '1px solid #330000',
-  borderRadius: '8px',
+  margin: '0 20px 20px',
+  background: 'rgba(255,68,68,0.03)',
+  border: '1px solid rgba(255,68,68,0.15)',
+  borderRadius: '12px',
   overflow: 'hidden'
 };
 
 const headerStyle = {
   width: '100%',
-  padding: '15px 20px',
-  background: 'linear-gradient(135deg, #1a0000 0%, #220000 100%)',
+  padding: '16px 20px',
+  background: 'transparent',
   border: 'none',
-  color: '#ff4444',
-  fontSize: '0.9rem',
-  fontWeight: '600',
+  fontSize: '0.85rem',
+  fontWeight: 600,
   cursor: 'pointer',
   display: 'flex',
   justifyContent: 'space-between',
-  alignItems: 'center'
+  alignItems: 'center',
+  letterSpacing: '1px',
+  transition: 'color 0.2s'
 };
 
 const badgeStyle = {
   background: '#ff4444',
   color: '#fff',
-  fontSize: '0.75rem',
-  padding: '2px 8px',
-  borderRadius: '10px',
-  fontWeight: 'bold'
+  fontSize: '0.7rem',
+  padding: '3px 8px',
+  borderRadius: '12px',
+  fontWeight: 700
 };
 
 const contentStyle = {
-  padding: '20px',
-  borderTop: '1px solid #220000'
+  padding: '0 20px 20px'
 };
 
 const requestItemStyle = {
-  background: '#0a0a0a',
-  borderRadius: '8px',
-  padding: '15px',
-  marginBottom: '12px'
+  background: 'rgba(0,0,0,0.3)',
+  borderRadius: '10px',
+  padding: '18px',
+  marginBottom: '12px',
+  border: '1px solid rgba(255,68,68,0.1)'
 };
 
 export default MercyPanel;
