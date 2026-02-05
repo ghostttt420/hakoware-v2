@@ -20,7 +20,7 @@ const LandingPage = ({ onEnter }) => {
               <span className="stat-label">APR Per Day Ghosted</span>
             </div>
             <div className="stat">
-              <span className="stat-number">💀</span>
+              <span className="stat-number">B</span>
               <span className="stat-label">Bankruptcy Awaits</span>
             </div>
           </div>
@@ -43,12 +43,12 @@ const LandingPage = ({ onEnter }) => {
             <p>How many days of silence before they start accumulating debt?</p>
           </div>
           <div className="rule-card">
-            <div className="rule-icon">💸</div>
+            <div className="rule-icon">APR</div>
             <h3>Interest Accrues</h3>
             <p>Miss the limit? +1 APR (Aura Payable Rate) per day.</p>
           </div>
           <div className="rule-card">
-            <div className="rule-icon">💀</div>
+            <div className="rule-icon">CH7</div>
             <h3>Face Bankruptcy</h3>
             <p>Hit the threshold? Official bankruptcy. Beg for mercy or pay up.</p>
           </div>
@@ -85,11 +85,11 @@ const LandingPage = ({ onEnter }) => {
           </p>
           <div className="consequence-cards">
             <div className="consequence warning">
-              <span className="consequence-icon">⚠️</span>
+              <span className="consequence-icon">WARN</span>
               <span>Warning emails before bankruptcy</span>
             </div>
             <div className="consequence danger">
-              <span className="consequence-icon">📧</span>
+              <span className="consequence-icon">EMAIL</span>
               <span>Official bankruptcy notices sent</span>
             </div>
             <div className="consequence shame">
