@@ -17,8 +17,8 @@ import Dashboard from './components/Dashboard'
 import NenCard from './components/NenCard'
 import InvitationsPanel from './components/InvitationsPanel'
 import MercyPanel from './components/MercyPanel'
-import AuraMarketplace from './components/AuraMarketplace'
 import HamburgerMenu from './components/HamburgerMenu'
+import AuraMarketplaceModal from './components/Modals/AuraMarketplaceModal'
 import AdminPanel from './components/AdminPanel'
 import AdminLock from './components/AdminLock'
 import Toast from './components/Toast'
@@ -122,7 +122,7 @@ function App() {
   const handleAction = (type, friendship) => {
       // SECURITY CHECK: If Admin is present but locked, BLOCK EVERYTHING
       if (isAdmin && !adminUnlocked) {
-          showToast("🔒 SYSTEM LOCKED: ENTER PIN", "ERROR");
+          showToast("SYSTEM LOCKED: ENTER PIN", "ERROR");
           return;
       }
 
@@ -194,13 +194,13 @@ function App() {
         <HamburgerMenu 
           onAddFriend={() => setShowAddFriend(true)}
           onRefresh={loadData}
+          onOpenMarketplace={() => setShowMarketplace(true)}
         />
       </header>
 
-      {/* Invitations, Mercy & Marketplace Panels */}
+      {/* Invitations & Mercy Panels */}
       <InvitationsPanel onUpdate={loadData} />
       <MercyPanel onUpdate={loadData} />
-      <AuraMarketplace onBailout={(friendship) => handleAction('BAILOUT', friendship)} />
 
       {/* Stats Dashboard */}
       {!loading && <Dashboard friendships={friendships} recentActivity={recentActivity} />}
@@ -287,6 +287,15 @@ function App() {
         friendship={selectedFriendship}
         showToast={showToast}
         onBailoutComplete={loadData}
+      />
+
+      <AuraMarketplaceModal
+        isOpen={showMarketplace}
+        onClose={() => setShowMarketplace(false)}
+        onBailout={(friendship) => {
+          setShowMarketplace(false);
+          handleAction('BAILOUT', friendship);
+        }}
       />
 
       <PetitionModal 
