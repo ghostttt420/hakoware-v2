@@ -60,7 +60,7 @@ const Login = ({ onToggle }) => {
           
           {resetSent ? (
             <div className="auth-success">
-              <p>✅ Password reset email sent!</p>
+              <p>Password reset email sent!</p>
               <p>Check your inbox for instructions.</p>
               <button 
                 className="auth-btn secondary" 

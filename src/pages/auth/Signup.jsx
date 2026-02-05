@@ -64,7 +64,7 @@ const Signup = ({ onToggle }) => {
         <div className="auth-box">
           <h1 className="auth-title glitch" data-text="HAKOWARE">HAKOWARE</h1>
           <div className="auth-success">
-            <div className="success-icon">📧</div>
+            <div className="success-icon">EMAIL SENT</div>
             <h2>Verification Email Sent!</h2>
             <p>Please check your inbox and verify your email before logging in.</p>
             <p className="small-text">Didn't receive it? Check your spam folder.</p>

@@ -22,7 +22,7 @@ const VerificationRequired = () => {
       <div className="auth-box">
         <h1 className="auth-title glitch" data-text="HAKOWARE">HAKOWARE</h1>
         <div className="auth-success">
-          <div className="success-icon">🔒</div>
+          <div className="success-icon">LOCKED</div>
           <h2 style={{ color: '#ffd700' }}>Email Verification Required</h2>
           <p>Please verify your email to access the system.</p>
           <p className="small-text">We sent a verification link to:<br/><strong>{user?.email}</strong></p>
