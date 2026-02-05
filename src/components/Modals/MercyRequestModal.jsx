@@ -30,7 +30,7 @@ const MercyRequestModal = ({ isOpen, onClose, friendship, showToast, onRequestCo
     "I was practicing social distancing... from my phone.",
     "My cat sat on my phone and refused to move. For 3 weeks.",
     "I was busy achieving enlightenment. Obviously failed.",
-    "Please have mercy on this bankrupt soul! 🙏"
+    "Please have mercy on this bankrupt soul!"
   ];
 
   const randomExcuse = () => {
@@ -54,7 +54,7 @@ const MercyRequestModal = ({ isOpen, onClose, friendship, showToast, onRequestCo
   return (
     <div style={overlayStyle}>
       <div style={modalStyle}>
-        <h2 style={{ color: '#ff4444', marginTop: 0 }}>🏳️ BEG FOR AURA</h2>
+        <h2 style={{ color: '#ff4444', marginTop: 0 }}>BEG FOR AURA</h2>
         
         <div style={{ marginBottom: '20px' }}>
           <div style={{
@@ -101,7 +101,7 @@ const MercyRequestModal = ({ isOpen, onClose, friendship, showToast, onRequestCo
                   textDecoration: 'underline'
                 }}
               >
-                🎲 Random Excuse
+                Random Excuse
               </button>
             </div>
             <textarea

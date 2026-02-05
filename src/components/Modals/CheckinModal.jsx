@@ -73,7 +73,7 @@ const CheckinModal = ({ isOpen, onClose, friendship, showToast, onCheckinComplet
               padding: '15px',
               color: '#00e676'
             }}>
-              ✅ You have already checked in today!
+              You have already checked in today!
               <p style={{ fontSize: '0.8rem', marginTop: '5px', color: '#888' }}>
                 Come back tomorrow to maintain your streak.
               </p>
@@ -118,7 +118,7 @@ const CheckinModal = ({ isOpen, onClose, friendship, showToast, onCheckinComplet
                   borderRadius: '8px',
                   marginBottom: '15px'
                 }}>
-                  <span style={{ color: '#ffd700' }}>🔥 Current Streak:</span>
+                  <span style={{ color: '#ffd700' }}>Current Streak:</span>
                   <span style={{ color: '#ffd700', fontWeight: 'bold' }}>
                     {friendship.streak} days
                   </span>

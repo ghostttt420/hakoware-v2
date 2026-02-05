@@ -7,8 +7,8 @@ const PetitionModal = ({ isOpen, onClose, contract, showToast }) => {
   if (!isOpen || !contract) return null;
 
   // --- SEPARATE STATES FOR BUTTONS ---
-  const [shareBtnText, setShareBtnText] = useState("📱 Share Image");
-  const [emailBtnText, setEmailBtnText] = useState("📧 Send Official Email");
+  const [shareBtnText, setShareBtnText] = useState("Share Image");
+  const [emailBtnText, setEmailBtnText] = useState("Send Official Email");
   
   const cardRef = useRef(null); 
   
@@ -32,7 +32,7 @@ const PetitionModal = ({ isOpen, onClose, contract, showToast }) => {
                     link.href = canvas.toDataURL();
                     link.click();
                 }
-                setShareBtnText("📱 Share Image");
+                setShareBtnText("Share Image");
             });
         } catch (e) {
             showToast("Image Gen Failed", "ERROR");
@@ -77,7 +77,7 @@ const PetitionModal = ({ isOpen, onClose, contract, showToast }) => {
       emailjs.send(SERVICE_ID, TEMPLATE_ID, emailParams, PUBLIC_KEY)
       .then(() => {
           showToast("Official Petition Sent", "MERCY");
-          setEmailBtnText("Email Sent ✅");
+          setEmailBtnText("Email Sent");
       })
       .catch((e) => {
           console.error("Email Error:", e);
@@ -89,18 +89,18 @@ const PetitionModal = ({ isOpen, onClose, contract, showToast }) => {
   // --- DYNAMIC CONTENT ---
   let title = "OFFICIAL PLEDGE";
   let color = "#00e676"; // Green
-  let mascot = "📜🧚";
+  let mascot = "PLEDGE";
   let excuse = "I vow to clear this debt.";
 
   if (isBankrupt) {
       title = "MERCY PETITION";
       color = "#ff4444"; // Red
-      mascot = "🏳️👹";
+      mascot = "PETITION";
       excuse = "I acknowledge my aura debts.";
   } else if (isClean) {
       title = "HUNTER LICENSE";
       color = "#33b5e5"; // Blue
-      mascot = "💎✨";
+      mascot = "LICENSE";
       excuse = "Debt is a chain, and I have broken it.";
   }
 

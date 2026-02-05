@@ -72,7 +72,7 @@ const BailoutModal = ({ isOpen, onClose, friendship, showToast, onBailoutComplet
         createdAt: serverTimestamp()
       });
 
-      showToast(`💸 Bailed out ${friend.displayName} for ${amount} APR!`, 'SUCCESS');
+      showToast(`Bailed out ${friend.displayName} for ${amount} APR!`, 'SUCCESS');
       onBailoutComplete();
       onClose();
     } catch (error) {
@@ -83,12 +83,12 @@ const BailoutModal = ({ isOpen, onClose, friendship, showToast, onBailoutComplet
   };
 
   const bailoutMessages = [
-    "I got you this time. Don't ghost me again! 😤",
-    "Consider this a loan... with interest 😉",
-    "You're lucky I like you 💸",
-    "This is coming out of your birthday present 🎁",
-    "One time only! Next time you're on your own 🏳️",
-    "Pay it forward when someone else needs help 🤝"
+    "I got you this time. Don't ghost me again!",
+    "Consider this a loan... with interest,"
+    "You're lucky I like you",
+    "This is coming out of your birthday present,"
+    "One time only! Next time you're on your own",
+    "Pay it forward when someone else needs help"
   ];
 
   const randomMessage = () => {
@@ -98,7 +98,7 @@ const BailoutModal = ({ isOpen, onClose, friendship, showToast, onBailoutComplet
   return (
     <div style={overlayStyle}>
       <div style={modalStyle}>
-        <h2 style={{ color: '#00e676', marginTop: 0 }}>💸 AURA BAILOUT</h2>
+        <h2 style={{ color: '#00e676', marginTop: 0 }}>AURA BAILOUT</h2>
         
         <div style={{ marginBottom: '20px' }}>
           <p style={{ color: '#888', marginBottom: '15px' }}>
@@ -213,7 +213,7 @@ const BailoutModal = ({ isOpen, onClose, friendship, showToast, onBailoutComplet
             fontSize: '0.85rem',
             color: '#888'
           }}>
-            <strong style={{ color: '#ffd700' }}>⚠️ Cost to you:</strong>
+            <strong style={{ color: '#ffd700' }}>Cost to you:</strong>
             <p style={{ margin: '5px 0 0 0' }}>
               This will increase <em>your</em> debt by {Math.ceil(amount * 0.5)} APR
               (50% bailout fee)
@@ -241,7 +241,7 @@ const BailoutModal = ({ isOpen, onClose, friendship, showToast, onBailoutComplet
                   textDecoration: 'underline'
                 }}
               >
-                🎲 Random
+                Random
               </button>
             </div>
             <input

@@ -22,7 +22,7 @@ const SettleModal = ({ isOpen, onClose, contract, onRefresh, showToast }) => {
 
         showToast("Timer Reset (Interest Baked In)", "SUCCESS");
         onClose();
-        onRefresh(`⚠️ UPDATE: ${contract.name.toUpperCase()} TIMER RESET`); 
+        onRefresh(`UPDATE: ${contract.name.toUpperCase()} TIMER RESET`); 
     }
   };
 
@@ -34,7 +34,7 @@ const SettleModal = ({ isOpen, onClose, contract, onRefresh, showToast }) => {
 
         showToast("Debt Cleared!", "SUCCESS");
         onClose();
-        onRefresh(`💸 BREAKING: ${contract.name.toUpperCase()} IS DEBT FREE`);
+        onRefresh(`BREAKING: ${contract.name.toUpperCase()} IS DEBT FREE`);
     }
   };
 
@@ -43,7 +43,7 @@ const SettleModal = ({ isOpen, onClose, contract, onRefresh, showToast }) => {
         await deleteContract(contract.id);
         showToast("Contract Deleted", "ERROR");
         onClose();
-        onRefresh(`🗑️ SYSTEM: CONTRACT FOR ${contract.name.toUpperCase()} TERMINATED`);
+        onRefresh(`SYSTEM: CONTRACT FOR ${contract.name.toUpperCase()} TERMINATED`);
     }
   };
 
@@ -58,13 +58,13 @@ const SettleModal = ({ isOpen, onClose, contract, onRefresh, showToast }) => {
         </button>
         
         <button onClick={handlePaid} className="action-btn" style={{marginBottom: '10px', background: '#004d40', color: '#00e676'}}>
-           💸 PAID IN FULL
+           PAID IN FULL
         </button>
         
         <div style={{margin: '20px 0', borderTop: '1px solid #333'}}></div>
         
         <button onClick={handleDelete} style={{background: 'transparent', color: '#ff4444', border: '1px solid #ff4444', marginBottom:'10px'}}>
-           🗑️ DELETE CONTRACT
+           DELETE CONTRACT
         </button>
         
         <button onClick={onClose} style={{background: '#222', color: '#fff'}}>CANCEL</button>
