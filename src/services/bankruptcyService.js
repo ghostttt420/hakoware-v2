@@ -41,10 +41,13 @@ export const checkBankruptcyStatus = async (friendshipId, userId) => {
       : 999;
     
     const limit = myData.limit || 7;
-    const totalDebt = (myData.baseDebt || 0) + Math.max(0, daysSince - limit);
+    // NEW: Interest only accrues after limit, bankruptcy at 2x limit
+    const daysOverLimit = Math.max(0, daysSince - limit);
+    const totalDebt = (myData.baseDebt || 0) + daysOverLimit;
 
     const wasBankrupt = myData.status === 'bankrupt';
-    const isNowBankrupt = totalDebt >= limit;
+    // NEW: Bankruptcy threshold is 2x the limit (warning zone)
+    const isNowBankrupt = totalDebt >= limit * 2;
 
     // If newly bankrupt, record it
     if (!wasBankrupt && isNowBankrupt) {
@@ -80,8 +83,10 @@ export const checkBankruptcyStatus = async (friendshipId, userId) => {
       success: true,
       newlyBankrupt: false,
       isBankrupt: isNowBankrupt,
+      isInWarningZone: totalDebt >= limit && totalDebt < limit * 2,
       totalDebt,
-      daysSince
+      daysSince,
+      daysUntilBankrupt: Math.max(0, (limit * 2) - totalDebt)
     };
   } catch (error) {
     console.error('Error checking bankruptcy status:', error);

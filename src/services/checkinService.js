@@ -90,8 +90,8 @@ export const performCheckin = async (friendshipId, userId, proofOfContact = null
     const perspective = isUser1 ? 'user1Perspective' : 'user2Perspective';
     const myData = isUser1 ? friendship.user1Perspective : friendship.user2Perspective;
 
-    // Calculate debt reduction (1 APR per check-in)
-    const debtReduction = 1;
+    // Calculate debt reduction (2 APR per check-in - improved recovery)
+    const debtReduction = 2;
     const newBaseDebt = Math.max(0, (myData.baseDebt || 0) - debtReduction);
 
     // Calculate streak
@@ -142,6 +142,12 @@ export const performCheckin = async (friendshipId, userId, proofOfContact = null
       totalCheckins: (friendship.totalCheckins || 0) + 1,
       lastCheckinAt: now
     };
+    
+    // NEW: Clear bankruptcy status if debt is fully paid off
+    if (newBaseDebt === 0 && myData.status === 'bankrupt') {
+      updates[`${perspective}.status`] = 'active';
+      updates[`${perspective}.bankruptcyResolvedAt`] = now;
+    }
 
     // Update longest streak if needed
     if (newStreak > (friendship.longestStreak || 0)) {
