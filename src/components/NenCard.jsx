@@ -1,6 +1,6 @@
 import { calculateDebt, calculateCreditScore, getDebtStatus } from '../utils/gameLogic';
 import CountUp from './CountUp';
-import { SkullIcon, CrownIcon, DollarIcon, FlameIcon } from './icons/Icons';
+import { SkullIcon, CrownIcon, DollarIcon, FlameIcon, SettingsIcon } from './icons/Icons';
 
 const NenCard = ({ 
   contract, 
@@ -104,19 +104,41 @@ const NenCard = ({
           {isAdmin && <div style={{fontSize:'0.6rem', color:'#666'}}>{email}</div>}
         </div>
         
-        {/* Mascot - shows MY status to this friend */}
-        <div 
-          className="mascot-icon-wrapper" 
-          style={{cursor: 'pointer'}}
-          onClick={() => onPoke(displayName, iAmBankrupt, iAmClean)}
-        >
-          {iAmBankrupt ? (
-            <SkullIcon size={40} color="#ff4444" />
-          ) : iAmClean ? (
-            <CrownIcon size={40} color="#ffd700" />
-          ) : (
-            <FlameIcon size={40} color="#888" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {/* Settings Button */}
+          {!isAdmin && (
+            <button
+              onClick={() => onAction('SETTINGS', data)}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '5px',
+                opacity: 0.5,
+                transition: 'opacity 0.2s'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+              onMouseLeave={(e) => e.currentTarget.style.opacity = '0.5'}
+              title="Friendship Settings"
+            >
+              <SettingsIcon size={20} color="#888" />
+            </button>
           )}
+          
+          {/* Mascot - shows MY status to this friend */}
+          <div 
+            className="mascot-icon-wrapper" 
+            style={{cursor: 'pointer'}}
+            onClick={() => onPoke(displayName, iAmBankrupt, iAmClean)}
+          >
+            {iAmBankrupt ? (
+              <SkullIcon size={40} color="#ff4444" />
+            ) : iAmClean ? (
+              <CrownIcon size={40} color="#ffd700" />
+            ) : (
+              <FlameIcon size={40} color="#888" />
+            )}
+          </div>
         </div>
       </div>
 
