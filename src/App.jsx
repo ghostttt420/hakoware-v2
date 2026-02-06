@@ -18,6 +18,7 @@ import NenCard from './components/NenCard'
 import InvitationsPanel from './components/InvitationsPanel'
 import MercyPanel from './components/MercyPanel'
 import BailoutHistoryPanel from './components/BailoutHistoryPanel'
+import NotificationsPanel from './components/NotificationsPanel'
 import HamburgerMenu from './components/HamburgerMenu'
 import AuraMarketplaceModal from './components/Modals/AuraMarketplaceModal'
 import AdminPanel from './components/AdminPanel'
@@ -200,7 +201,8 @@ function App() {
         />
       </header>
 
-      {/* Invitations, Mercy & Bailout Panels */}
+      {/* Notifications, Invitations, Mercy & Bailout Panels */}
+      <NotificationsPanel />
       <InvitationsPanel onUpdate={loadData} />
       <MercyPanel onUpdate={loadData} />
       <BailoutHistoryPanel />
