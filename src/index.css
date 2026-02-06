@@ -229,6 +229,13 @@ button:active { transform: scale(0.98); }
   border-color: var(--blue);
 }
 
+.warning-btn {
+  background: linear-gradient(45deg, #332200, #664400);
+  color: #ff8800;
+  border-color: #ff8800;
+  animation: warning-pulse 2s infinite ease-in-out;
+}
+
 /* --- MOBILE OPTIMIZATIONS (The Fix) --- */
 @media (max-width: 600px) {
   .app-container {
@@ -401,9 +408,23 @@ button:active { transform: scale(0.98); }
 }
 
 
-/* 3. ACTIVE USERS (Middle Ground) */
-/* This targets cards that are NOT bankrupt and NOT clean */
-.card:not(.bankrupt):not(.clean-record) {
+/* 3. WARNING ZONE ( approaching bankruptcy ) */
+.card.warning-zone {
+  background: linear-gradient(145deg, #2a1a00, #0a0a0a); /* Dark orange/amber tint */
+  border: 1px solid #ff8800;
+  box-shadow: 0 0 15px rgba(255, 136, 0, 0.2);
+  animation: warning-pulse 2s infinite ease-in-out;
+}
+
+@keyframes warning-pulse {
+  0% { box-shadow: 0 0 5px rgba(255, 136, 0, 0.2); border-color: #884400; }
+  50% { box-shadow: 0 0 15px rgba(255, 136, 0, 0.4); border-color: #ff8800; }
+  100% { box-shadow: 0 0 5px rgba(255, 136, 0, 0.2); border-color: #884400; }
+}
+
+/* 4. ACTIVE USERS (Middle Ground) */
+/* This targets cards that are NOT bankrupt and NOT clean and NOT warning */
+.card:not(.bankrupt):not(.clean-record):not(.warning-zone) {
   background: linear-gradient(145deg, #1a1a1a, #0a0a0a); /* Subtle dark grey gradient */
   border: 1px solid #444;
 }
