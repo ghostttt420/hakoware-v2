@@ -41,7 +41,7 @@ const AuraMarketplaceModal = ({ isOpen, onClose, onBailout }) => {
   if (!isOpen) return null;
 
   const totalDebtAvailable = bankruptFriends.reduce((sum, f) => sum + f.stats.totalDebt, 0);
-  const bankruptCount = bankruptFriends.filter(f => f.stats.totalDebt >= f.stats.limit).length;
+  const bankruptCount = bankruptFriends.filter(f => f.stats.isBankrupt).length;
 
   return (
     <div style={overlayStyle}>
@@ -181,13 +181,14 @@ const StatBox = ({ label, value, icon, danger }) => (
 );
 
 const MarketItem = ({ item, onBailout }) => {
-  const isBankrupt = item.stats.totalDebt >= item.stats.limit;
+  const isBankrupt = item.stats.isBankrupt;
+  const isInWarningZone = item.stats.isInWarningZone;
   const debtRatio = Math.min(item.stats.totalDebt / (item.stats.limit * 2), 1);
 
   return (
     <div style={{
-      background: 'rgba(255,255,255,0.02)',
-      border: `1px solid ${isBankrupt ? 'rgba(255,68,68,0.3)' : '#1a1a1a'}`,
+      background: isBankrupt ? 'rgba(255,68,68,0.05)' : isInWarningZone ? 'rgba(255,136,0,0.05)' : 'rgba(255,255,255,0.02)',
+      border: `1px solid ${isBankrupt ? 'rgba(255,68,68,0.3)' : isInWarningZone ? 'rgba(255,136,0,0.3)' : '#1a1a1a'}',
       borderRadius: '12px',
       padding: '20px',
       display: 'flex',
@@ -213,14 +214,16 @@ const MarketItem = ({ item, onBailout }) => {
         borderRadius: '50%',
         background: isBankrupt 
           ? 'linear-gradient(135deg, #330000 0%, #1a0000 100%)' 
+          : isInWarningZone
+          ? 'linear-gradient(135deg, #332200 0%, #1a1000 100%)'
           : 'linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%)',
-        border: `2px solid ${isBankrupt ? '#ff4444' : '#333'}`,
+        border: `2px solid ${isBankrupt ? '#ff4444' : isInWarningZone ? '#ff8800' : '#333'}`,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         fontSize: '1.2rem',
         fontWeight: 600,
-        color: isBankrupt ? '#ff4444' : '#888'
+        color: isBankrupt ? '#ff4444' : isInWarningZone ? '#ff8800' : '#888'
       }}>
         {item.friend.displayName?.charAt(0).toUpperCase() || '?'}
       </div>
@@ -250,6 +253,20 @@ const MarketItem = ({ item, onBailout }) => {
               BANKRUPT
             </span>
           )}
+          {isInWarningZone && !isBankrupt && (
+            <span style={{
+              fontSize: '0.65rem',
+              color: '#ff8800',
+              background: 'rgba(255,136,0,0.1)',
+              padding: '2px 8px',
+              borderRadius: '4px',
+              textTransform: 'uppercase',
+              letterSpacing: '1px',
+              fontWeight: 600
+            }}>
+              WARNING
+            </span>
+          )}
         </div>
 
         {/* Debt Bar */}
@@ -264,13 +281,13 @@ const MarketItem = ({ item, onBailout }) => {
             <div style={{
               width: `${debtRatio * 100}%`,
               height: '100%',
-              background: isBankrupt ? '#ff4444' : '#ffd700',
+              background: isBankrupt ? '#ff4444' : isInWarningZone ? '#ff8800' : '#ffd700',
               borderRadius: '2px',
               transition: 'width 0.3s'
             }} />
           </div>
           <span style={{ 
-            color: isBankrupt ? '#ff4444' : '#ffd700', 
+            color: isBankrupt ? '#ff4444' : isInWarningZone ? '#ff8800' : '#ffd700', 
             fontWeight: 600,
             fontSize: '0.9rem',
             minWidth: '60px',
@@ -286,10 +303,10 @@ const MarketItem = ({ item, onBailout }) => {
         onClick={(e) => { e.stopPropagation(); onBailout(); }}
         style={{
           padding: '10px 20px',
-          background: isBankrupt ? 'rgba(255,68,68,0.1)' : 'rgba(0,230,118,0.1)',
-          border: `1px solid ${isBankrupt ? '#ff4444' : '#00e676'}`,
+          background: isBankrupt ? 'rgba(255,68,68,0.1)' : isInWarningZone ? 'rgba(255,136,0,0.1)' : 'rgba(0,230,118,0.1)',
+          border: `1px solid ${isBankrupt ? '#ff4444' : isInWarningZone ? '#ff8800' : '#00e676'}`,
           borderRadius: '8px',
-          color: isBankrupt ? '#ff4444' : '#00e676',
+          color: isBankrupt ? '#ff4444' : isInWarningZone ? '#ff8800' : '#00e676',
           fontSize: '0.8rem',
           fontWeight: 600,
           cursor: 'pointer',
@@ -298,10 +315,10 @@ const MarketItem = ({ item, onBailout }) => {
           letterSpacing: '1px'
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.background = isBankrupt ? 'rgba(255,68,68,0.2)' : 'rgba(0,230,118,0.2)';
+          e.currentTarget.style.background = isBankrupt ? 'rgba(255,68,68,0.2)' : isInWarningZone ? 'rgba(255,136,0,0.2)' : 'rgba(0,230,118,0.2)';
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.background = isBankrupt ? 'rgba(255,68,68,0.1)' : 'rgba(0,230,118,0.1)';
+          e.currentTarget.style.background = isBankrupt ? 'rgba(255,68,68,0.1)' : isInWarningZone ? 'rgba(255,136,0,0.1)' : 'rgba(0,230,118,0.1)';
         }}
       >
         BAIL

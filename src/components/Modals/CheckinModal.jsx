@@ -104,7 +104,7 @@ const CheckinModal = ({ isOpen, onClose, friendship, showToast, onCheckinComplet
               }}>
                 <span style={{ color: '#888' }}>Debt After Check-in:</span>
                 <span style={{ color: '#00e676', fontWeight: 'bold' }}>
-                  {Math.max(0, stats.totalDebt - 1)} APR
+                  {Math.max(0, stats.totalDebt - 2)} APR
                 </span>
               </div>
 
@@ -153,7 +153,7 @@ const CheckinModal = ({ isOpen, onClose, friendship, showToast, onCheckinComplet
                   }}
                 />
                 <p style={{ color: '#666', fontSize: '0.75rem', marginTop: '5px' }}>
-                  This helps with accountability and tracking your friendship history.
+                  Check-ins reduce debt by 2 APR. This helps with accountability and tracking your friendship history.
                 </p>
               </div>
             </>
