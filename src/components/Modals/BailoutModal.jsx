@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { calculateDebt } from '../../utils/gameLogic';
+import { notifyBailoutReceived } from '../../services/notificationService';
 import { doc, getDoc, updateDoc, serverTimestamp, addDoc, collection } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 
@@ -71,6 +72,13 @@ const BailoutModal = ({ isOpen, onClose, friendship, showToast, onBailoutComplet
         message: message || null,
         createdAt: serverTimestamp()
       });
+
+      // Send notification to the friend who was bailed out
+      try {
+        await notifyBailoutReceived(friendship, user.uid, friend.userId, amount, message);
+      } catch (error) {
+        console.error('Error sending bailout notification:', error);
+      }
 
       showToast(`Bailed out ${friend.displayName} for ${amount} APR!`, 'SUCCESS');
       onBailoutComplete();

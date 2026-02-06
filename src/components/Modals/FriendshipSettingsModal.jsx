@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { updateFriendshipLimit, removeFriendship } from '../../services/friendshipService';
+import { notifyLimitChanged } from '../../services/notificationService';
 import { useAuth } from '../../contexts/AuthContext';
 import { calculateDebt } from '../../utils/gameLogic';
 import { XIcon, AlertIcon, TrashIcon } from '../icons/Icons';
@@ -7,6 +8,7 @@ import { XIcon, AlertIcon, TrashIcon } from '../icons/Icons';
 const FriendshipSettingsModal = ({ isOpen, onClose, friendship, showToast, onUpdate }) => {
   const { user } = useAuth();
   const [limit, setLimit] = useState(7);
+  const [originalLimit, setOriginalLimit] = useState(7);
   const [loading, setLoading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -15,7 +17,9 @@ const FriendshipSettingsModal = ({ isOpen, onClose, friendship, showToast, onUpd
     if (isOpen && friendship) {
       const isUser1 = friendship.myPerspective === 'user1';
       const myData = isUser1 ? friendship.user1Perspective : friendship.user2Perspective;
-      setLimit(myData.limit || 7);
+      const currentLimit = myData.limit || 7;
+      setLimit(currentLimit);
+      setOriginalLimit(currentLimit);
     }
   }, [isOpen, friendship]);
 
@@ -37,8 +41,24 @@ const FriendshipSettingsModal = ({ isOpen, onClose, friendship, showToast, onUpd
       return;
     }
 
+    // Check if limit actually changed
+    if (limit === originalLimit) {
+      onClose();
+      return;
+    }
+
     setLoading(true);
     const result = await updateFriendshipLimit(friendship.id, user.uid, limit);
+    
+    // Send notification to friend about the limit change
+    if (result.success) {
+      try {
+        await notifyLimitChanged(friendship, user.uid, originalLimit, limit);
+      } catch (error) {
+        console.error('Error sending limit change notification:', error);
+      }
+    }
+    
     setLoading(false);
 
     if (result.success) {
