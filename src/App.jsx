@@ -53,6 +53,7 @@ function App() {
   const [selectedFriendship, setSelectedFriendship] = useState(null)
   const [modalType, setModalType] = useState(null) 
   const [showAddFriend, setShowAddFriend] = useState(false)
+  const [showMarketplace, setShowMarketplace] = useState(false)
   const [toast, setToast] = useState(null)
   const [recentActivity, setRecentActivity] = useState("SYSTEM: MONITORING TRANSACTIONS...");
 
