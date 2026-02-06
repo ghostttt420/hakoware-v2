@@ -84,9 +84,9 @@ const BailoutModal = ({ isOpen, onClose, friendship, showToast, onBailoutComplet
 
   const bailoutMessages = [
     "I got you this time. Don't ghost me again!",
-    "Consider this a loan... with interest,"
+    "Consider this a loan... with interest,",
     "You're lucky I like you",
-    "This is coming out of your birthday present,"
+    "This is coming out of your birthday present,",
     "One time only! Next time you're on your own",
     "Pay it forward when someone else needs help"
   ];
