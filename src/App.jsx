@@ -17,6 +17,7 @@ import Dashboard from './components/Dashboard'
 import NenCard from './components/NenCard'
 import InvitationsPanel from './components/InvitationsPanel'
 import MercyPanel from './components/MercyPanel'
+import BailoutHistoryPanel from './components/BailoutHistoryPanel'
 import HamburgerMenu from './components/HamburgerMenu'
 import AuraMarketplaceModal from './components/Modals/AuraMarketplaceModal'
 import AdminPanel from './components/AdminPanel'
@@ -28,6 +29,7 @@ import MercyRequestModal from './components/Modals/MercyRequestModal'
 import BailoutModal from './components/Modals/BailoutModal'
 import SettleModal from './components/Modals/SettleModal'
 import PetitionModal from './components/Modals/PetitionModal'
+import FriendshipSettingsModal from './components/Modals/FriendshipSettingsModal'
 
 function App() {
   const { user, isAuthenticated, isEmailVerified } = useAuth();
@@ -136,8 +138,7 @@ function App() {
       } else if (type === 'BAILOUT') {
         setModalType('BAILOUT');
       } else if (type === 'SETTINGS') {
-        // TODO: Implement friendship settings
-        showToast("Settings feature coming soon!", "INFO");
+        setModalType('SETTINGS');
       }
   };
 
@@ -199,9 +200,10 @@ function App() {
         />
       </header>
 
-      {/* Invitations & Mercy Panels */}
+      {/* Invitations, Mercy & Bailout Panels */}
       <InvitationsPanel onUpdate={loadData} />
       <MercyPanel onUpdate={loadData} />
+      <BailoutHistoryPanel />
 
       {/* Stats Dashboard */}
       {!loading && <Dashboard friendships={friendships} recentActivity={recentActivity} />}
@@ -259,7 +261,8 @@ function App() {
       {(isAdmin && adminUnlocked) && (
         <SettleModal 
             isOpen={modalType === 'SETTLE'} 
-            contract={selectedFriendship} 
+            contract={selectedFriendship}
+            friendship={selectedFriendship}
             onClose={closeModal} 
             onRefresh={handleRefreshData} 
             showToast={showToast} 
@@ -301,9 +304,18 @@ function App() {
 
       <PetitionModal 
           isOpen={modalType === 'PETITION'} 
-          contract={selectedFriendship} 
+          contract={selectedFriendship}
+          friendship={selectedFriendship}
           onClose={closeModal}
           showToast={showToast}
+      />
+
+      <FriendshipSettingsModal
+          isOpen={modalType === 'SETTINGS'}
+          onClose={closeModal}
+          friendship={selectedFriendship}
+          showToast={showToast}
+          onUpdate={loadData}
       />
 
       {toast && <Toast message={toast.msg} type={toast.type} onClose={() => setToast(null)} />}
