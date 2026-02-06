@@ -151,7 +151,7 @@ const StatBox = ({ label, value, icon, danger }) => (
   <div style={{
     flex: 1,
     background: 'rgba(255,255,255,0.02)',
-    border: `1px solid ${danger ? 'rgba(255,68,68,0.2)' : '#222'}`,
+    border: danger ? '1px solid rgba(255,68,68,0.2)' : '1px solid #222',
     borderRadius: '10px',
     padding: '16px',
     display: 'flex',
@@ -188,7 +188,7 @@ const MarketItem = ({ item, onBailout }) => {
   return (
     <div style={{
       background: isBankrupt ? 'rgba(255,68,68,0.05)' : isInWarningZone ? 'rgba(255,136,0,0.05)' : 'rgba(255,255,255,0.02)',
-      border: `1px solid ${isBankrupt ? 'rgba(255,68,68,0.3)' : isInWarningZone ? 'rgba(255,136,0,0.3)' : '#1a1a1a'}',
+      border: isBankrupt ? '1px solid rgba(255,68,68,0.3)' : isInWarningZone ? '1px solid rgba(255,136,0,0.3)' : '1px solid #1a1a1a',
       borderRadius: '12px',
       padding: '20px',
       display: 'flex',
@@ -217,7 +217,7 @@ const MarketItem = ({ item, onBailout }) => {
           : isInWarningZone
           ? 'linear-gradient(135deg, #332200 0%, #1a1000 100%)'
           : 'linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%)',
-        border: `2px solid ${isBankrupt ? '#ff4444' : isInWarningZone ? '#ff8800' : '#333'}`,
+        border: isBankrupt ? '2px solid #ff4444' : isInWarningZone ? '2px solid #ff8800' : '2px solid #333',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -304,7 +304,7 @@ const MarketItem = ({ item, onBailout }) => {
         style={{
           padding: '10px 20px',
           background: isBankrupt ? 'rgba(255,68,68,0.1)' : isInWarningZone ? 'rgba(255,136,0,0.1)' : 'rgba(0,230,118,0.1)',
-          border: `1px solid ${isBankrupt ? '#ff4444' : isInWarningZone ? '#ff8800' : '#00e676'}`,
+          border: isBankrupt ? '1px solid #ff4444' : isInWarningZone ? '1px solid #ff8800' : '1px solid #00e676',
           borderRadius: '8px',
           color: isBankrupt ? '#ff4444' : isInWarningZone ? '#ff8800' : '#00e676',
           fontSize: '0.8rem',
