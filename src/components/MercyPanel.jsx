@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getPendingMercyRequests, respondToMercyRequest } from '../services/bankruptcyService';
+import { notifyMercyResponse } from '../services/notificationService';
 import { useAuth } from '../contexts/AuthContext';
 import { ShieldIcon, CheckIcon, XIcon, MessageIcon, ChevronDownIcon, ChevronUpIcon } from './icons/Icons';
 
@@ -30,8 +31,21 @@ const MercyPanel = ({ onUpdate }) => {
       return;
     }
 
+    // Find the request data for notification
+    const request = requests.find(r => r.id === requestId);
+
     setResponding(requestId);
     const result = await respondToMercyRequest(requestId, response);
+    
+    // Send notification to the requester
+    if (result.success && request) {
+      try {
+        await notifyMercyResponse(request, response);
+      } catch (error) {
+        console.error('Error sending mercy notification:', error);
+      }
+    }
+    
     setResponding(null);
 
     if (result.success) {
@@ -43,8 +57,21 @@ const MercyPanel = ({ onUpdate }) => {
   const handleCounterSubmit = async () => {
     if (!condition.trim()) return;
 
+    // Find the request data for notification
+    const request = requests.find(r => r.id === responding);
+
     setResponding('submitting');
     const result = await respondToMercyRequest(responding, 'countered', condition);
+    
+    // Send notification to the requester
+    if (result.success && request) {
+      try {
+        await notifyMercyResponse(request, 'countered', condition);
+      } catch (error) {
+        console.error('Error sending mercy notification:', error);
+      }
+    }
+    
     setResponding(null);
     setShowConditionInput(false);
     setCondition('');

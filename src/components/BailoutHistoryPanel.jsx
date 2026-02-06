@@ -180,18 +180,36 @@ const BailoutHistoryPanel = () => {
                     </span>
                   </div>
                   
+                  {/* Message is now more prominent */}
                   {bailout.message && (
                     <div style={{ 
-                      color: '#888', 
-                      fontSize: '0.8rem', 
-                      marginTop: '4px',
-                      fontStyle: 'italic'
+                      background: bailout.type === 'given' ? 'rgba(255,68,68,0.1)' : 'rgba(0,230,118,0.1)',
+                      border: bailout.type === 'given' ? '1px solid rgba(255,68,68,0.2)' : '1px solid rgba(0,230,118,0.2)',
+                      borderRadius: '6px',
+                      padding: '8px 10px',
+                      marginTop: '8px',
+                      marginBottom: '6px'
                     }}>
-                      "{bailout.message}"
+                      <div style={{ 
+                        color: bailout.type === 'given' ? '#ff8888' : '#00e676', 
+                        fontSize: '0.7rem', 
+                        marginBottom: '2px',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px'
+                      }}>
+                        {bailout.type === 'given' ? 'Your message to them' : 'Their message to you'}
+                      </div>
+                      <div style={{ 
+                        color: '#ccc', 
+                        fontSize: '0.85rem',
+                        fontStyle: 'italic'
+                      }}>
+                        "{bailout.message}"
+                      </div>
                     </div>
                   )}
                   
-                  <div style={{ color: '#555', fontSize: '0.7rem', marginTop: '4px' }}>
+                  <div style={{ color: '#555', fontSize: '0.7rem' }}>
                     {formatDate(bailout.createdAt)}
                   </div>
                 </div>
