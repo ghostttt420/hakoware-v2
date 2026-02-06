@@ -1,4 +1,4 @@
-import { calculateDebt, calculateCreditScore } from '../utils/gameLogic';
+import { calculateDebt, calculateCreditScore, getDebtStatus } from '../utils/gameLogic';
 import CountUp from './CountUp';
 import { SkullIcon, CrownIcon, DollarIcon, FlameIcon } from './icons/Icons';
 
@@ -15,7 +15,7 @@ const NenCard = ({
   let displayName, email, streak;
   let myData, friendData, friend;
   let myStats, friendStats;
-  let iAmBankrupt, iAmClean, friendIsBankrupt;
+  let iAmBankrupt, iAmClean, iAmInWarningZone, friendIsBankrupt;
 
   if (friendship && currentUserId) {
     // New friendship format
@@ -42,14 +42,17 @@ const NenCard = ({
       bankruptcyLimit: friendData.limit
     });
     
-    iAmBankrupt = myStats.totalDebt >= myStats.limit;
+    // NEW: Use the new bankruptcy logic from calculateDebt (bankrupt at 2x limit)
+    iAmBankrupt = myStats.isBankrupt;
     iAmClean = myStats.totalDebt === 0;
-    friendIsBankrupt = friendStats.totalDebt >= friendStats.limit;
+    iAmInWarningZone = myStats.isInWarningZone;
+    friendIsBankrupt = friendStats.isBankrupt;
   } else {
     // Old contract format (fallback)
     myStats = calculateDebt(contract);
-    iAmBankrupt = myStats.totalDebt >= myStats.limit;
+    iAmBankrupt = myStats.isBankrupt;
     iAmClean = myStats.totalDebt === 0;
+    iAmInWarningZone = myStats.isInWarningZone;
     friendIsBankrupt = false;
     displayName = contract.name;
     email = contract.email;
@@ -71,6 +74,7 @@ const NenCard = ({
   let stateClass = '';
   if (iAmBankrupt) stateClass = 'bankrupt';
   else if (iAmClean) stateClass = 'clean-record';
+  else if (iAmInWarningZone) stateClass = 'warning-zone';
 
   // Button Logic - based on MY status (what I should do)
   let btnText = "CHECK IN";
@@ -84,6 +88,10 @@ const NenCard = ({
   } else if (iAmBankrupt) {
     btnText = "BEG FOR AURA";
     actionType = 'BEG';
+  } else if (iAmInWarningZone) {
+    btnText = "CHECK IN NOW";
+    btnClass += " warning-btn";
+    actionType = 'CHECKIN';
   }
 
   const data = friendship || contract;
@@ -114,8 +122,8 @@ const NenCard = ({
 
       {/* MY Debt Section (What I owe to this friend) */}
       <div style={{
-        background: iAmBankrupt ? 'rgba(255,68,68,0.1)' : iAmClean ? 'rgba(0,230,118,0.1)' : 'rgba(255,215,0,0.05)',
-        border: `1px solid ${iAmBankrupt ? '#ff4444' : iAmClean ? '#00e676' : '#333'}`,
+        background: iAmBankrupt ? 'rgba(255,68,68,0.15)' : iAmClean ? 'rgba(0,230,118,0.1)' : iAmInWarningZone ? 'rgba(255,136,0,0.1)' : 'rgba(255,215,0,0.05)',
+        border: `1px solid ${iAmBankrupt ? '#ff4444' : iAmClean ? '#00e676' : iAmInWarningZone ? '#ff8800' : '#333'}`,
         borderRadius: '8px',
         padding: '15px',
         marginBottom: '10px'
@@ -129,7 +137,12 @@ const NenCard = ({
         </div>
         {iAmBankrupt && (
           <div style={{color: '#ff4444', fontSize: '0.75rem', marginTop: '5px', fontWeight: 'bold'}}>
-            YOU ARE BANKRUPT
+            ⚠️ CHAPTER 7 BANKRUPTCY ⚠️
+          </div>
+        )}
+        {iAmInWarningZone && !iAmBankrupt && (
+          <div style={{color: '#ff8800', fontSize: '0.75rem', marginTop: '5px', fontWeight: 'bold'}}>
+            ⚠️ WARNING: {myStats.daysUntilBankrupt} days until bankruptcy
           </div>
         )}
       </div>
@@ -167,8 +180,9 @@ const NenCard = ({
       </div>
 
       <div className="info">
-        Interest: +1/day<br/>
-        Your Limit: {myData.limit} • You've ghosted: {myStats.daysMissed}d
+        Interest: +1/day after {myData.limit} days<br/>
+        Free days: {Math.max(0, myData.limit - myStats.daysMissed)} remaining
+        {myStats.daysOverLimit > 0 && <> • Accruing: {myStats.daysOverLimit} days</>}
         {streak > 0 && (
           <>
             <br/>

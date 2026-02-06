@@ -78,15 +78,17 @@ const AuraMarketplace = ({ onBailout }) => {
                   width: '40px',
                   height: '40px',
                   borderRadius: '50%',
-                  background: item.stats.totalDebt >= item.stats.limit 
+                  background: item.stats.isBankrupt 
                     ? 'linear-gradient(135deg, #330000 0%, #550000 100%)' 
-                    : 'linear-gradient(135deg, #443300 0%, #665500 100%)',
+                    : item.stats.isInWarningZone
+                    ? 'linear-gradient(135deg, #443300 0%, #665500 100%)'
+                    : 'linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontSize: '1.2rem'
                 }}>
-                  {item.stats.totalDebt >= item.stats.limit ? '💀' : '😰'}
+                  {item.stats.isBankrupt ? '💀' : item.stats.isInWarningZone ? '⚠️' : '😰'}
                 </div>
                 
                 <div style={{ flex: 1 }}>
@@ -94,12 +96,15 @@ const AuraMarketplace = ({ onBailout }) => {
                     {item.friend.displayName}
                   </div>
                   <div style={{ 
-                    color: item.stats.totalDebt >= item.stats.limit ? '#ff4444' : '#ffd700',
+                    color: item.stats.isBankrupt ? '#ff4444' : item.stats.isInWarningZone ? '#ff8800' : '#ffd700',
                     fontSize: '0.8rem'
                   }}>
                     {item.stats.totalDebt} APR debt
-                    {item.stats.totalDebt >= item.stats.limit && (
+                    {item.stats.isBankrupt && (
                       <span style={{ marginLeft: '8px', fontWeight: 'bold' }}>💀 BANKRUPT</span>
+                    )}
+                    {item.stats.isInWarningZone && !item.stats.isBankrupt && (
+                      <span style={{ marginLeft: '8px', fontWeight: 'bold', color: '#ff8800' }}>⚠️ WARNING</span>
                     )}
                   </div>
                 </div>

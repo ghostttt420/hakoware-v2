@@ -53,7 +53,7 @@ const Dashboard = ({ friendships, recentActivity }) => {
       lastInteraction: myData.lastInteraction,
       bankruptcyLimit: myData.limit
     });
-    return stats.totalDebt >= stats.limit;
+    return stats.isBankrupt;  // Use new bankruptcy logic
   }).length;
 
   const handleFinish = () => {
