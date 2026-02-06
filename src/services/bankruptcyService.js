@@ -334,3 +334,68 @@ export const resolveBankruptcyByCheckin = async (friendshipId, userId) => {
     return { success: false, error: error.message };
   }
 };
+
+// Get bailout history for a user (bailouts they gave or received)
+export const getUserBailoutHistory = async (userId) => {
+  try {
+    // Get bailouts where user was the giver
+    const givenQuery = query(
+      collection(db, 'bailouts'),
+      where('fromUserId', '==', userId),
+      orderBy('createdAt', 'desc')
+    );
+    
+    // Get bailouts where user was the receiver
+    const receivedQuery = query(
+      collection(db, 'bailouts'),
+      where('toUserId', '==', userId),
+      orderBy('createdAt', 'desc')
+    );
+    
+    const [givenSnapshot, receivedSnapshot] = await Promise.all([
+      getDocs(givenQuery),
+      getDocs(receivedQuery)
+    ]);
+    
+    const given = givenSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      type: 'given'
+    }));
+    
+    const received = receivedSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      type: 'received'
+    }));
+    
+    // Combine and sort by date
+    const allBailouts = [...given, ...received].sort((a, b) => {
+      const dateA = a.createdAt?.toDate?.() || new Date(0);
+      const dateB = b.createdAt?.toDate?.() || new Date(0);
+      return dateB - dateA;
+    });
+    
+    return { given, received, all: allBailouts };
+  } catch (error) {
+    console.error('Error getting bailout history:', error);
+    return { given: [], received: [], all: [] };
+  }
+};
+
+// Get bailout history for a specific friendship
+export const getFriendshipBailoutHistory = async (friendshipId) => {
+  try {
+    const q = query(
+      collection(db, 'bailouts'),
+      where('friendshipId', '==', friendshipId),
+      orderBy('createdAt', 'desc')
+    );
+    
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } catch (error) {
+    console.error('Error getting friendship bailout history:', error);
+    return [];
+  }
+};
