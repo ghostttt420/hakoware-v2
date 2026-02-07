@@ -1,7 +1,15 @@
 // Pure logic functions - No React code here
 
+/**
+ * Calculate debt for a user in a friendship
+ * 
+ * NEW LOGIC:
+ * - Days 0 to limit: FREE (grace period, no debt)
+ * - Days limit+1 onwards: debt = baseDebt + (daysMissed - limit)
+ * - Bankruptcy: when totalDebt >= limit * 2 (warning zone)
+ */
 export const calculateDebt = (contract) => {
-    if (!contract.lastInteraction) return { totalDebt: 0, daysMissed: 0, limit: 50 };
+    if (!contract.lastInteraction) return { totalDebt: 0, daysMissed: 0, limit: 7 };
     
     // Handle Firestore Timestamp vs Date object
     let lastInteraction;
@@ -15,10 +23,26 @@ export const calculateDebt = (contract) => {
     const diffTime = Math.abs(now - lastInteraction);
     const daysMissed = Math.floor(diffTime / (1000 * 60 * 60 * 24));
     
+    const limit = contract.bankruptcyLimit || 7;
+    const baseDebt = contract.baseDebt || 0;
+    
+    // NEW: Interest only accrues AFTER the limit (grace period is truly free)
+    const daysOverLimit = Math.max(0, daysMissed - limit);
+    const totalDebt = baseDebt + daysOverLimit;
+    
+    // NEW: Bankruptcy threshold is 2x the limit (warning zone)
+    const isBankrupt = totalDebt >= limit * 2;
+    const isInWarningZone = totalDebt >= limit && totalDebt < limit * 2;
+    
     return {
-        totalDebt: (contract.baseDebt || 0) + daysMissed,
-        daysMissed: daysMissed,
-        limit: contract.bankruptcyLimit || 50
+        totalDebt,
+        daysMissed,
+        daysOverLimit,
+        limit,
+        baseDebt,
+        isBankrupt,
+        isInWarningZone,
+        daysUntilBankrupt: Math.max(0, (limit * 2) - totalDebt)
     };
 };
 
@@ -35,4 +59,14 @@ export const calculateCreditScore = (debt, days) => {
     score -= (days * 10); 
     score -= (debt * 2);  
     return Math.max(300, score);
+};
+
+/**
+ * Get status label for debt level
+ */
+export const getDebtStatus = (debt, limit) => {
+    if (debt === 0) return { label: 'SOLVENT', color: '#00e676', severity: 'good' };
+    if (debt < limit) return { label: 'ACTIVE', color: '#ffd700', severity: 'warning' };
+    if (debt < limit * 2) return { label: 'WARNING', color: '#ff8800', severity: 'danger' };
+    return { label: 'BANKRUPT', color: '#ff4444', severity: 'critical' };
 };

@@ -1,7 +1,8 @@
 import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
 import { 
   getFirestore, collection, getDocs, addDoc, 
-  updateDoc, deleteDoc, doc, Timestamp // <--- ADDED TIMESTAMP
+  updateDoc, deleteDoc, doc, Timestamp, serverTimestamp 
 } from "firebase/firestore";
 
 // --- YOUR KEYS ---
@@ -15,6 +16,7 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 const db = getFirestore(app);
 
 export const fetchContracts = async () => {
@@ -104,3 +106,5 @@ export const markBankruptcyNotified = async (id) => {
 export const deleteContract = async (id) => {
     await deleteDoc(doc(db, "friends", id));
 };
+
+export { auth, db, serverTimestamp };

@@ -61,7 +61,7 @@ export const sendSystemEmail = (type, data, showToast = null, isAdmin = false) =
         .then(() => {
             console.log(`[System] ${type} email sent to ${data.email}`);
             if (isAdmin && showToast) {
-                showToast(`📧 ${type} Sent!`, "INFO");
+                showToast(`${type} Sent!`, "INFO");
             }
         })
         .catch(e => {
@@ -69,7 +69,7 @@ export const sendSystemEmail = (type, data, showToast = null, isAdmin = false) =
             if (isAdmin && showToast) {
                 // SHOW THE REAL REASON (e.text)
                 // Common errors: "Quota Exceeded", "Rate Limit Reached"
-                showToast(`⚠️ Email Error: ${e.text || "Unknown"}`, "ERROR");
+                showToast(`Email Error: ${e.text || "Unknown"}`, "ERROR");
             }
         });
 };
