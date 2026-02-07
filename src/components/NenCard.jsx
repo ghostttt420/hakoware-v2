@@ -121,7 +121,7 @@ const NenCard = ({
               onMouseLeave={(e) => e.currentTarget.style.opacity = '0.5'}
               title="Friendship Settings"
             >
-              <SettingsIcon size={16} color="#888" />
+              <SettingsIcon size={20} color="#888" />
             </button>
           )}
           
@@ -132,11 +132,11 @@ const NenCard = ({
             onClick={() => onPoke(displayName, iAmBankrupt, iAmClean)}
           >
             {iAmBankrupt ? (
-              <SkullIcon size={28} color="#ff4444" />
+              <SkullIcon size={40} color="#ff4444" />
             ) : iAmClean ? (
-              <CrownIcon size={28} color="#ffd700" />
+              <CrownIcon size={40} color="#ffd700" />
             ) : (
-              <FlameIcon size={28} color="#888" />
+              <FlameIcon size={40} color="#888" />
             )}
           </div>
         </div>
@@ -147,24 +147,24 @@ const NenCard = ({
         background: iAmBankrupt ? 'rgba(255,68,68,0.15)' : iAmClean ? 'rgba(0,230,118,0.1)' : iAmInWarningZone ? 'rgba(255,136,0,0.1)' : 'rgba(255,215,0,0.05)',
         border: `1px solid ${iAmBankrupt ? '#ff4444' : iAmClean ? '#00e676' : iAmInWarningZone ? '#ff8800' : '#333'}`,
         borderRadius: '8px',
-        padding: '12px',
-        marginBottom: '8px'
+        padding: '15px',
+        marginBottom: '10px'
       }}>
         <div style={{ fontSize: '0.7rem', color: '#666', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '1px' }}>
           You owe {displayName}
         </div>
-        <div className="debt-display" style={{ fontSize: '1.6rem', margin: 0 }}>
+        <div className="debt-display" style={{ fontSize: '2rem', margin: 0 }}>
           <CountUp end={myStats.totalDebt} duration={2000} />
           <span style={{fontSize: '0.5em'}}> APR</span>
         </div>
         {iAmBankrupt && (
-          <div style={{color: '#ff4444', fontSize: '0.7rem', marginTop: '4px', fontWeight: 'bold'}}>
-            ⚠️ BANKRUPT
+          <div style={{color: '#ff4444', fontSize: '0.75rem', marginTop: '5px', fontWeight: 'bold'}}>
+            ⚠️ CHAPTER 7 BANKRUPTCY ⚠️
           </div>
         )}
         {iAmInWarningZone && !iAmBankrupt && (
-          <div style={{color: '#ff8800', fontSize: '0.7rem', marginTop: '4px', fontWeight: 'bold'}}>
-            ⚠️ {myStats.daysUntilBankrupt} days to bankruptcy
+          <div style={{color: '#ff8800', fontSize: '0.75rem', marginTop: '5px', fontWeight: 'bold'}}>
+            ⚠️ WARNING: {myStats.daysUntilBankrupt} days until bankruptcy
           </div>
         )}
       </div>
@@ -175,41 +175,42 @@ const NenCard = ({
           background: friendIsBankrupt ? 'rgba(255,68,68,0.05)' : 'rgba(0,230,118,0.05)',
           border: `1px solid ${friendIsBankrupt ? '#ff4444' : '#00e676'}`,
           borderRadius: '8px',
-          padding: '10px',
-          marginBottom: '8px'
+          padding: '12px',
+          marginBottom: '10px'
         }}>
-          <div style={{ fontSize: '0.65rem', color: '#666', marginBottom: '2px' }}>
+          <div style={{ fontSize: '0.7rem', color: '#666', marginBottom: '3px' }}>
             {displayName} owes you
           </div>
           <div style={{ 
-            fontSize: '1.1rem', 
+            fontSize: '1.3rem', 
             fontWeight: 'bold',
             color: friendIsBankrupt ? '#ff4444' : '#00e676'
           }}>
             {friendStats.totalDebt} APR
-            {friendIsBankrupt && <span style={{ fontSize: '0.65rem', marginLeft: '6px' }}>BANKRUPT</span>}
+            {friendIsBankrupt && <span style={{ fontSize: '0.7rem', marginLeft: '8px' }}>BANKRUPT</span>}
           </div>
         </div>
       )}
 
-      <div style={{textAlign: 'center', marginBottom: '8px'}}>
-        <div className="soul-score-container" style={{ padding: '4px 8px' }}>
-          <span className="soul-label" style={{ fontSize: '0.55rem' }}>AURA</span>
-          <span className="soul-value" style={{fontSize: '0.8rem', color: calculateCreditScore(myStats.totalDebt, myStats.daysMissed) > 700 ? '#00e676' : '#ff4444'}}>
+      <div style={{textAlign: 'center', marginBottom: '10px'}}>
+        <div className="soul-score-container">
+          <span className="soul-label">AURA SCORE</span>
+          <span className="soul-value" style={{color: calculateCreditScore(myStats.totalDebt, myStats.daysMissed) > 700 ? '#00e676' : '#ff4444'}}>
             {calculateCreditScore(myStats.totalDebt, myStats.daysMissed)}
           </span>
         </div>
       </div>
 
-      <div className="info" style={{ fontSize: '0.7rem', marginBottom: '10px' }}>
-        +1/day after {myData.limit}d • {Math.max(0, myData.limit - myStats.daysMissed)} free
-        {myStats.daysOverLimit > 0 && <> • {myStats.daysOverLimit} accruing</>}
+      <div className="info">
+        Interest: +1/day after {myData.limit} days<br/>
+        Free days: {Math.max(0, myData.limit - myStats.daysMissed)} remaining
+        {myStats.daysOverLimit > 0 && <> • Accruing: {myStats.daysOverLimit} days</>}
         {streak > 0 && (
           <>
-            {' '}
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', color: '#ffd700' }}>
-              <FlameIcon size={10} color="#ffd700" />
-              {streak}
+            <br/>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+              <FlameIcon size={12} color="#ffd700" />
+              Streak: {streak} days
             </span>
           </>
         )}
@@ -217,28 +218,28 @@ const NenCard = ({
 
       {/* Action Buttons */}
       {isAdmin ? (
-        <div className="action-row" style={{display:'flex', gap:'8px', marginTop:'8px'}}>
+        <div className="action-row" style={{display:'flex', gap:'10px', marginTop:'10px'}}>
           <button 
             className="action-btn notify-btn" 
-            style={{background:'#444', color:'white', flex:1, padding: '8px', fontSize: '0.75rem'}}
+            style={{background:'#444', color:'white', flex:1}}
             onClick={() => onAction('SHAME', data)}
           >
             📢 SHAME
           </button>
           <button 
             className="action-btn" 
-            style={{flex:2, padding: '8px', fontSize: '0.75rem'}}
+            style={{flex:2}}
             onClick={() => onAction('RESET', data)}
           >
             WE SPOKE
           </button>
         </div>
       ) : (
-        <div className="action-row" style={{display:'flex', gap:'8px', marginTop:'8px'}}>
+        <div className="action-row" style={{display:'flex', gap:'10px', marginTop:'10px'}}>
           {/* MY Action Button (what I should do about MY debt) */}
           <button 
             className={`action-btn ${btnClass}`}
-            style={{flex: iAmBankrupt ? 2 : 1, padding: '8px', fontSize: '0.75rem'}}
+            style={{flex: iAmBankrupt ? 2 : 1}}
             onClick={() => onAction(actionType, data)}
           >
             {btnText}
@@ -252,13 +253,11 @@ const NenCard = ({
                 flex: 1,
                 background: friendIsBankrupt ? '#330000' : '#004d40',
                 color: friendIsBankrupt ? '#ff4444' : '#00e676',
-                border: `1px solid ${friendIsBankrupt ? '#ff4444' : '#00e676'}`,
-                padding: '8px',
-                fontSize: '0.75rem'
+                border: `1px solid ${friendIsBankrupt ? '#ff4444' : '#00e676'}`
               }}
               onClick={() => onAction('BAILOUT', data)}
             >
-              {friendIsBankrupt ? 'SAVE' : 'BAIL'}
+              {friendIsBankrupt ? 'SAVE THEM' : 'BAIL'}
             </button>
           )}
         </div>
