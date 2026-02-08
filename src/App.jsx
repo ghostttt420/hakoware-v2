@@ -39,6 +39,8 @@ import ShameWall from './components/ShameWall'
 import BountyBoard from './components/BountyBoard'
 import CreateBountyModal from './components/Modals/CreateBountyModal'
 import AchievementUnlockModal from './components/Modals/AchievementUnlockModal'
+import VoiceCheckinModal from './components/Modals/VoiceCheckinModal'
+import { UsersIcon, AwardIcon, Skull2Icon, Target2Icon } from './components/icons/Icons'
 
 function App() {
   const { user, isAuthenticated, isEmailVerified } = useAuth();
@@ -148,6 +150,8 @@ function App() {
       
       if (type === 'CHECKIN') {
         setModalType('CHECKIN');
+      } else if (type === 'VOICE_CHECKIN') {
+        setModalType('VOICE_CHECKIN');
       } else if (type === 'BEG') {
         setModalType('MERCY_REQUEST');
       } else if (type === 'BAILOUT') {
@@ -240,25 +244,29 @@ function App() {
           style={{...tabButtonStyle, ...(activeTab === 'friends' ? tabActiveStyle : {})}}
           onClick={() => setActiveTab('friends')}
         >
-          👥 FRIENDS
+          <UsersIcon size={16} color={activeTab === 'friends' ? '#ffd700' : '#666'} />
+          <span style={{ marginLeft: '8px' }}>FRIENDS</span>
         </button>
         <button 
           style={{...tabButtonStyle, ...(activeTab === 'achievements' ? tabActiveStyle : {})}}
           onClick={() => setActiveTab('achievements')}
         >
-          🏆 ACHIEVEMENTS
+          <AwardIcon size={16} color={activeTab === 'achievements' ? '#ffd700' : '#666'} />
+          <span style={{ marginLeft: '8px' }}>ACHIEVEMENTS</span>
         </button>
         <button 
           style={{...tabButtonStyle, ...(activeTab === 'shame' ? tabActiveStyle : {})}}
           onClick={() => setActiveTab('shame')}
         >
-          💀 WALL OF SHAME
+          <Skull2Icon size={16} color={activeTab === 'shame' ? '#ff4444' : '#666'} />
+          <span style={{ marginLeft: '8px' }}>WALL OF SHAME</span>
         </button>
         <button 
           style={{...tabButtonStyle, ...(activeTab === 'bounties' ? tabActiveStyle : {})}}
           onClick={() => setActiveTab('bounties')}
         >
-          🎯 BOUNTIES
+          <Target2Icon size={16} color={activeTab === 'bounties' ? '#ff8800' : '#666'} />
+          <span style={{ marginLeft: '8px' }}>BOUNTIES</span>
         </button>
       </div>
 
@@ -371,7 +379,21 @@ function App() {
         onClose={closeModal}
         friendship={selectedFriendship}
         showToast={showToast}
-        onCheckinComplete={loadData}
+        onCheckinComplete={() => {
+          loadData();
+          checkForAchievements('CHECKIN', { hour: new Date().getHours() });
+        }}
+      />
+
+      <VoiceCheckinModal
+        isOpen={modalType === 'VOICE_CHECKIN'}
+        onClose={closeModal}
+        friendship={selectedFriendship}
+        showToast={showToast}
+        onCheckinComplete={() => {
+          loadData();
+          checkForAchievements('CHECKIN', { hour: new Date().getHours() });
+        }}
       />
 
       <MercyRequestModal
@@ -431,12 +453,14 @@ const tabContainerStyle = {
 };
 
 const tabButtonStyle = {
-  padding: '12px 24px',
+  display: 'flex',
+  alignItems: 'center',
+  padding: '12px 20px',
   background: 'transparent',
   border: '1px solid #333',
   borderRadius: '8px',
   color: '#666',
-  fontSize: '0.85rem',
+  fontSize: '0.8rem',
   fontWeight: 'bold',
   cursor: 'pointer',
   whiteSpace: 'nowrap',
