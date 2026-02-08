@@ -7,6 +7,8 @@
   --red: #ff4444;
   --green: #00e676;
   --blue: #33b5e5;
+  --orange: #ff8800;
+  --purple: #9c27b0;
 }
 
 body {
@@ -458,4 +460,402 @@ button:active { transform: scale(0.98); }
 .floating {
   animation: float 3s ease-in-out infinite;
   display: inline-block;
+}
+
+/* ======================================== */
+/* --- GLASSMORPHISM ENHANCEMENTS --- */
+/* ======================================== */
+
+/* Glass Card Base */
+.glass-card {
+  background: rgba(17, 17, 17, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  box-shadow: 
+    0 4px 30px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Glow Variants */
+.glass-gold {
+  background: rgba(255, 215, 0, 0.05);
+  border-color: rgba(255, 215, 0, 0.2);
+  box-shadow: 
+    0 0 30px rgba(255, 215, 0, 0.1),
+    inset 0 1px 0 rgba(255, 215, 0, 0.1);
+}
+
+.glass-red {
+  background: rgba(255, 68, 68, 0.05);
+  border-color: rgba(255, 68, 68, 0.2);
+  box-shadow: 
+    0 0 30px rgba(255, 68, 68, 0.1),
+    inset 0 1px 0 rgba(255, 68, 68, 0.1);
+}
+
+.glass-green {
+  background: rgba(0, 230, 118, 0.05);
+  border-color: rgba(0, 230, 118, 0.2);
+  box-shadow: 
+    0 0 30px rgba(0, 230, 118, 0.1),
+    inset 0 1px 0 rgba(0, 230, 118, 0.1);
+}
+
+.glass-orange {
+  background: rgba(255, 136, 0, 0.05);
+  border-color: rgba(255, 136, 0, 0.2);
+  box-shadow: 
+    0 0 30px rgba(255, 136, 0, 0.1),
+    inset 0 1px 0 rgba(255, 136, 0, 0.1);
+}
+
+/* ======================================== */
+/* --- ENHANCED ANIMATIONS --- */
+/* ======================================== */
+
+/* Slide In From Bottom */
+@keyframes slide-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-in {
+  animation: slide-in-up 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Pop In */
+@keyframes pop-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  70% {
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.pop-in {
+  animation: pop-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Shake Error */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+.shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+/* Pulse Glow */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px currentColor;
+  }
+  50% {
+    box-shadow: 0 0 20px currentColor, 0 0 40px currentColor;
+  }
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Gradient Shift */
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.gradient-animate {
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+}
+
+/* ======================================== */
+/* --- NEON TEXT EFFECTS --- */
+/* ======================================== */
+
+.neon-text-gold {
+  color: var(--gold);
+  text-shadow: 
+    0 0 5px var(--gold),
+    0 0 10px var(--gold),
+    0 0 20px var(--gold),
+    0 0 40px var(--gold);
+}
+
+.neon-text-red {
+  color: var(--red);
+  text-shadow: 
+    0 0 5px var(--red),
+    0 0 10px var(--red),
+    0 0 20px var(--red),
+    0 0 40px var(--red);
+}
+
+.neon-text-green {
+  color: var(--green);
+  text-shadow: 
+    0 0 5px var(--green),
+    0 0 10px var(--green),
+    0 0 20px var(--green),
+    0 0 40px var(--green);
+}
+
+.neon-text-blue {
+  color: var(--blue);
+  text-shadow: 
+    0 0 5px var(--blue),
+    0 0 10px var(--blue),
+    0 0 20px var(--blue),
+    0 0 40px var(--blue);
+}
+
+/* ======================================== */
+/* --- HOVER EFFECTS --- */
+/* ======================================== */
+
+.hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.hover-glow:hover {
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+}
+
+.hover-scale {
+  transition: transform 0.2s ease;
+}
+
+.hover-scale:hover {
+  transform: scale(1.02);
+}
+
+/* ======================================== */
+/* --- STAGGERED ANIMATION DELAYS --- */
+/* ======================================== */
+
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+.stagger-4 { animation-delay: 0.4s; }
+.stagger-5 { animation-delay: 0.5s; }
+
+/* ======================================== */
+/* --- LOADING ANIMATIONS --- */
+/* ======================================== */
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { 
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  50% { 
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}
+
+.loading-dots {
+  display: flex;
+  gap: 8px;
+}
+
+.loading-dots span {
+  width: 8px;
+  height: 8px;
+  background: var(--gold);
+  border-radius: 50%;
+  animation: pulse-dot 1.4s ease-in-out infinite;
+}
+
+.loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+.loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+/* ======================================== */
+/* --- SCROLLBAR STYLING --- */
+/* ======================================== */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a0a0a;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #444;
+}
+
+/* ======================================== */
+/* --- SELECTION STYLING --- */
+/* ======================================== */
+
+::selection {
+  background: rgba(255, 215, 0, 0.3);
+  color: #fff;
+}
+
+/* ======================================== */
+/* --- FOCUS STYLES --- */
+/* ======================================== */
+
+*:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--gold) !important;
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+}
+
+/* ======================================== */
+/* --- BUTTON VARIANTS --- */
+/* ======================================== */
+
+.btn-gold {
+  background: linear-gradient(145deg, #ffd700, #ffaa00);
+  color: #000;
+  border: none;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+}
+
+.btn-gold:hover {
+  box-shadow: 0 6px 20px rgba(255, 215, 0, 0.5);
+  transform: translateY(-2px);
+}
+
+.btn-red {
+  background: linear-gradient(145deg, #ff4444, #cc0000);
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 15px rgba(255, 68, 68, 0.3);
+}
+
+.btn-green {
+  background: linear-gradient(145deg, #00e676, #00c853);
+  color: #000;
+  border: none;
+  box-shadow: 0 4px 15px rgba(0, 230, 118, 0.3);
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #888;
+}
+
+.btn-ghost:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: rgba(255, 215, 0, 0.05);
+}
+
+/* ======================================== */
+/* --- BADGES --- */
+/* ======================================== */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.badge-gold {
+  background: rgba(255, 215, 0, 0.15);
+  color: var(--gold);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.badge-red {
+  background: rgba(255, 68, 68, 0.15);
+  color: var(--red);
+  border: 1px solid rgba(255, 68, 68, 0.3);
+}
+
+.badge-green {
+  background: rgba(0, 230, 118, 0.15);
+  color: var(--green);
+  border: 1px solid rgba(0, 230, 118, 0.3);
+}
+
+.badge-orange {
+  background: rgba(255, 136, 0, 0.15);
+  color: var(--orange);
+  border: 1px solid rgba(255, 136, 0, 0.3);
+}
+
+/* ======================================== */
+/* --- DIVIDERS --- */
+/* ======================================== */
+
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #333, transparent);
+  margin: 20px 0;
+}
+
+.divider-gold {
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+
+/* ======================================== */
+/* --- GRADIENT TEXT --- */
+/* ======================================== */
+
+.gradient-text {
+  background: linear-gradient(90deg, var(--gold), #ff6b6b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-green {
+  background: linear-gradient(90deg, var(--green), #00bcd4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }

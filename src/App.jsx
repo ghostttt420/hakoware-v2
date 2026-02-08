@@ -5,6 +5,7 @@ import { sendSystemEmail } from './services/emailService'
 import { getRandomQuote } from './utils/quotes' 
 import './index.css' 
 import { calculateDebt } from './utils/gameLogic'
+import { checkAchievements } from './services/achievementService'
 
 // Pages
 import LandingPage from './pages/LandingPage'
@@ -31,6 +32,13 @@ import BailoutModal from './components/Modals/BailoutModal'
 import SettleModal from './components/Modals/SettleModal'
 import PetitionModal from './components/Modals/PetitionModal'
 import FriendshipSettingsModal from './components/Modals/FriendshipSettingsModal'
+
+// NEW: Fun Features
+import AchievementShowcase from './components/AchievementShowcase'
+import ShameWall from './components/ShameWall'
+import BountyBoard from './components/BountyBoard'
+import CreateBountyModal from './components/Modals/CreateBountyModal'
+import AchievementUnlockModal from './components/Modals/AchievementUnlockModal'
 
 function App() {
   const { user, isAuthenticated, isEmailVerified } = useAuth();
@@ -60,7 +68,13 @@ function App() {
   const [toast, setToast] = useState(null)
   const [recentActivity, setRecentActivity] = useState("SYSTEM: MONITORING TRANSACTIONS...");
 
+  // NEW: Feature States
+  const [showCreateBounty, setShowCreateBounty] = useState(false);
+  const [newAchievement, setNewAchievement] = useState(null);
+  const [activeTab, setActiveTab] = useState('friends'); // 'friends', 'achievements', 'shame', 'bounties'
+
   const sfxReset = useRef(new Audio('https://www.myinstants.com/media/sounds/discord-notification.mp3'));
+  const sfxAchievement = useRef(new Audio('https://www.myinstants.com/media/sounds/level-up.mp3'));
 
   // Check for admin mode
   useEffect(() => {
@@ -148,6 +162,19 @@ function App() {
       loadData(); 
   };
 
+  // NEW: Check achievements after actions
+  const checkForAchievements = async (activityType, activityData = {}) => {
+    if (!user) return;
+    const result = await checkAchievements(user.uid, activityType, activityData);
+    if (result.newlyUnlocked && result.newlyUnlocked.length > 0) {
+      // Show the first new achievement (or queue them)
+      setNewAchievement(result.newlyUnlocked[0]);
+      // Play achievement sound
+      sfxAchievement.current.volume = 0.5;
+      sfxAchievement.current.play().catch(e => console.log("Audio Blocked:", e));
+    }
+  };
+
   const closeModal = () => {
       setSelectedFriendship(null);
       setModalType(null);
@@ -207,8 +234,36 @@ function App() {
       <MercyPanel onUpdate={loadData} />
       <BailoutHistoryPanel />
 
+      {/* NEW: Tab Navigation */}
+      <div style={tabContainerStyle}>
+        <button 
+          style={{...tabButtonStyle, ...(activeTab === 'friends' ? tabActiveStyle : {})}}
+          onClick={() => setActiveTab('friends')}
+        >
+          👥 FRIENDS
+        </button>
+        <button 
+          style={{...tabButtonStyle, ...(activeTab === 'achievements' ? tabActiveStyle : {})}}
+          onClick={() => setActiveTab('achievements')}
+        >
+          🏆 ACHIEVEMENTS
+        </button>
+        <button 
+          style={{...tabButtonStyle, ...(activeTab === 'shame' ? tabActiveStyle : {})}}
+          onClick={() => setActiveTab('shame')}
+        >
+          💀 WALL OF SHAME
+        </button>
+        <button 
+          style={{...tabButtonStyle, ...(activeTab === 'bounties' ? tabActiveStyle : {})}}
+          onClick={() => setActiveTab('bounties')}
+        >
+          🎯 BOUNTIES
+        </button>
+      </div>
+
       {/* Stats Dashboard */}
-      {!loading && <Dashboard friendships={friendships} recentActivity={recentActivity} />}
+      {!loading && activeTab === 'friends' && <Dashboard friendships={friendships} recentActivity={recentActivity} />}
       
       {/* --- ADMIN LOCK SYSTEM --- */}
       {isAdmin && (
@@ -253,11 +308,51 @@ function App() {
         </div>
       )}
 
+      {/* TAB CONTENT */}
+      {activeTab === 'achievements' && <AchievementShowcase />}
+      {activeTab === 'shame' && <ShameWall />}
+      {activeTab === 'bounties' && (
+        <BountyBoard 
+          onCreateBounty={() => {
+            // Find a friendship with debt to create bounty on
+            const targetFriendship = friendships.find(f => {
+              const isUser1 = f.myPerspective === 'user1';
+              const friendData = isUser1 ? f.user2Perspective : f.user1Perspective;
+              const friendStats = calculateDebt({
+                baseDebt: friendData.baseDebt,
+                lastInteraction: friendData.lastInteraction,
+                bankruptcyLimit: friendData.limit
+              });
+              return friendStats.totalDebt > 0;
+            });
+            if (targetFriendship) {
+              setSelectedFriendship(targetFriendship);
+              setShowCreateBounty(true);
+            } else {
+              showToast("No friends with debt to place bounty on!", "INFO");
+            }
+          }}
+        />
+      )}
+
       {/* --- MODALS --- */}
       <AddFriendModal 
         isOpen={showAddFriend}
         onClose={() => setShowAddFriend(false)}
         showToast={showToast}
+      />
+
+      <CreateBountyModal
+        isOpen={showCreateBounty}
+        onClose={() => setShowCreateBounty(false)}
+        friendship={selectedFriendship}
+        showToast={showToast}
+        onBountyCreated={() => checkForAchievements('BOUNTY_CREATED')}
+      />
+
+      <AchievementUnlockModal
+        achievement={newAchievement}
+        onClose={() => setNewAchievement(null)}
       />
 
       {(isAdmin && adminUnlocked) && (
@@ -324,5 +419,36 @@ function App() {
     </div>
   )
 }
+
+// Tab Styles
+const tabContainerStyle = {
+  display: 'flex',
+  gap: '10px',
+  padding: '0 0 20px 0',
+  overflowX: 'auto',
+  borderBottom: '1px solid #222',
+  marginBottom: '20px'
+};
+
+const tabButtonStyle = {
+  padding: '12px 24px',
+  background: 'transparent',
+  border: '1px solid #333',
+  borderRadius: '8px',
+  color: '#666',
+  fontSize: '0.85rem',
+  fontWeight: 'bold',
+  cursor: 'pointer',
+  whiteSpace: 'nowrap',
+  transition: 'all 0.3s ease',
+  fontFamily: 'inherit'
+};
+
+const tabActiveStyle = {
+  background: 'linear-gradient(145deg, #1a1a1a, #0a0a0a)',
+  borderColor: '#ffd700',
+  color: '#ffd700',
+  boxShadow: '0 0 15px rgba(255, 215, 0, 0.2)'
+};
 
 export default App
