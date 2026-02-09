@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { MicIcon, StopIcon, PlayIcon, TrashIcon } from '../icons/Icons';
+import { sendVoiceNote } from '../../services/voiceNoteService';
+import { performCheckin } from '../../services/checkinService';
 
 const VoiceCheckinModal = ({ isOpen, onClose, friendship, showToast, onCheckinComplete }) => {
   const { user } = useAuth();
@@ -107,21 +109,38 @@ const VoiceCheckinModal = ({ isOpen, onClose, friendship, showToast, onCheckinCo
 
     setLoading(true);
     
-    // In a real implementation, you would upload the audioBlob to storage
-    // and get a URL, then pass that to the checkin service
-    // For now, we'll just simulate a checkin with voice proof
-    
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // First, perform the checkin
+      const checkinResult = await performCheckin(friendship.id, user.uid, 'Voice note check-in');
       
-      showToast('Voice check-in submitted! Debt reduced by 2 APR.', 'SUCCESS');
-      onCheckinComplete?.();
-      onClose();
-      
-      // Reset
-      deleteRecording();
+      if (!checkinResult.success) {
+        showToast(checkinResult.message || 'Check-in failed', 'ERROR');
+        setLoading(false);
+        return;
+      }
+
+      // Then send the voice note to the friend
+      const friend = isUser1 ? friendship.user2 : friendship.user1;
+      const voiceResult = await sendVoiceNote(
+        friendship.id,
+        user.uid,
+        user.displayName || 'Anonymous',
+        friend.userId,
+        audioBlob
+      );
+
+      if (voiceResult.success) {
+        showToast(`Check-in sent! ${checkinResult.message}`, 'SUCCESS');
+        onCheckinComplete?.();
+        onClose();
+        deleteRecording();
+      } else {
+        showToast('Check-in saved but voice note failed to send', 'WARNING');
+        onCheckinComplete?.();
+        onClose();
+      }
     } catch (error) {
+      console.error('Error submitting voice check-in:', error);
       showToast('Failed to submit check-in', 'ERROR');
     }
     
