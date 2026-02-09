@@ -3,6 +3,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { getUserAchievements, RARITY_TIERS, ACHIEVEMENTS } from '../services/achievementService';
 import { TrophyIcon, LockIcon } from './icons/Icons';
 import AchievementIcon from './AchievementIcon';
+import { AchievementSkeleton } from './Skeleton';
+import { EmptyAchievements } from './EmptyState';
 
 const AchievementShowcase = () => {
   const { user } = useAuth();
@@ -39,11 +41,7 @@ const AchievementShowcase = () => {
   };
 
   if (loading) {
-    return (
-      <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>
-        Loading Collection...
-      </div>
-    );
+    return <AchievementSkeleton />;
   }
 
   return (

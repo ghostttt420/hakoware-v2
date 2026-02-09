@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { calculateDebt, calculateCreditScore, getDebtStatus } from '../utils/gameLogic';
 import CountUp from './CountUp';
 import { SkullIcon, CrownIcon, FlameIcon, SettingsIcon, MicIcon, AlertIcon, RouletteIcon } from './icons/Icons';
@@ -335,57 +336,52 @@ const NenCard = ({
       ) : (
         <div style={buttonRowStyle}>
           {/* Main Action - Always visible */}
-          <button 
+          <ActionButton 
             style={{
-              ...actionButtonStyle,
               background: btnStyle.background,
               color: btnStyle.color,
               borderColor: btnStyle.borderColor,
               flex: 1.5
             }}
             onClick={() => onAction(actionType, data)}
-          >
-            {btnText}
-          </button>
+            label={btnText}
+          />
           
           {/* Bailout - If friend has debt */}
           {friendData && friendStats.totalDebt > 0 && (
-            <button 
+            <ActionButton 
               style={{
-                ...actionButtonStyle,
                 flex: 1,
                 background: friendIsBankrupt ? 'rgba(255,68,68,0.1)' : 'rgba(0,230,118,0.1)',
                 color: friendIsBankrupt ? '#ff4444' : '#00e676',
                 borderColor: friendIsBankrupt ? '#ff4444' : '#00e676'
               }}
               onClick={() => onAction('BAILOUT', data)}
-            >
-              {friendIsBankrupt ? 'BAILOUT' : 'HELP'}
-            </button>
+              label={friendIsBankrupt ? 'BAILOUT' : 'HELP'}
+            />
           )}
           
           {/* Icon Buttons Group */}
           <div style={iconButtonGroupStyle}>
             {/* Voice Check-in */}
             {actionType === 'CHECKIN' && (
-              <button 
-                style={{ ...iconActionButtonStyle, borderColor: '#444' }}
+              <IconButton 
                 onClick={() => onAction('VOICE_CHECKIN', data)}
+                icon={<MicIcon size={18} color="#888" />}
+                borderColor="#444"
                 title="Voice Check-in"
-              >
-                <MicIcon size={18} color="#888" />
-              </button>
+              />
             )}
             
             {/* Debt Roulette - show when in debt but not bankrupt */}
             {myStats.totalDebt > 0 && !iAmBankrupt && (
-              <button 
-                style={{ ...iconActionButtonStyle, borderColor: '#ff00ff', background: 'rgba(255,0,255,0.1)' }}
+              <IconButton 
                 onClick={() => onAction('ROULETTE', data)}
+                icon={<RouletteIcon size={18} color="#ff00ff" />}
+                borderColor="#ff00ff"
+                bgColor="rgba(255,0,255,0.1)"
                 title="Debt Roulette"
-              >
-                <RouletteIcon size={18} color="#ff00ff" />
-              </button>
+              />
             )}
           </div>
         </div>
@@ -401,9 +397,14 @@ const cardContainerStyle = {
   borderRadius: '16px',
   padding: '20px',
   position: 'relative',
-  transition: 'all 0.3s ease',
+  transition: 'all 0.2s ease',
   backdropFilter: 'blur(10px)',
-  WebkitBackdropFilter: 'blur(10px)'
+  WebkitBackdropFilter: 'blur(10px)',
+  ':hover': {
+    borderColor: '#444',
+    transform: 'translateY(-2px)',
+    boxShadow: '0 8px 24px rgba(0,0,0,0.4)'
+  }
 };
 
 const headerStyle = {
@@ -540,8 +541,16 @@ const actionButtonStyle = {
   cursor: 'pointer',
   textTransform: 'uppercase',
   letterSpacing: '1px',
-  transition: 'all 0.2s',
-  fontFamily: 'inherit'
+  transition: 'all 0.15s ease',
+  fontFamily: 'inherit',
+  ':hover': {
+    transform: 'translateY(-2px)',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.4)'
+  },
+  ':active': {
+    transform: 'translateY(0)',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+  }
 };
 
 const iconActionButtonStyle = {
@@ -553,7 +562,14 @@ const iconActionButtonStyle = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  transition: 'all 0.2s'
+  transition: 'all 0.15s ease',
+  ':hover': {
+    transform: 'scale(1.05)',
+    background: '#222'
+  },
+  ':active': {
+    transform: 'scale(0.95)'
+  }
 };
 
 const adminButtonStyle = {
@@ -567,6 +583,58 @@ const adminButtonStyle = {
   textTransform: 'uppercase',
   letterSpacing: '1px',
   fontFamily: 'inherit'
+};
+
+// Interactive Button Components with hover states
+const ActionButton = ({ style, onClick, label }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const [isPressed, setIsPressed] = useState(false);
+
+  return (
+    <button
+      style={{
+        ...actionButtonStyle,
+        ...style,
+        transform: isPressed ? 'translateY(0)' : isHovered ? 'translateY(-2px)' : 'translateY(0)',
+        boxShadow: isPressed 
+          ? '0 2px 4px rgba(0,0,0,0.2)' 
+          : isHovered 
+            ? '0 4px 12px rgba(0,0,0,0.4)' 
+            : 'none'
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => { setIsHovered(false); setIsPressed(false); }}
+      onMouseDown={() => setIsPressed(true)}
+      onMouseUp={() => setIsPressed(false)}
+      onClick={onClick}
+    >
+      {label}
+    </button>
+  );
+};
+
+const IconButton = ({ onClick, icon, borderColor, bgColor = '#1a1a1a', title }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const [isPressed, setIsPressed] = useState(false);
+
+  return (
+    <button
+      style={{
+        ...iconActionButtonStyle,
+        borderColor,
+        background: isHovered ? '#222' : bgColor,
+        transform: isPressed ? 'scale(0.95)' : isHovered ? 'scale(1.05)' : 'scale(1)'
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => { setIsHovered(false); setIsPressed(false); }}
+      onMouseDown={() => setIsPressed(true)}
+      onMouseUp={() => setIsPressed(false)}
+      onClick={onClick}
+      title={title}
+    >
+      {icon}
+    </button>
+  );
 };
 
 export default NenCard;
