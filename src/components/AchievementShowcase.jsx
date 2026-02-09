@@ -51,7 +51,7 @@ const AchievementShowcase = () => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
           <TrophyIcon size={32} color="#ffd700" />
           <div>
-            <h2 style={{ margin: 0, color: '#ffd700', fontSize: '1.3rem' }}>COLLECTION PLAQUES</h2>
+            <h2 style={{ margin: 0, color: '#ffd700', fontSize: '1.3rem' }}>Collection plaques</h2>
             <p style={{ margin: '5px 0 0 0', color: '#888', fontSize: '0.8rem' }}>
               {unlockedCount} of {totalCount} Unlocked • {totalPoints} Aura Points
             </p>
@@ -71,7 +71,7 @@ const AchievementShowcase = () => {
           style={{ ...filterButtonStyle, ...(selectedRarity === 'all' ? filterActiveStyle : {}) }}
           onClick={() => setSelectedRarity('all')}
         >
-          ALL ({unlockedCount})
+          All ({unlockedCount})
         </button>
         {Object.entries(RARITY_TIERS).map(([key, tier]) => (
           <button

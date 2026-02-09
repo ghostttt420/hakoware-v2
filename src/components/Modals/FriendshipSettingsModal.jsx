@@ -164,7 +164,7 @@ const FriendshipSettingsModal = ({ isOpen, onClose, friendship, showToast, onUpd
     <div style={overlayStyle}>
       <div style={modalStyle}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h2 style={{ color: '#ffd700', margin: 0 }}>FRIENDSHIP SETTINGS</h2>
+          <h2 style={{ color: '#ffd700', margin: 0 }}>Friendship settings</h2>
           <button 
             onClick={onClose}
             style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '5px' }}

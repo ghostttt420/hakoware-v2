@@ -54,7 +54,7 @@ const AuraMarketplace = ({ onBailout }) => {
         onClick={() => setExpanded(!expanded)}
         style={headerStyle}
       >
-        <span>💸 AURA MARKETPLACE</span>
+        <span>💸 Aura marketplace</span>
         <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ color: '#00e676', fontSize: '0.8rem' }}>
             {totalDebtAvailable} APR available

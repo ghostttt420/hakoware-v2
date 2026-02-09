@@ -82,7 +82,7 @@ const AuraWallet = () => {
             <DollarIcon size={28} color="#000" />
           </div>
           <div>
-            <h2 style={{ margin: 0, color: '#ffd700', fontSize: '1.3rem' }}>AURA WALLET</h2>
+            <h2 style={{ margin: 0, color: '#ffd700', fontSize: '1.3rem' }}>Aura wallet</h2>
             <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '0.75rem' }}>
               Spendable Currency • Earn & Use
             </p>
@@ -94,7 +94,7 @@ const AuraWallet = () => {
           <span style={{ color: '#ffd700', fontSize: '2.5rem', fontWeight: 'bold' }}>
             {balance}
           </span>
-          <span style={{ color: '#888', fontSize: '0.9rem' }}>AURA</span>
+          <span style={{ color: '#888', fontSize: '0.9rem' }}>Aura</span>
         </div>
       </div>
 

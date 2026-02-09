@@ -180,7 +180,7 @@ const FriendChallenges = ({ friendships = [], showToast }) => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <TargetIcon size={28} color="#9c27b0" />
           <div>
-            <h2 style={{ margin: 0, color: '#9c27b0', fontSize: '1.2rem' }}>FRIEND CHALLENGES</h2>
+            <h2 style={{ margin: 0, color: '#ffd700', fontSize: '1.2rem' }}>Friend challenges</h2>
             <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '0.75rem' }}>
               Compete with friends • Winner takes all
             </p>
@@ -191,7 +191,7 @@ const FriendChallenges = ({ friendships = [], showToast }) => {
           onClick={() => setShowCreateModal(true)}
           style={createButtonStyle}
         >
-          + NEW CHALLENGE
+          + New challenge
         </button>
       </div>
 
@@ -219,13 +219,13 @@ const FriendChallenges = ({ friendships = [], showToast }) => {
                   onClick={() => respondToChallenge(challenge.id, true)}
                   style={{ ...actionButtonStyle, background: '#00e676', color: '#000' }}
                 >
-                  ACCEPT
+                  Accept
                 </button>
                 <button 
                   onClick={() => respondToChallenge(challenge.id, false)}
                   style={{ ...actionButtonStyle, background: '#333', color: '#888' }}
                 >
-                  DECLINE
+                  Decline
                 </button>
               </div>
             </div>
@@ -426,7 +426,7 @@ const FriendChallenges = ({ friendships = [], showToast }) => {
                 onClick={() => setShowCreateModal(false)}
                 style={{ ...modalActionButtonStyle, background: '#333', color: '#888' }}
               >
-                CANCEL
+                Cancel
               </button>
               <button 
                 onClick={createChallenge}
@@ -439,7 +439,7 @@ const FriendChallenges = ({ friendships = [], showToast }) => {
                   cursor: selectedFriend ? 'pointer' : 'not-allowed'
                 }}
               >
-                ISSUE CHALLENGE
+                Issue challenge
               </button>
             </div>
           </div>

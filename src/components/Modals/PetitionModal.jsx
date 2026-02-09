@@ -179,7 +179,7 @@ const PetitionModal = ({ isOpen, onClose, contract, friendship, showToast }) => 
         }}>
             <div>
                 <h2 style={{color: color, fontSize: '2rem', borderBottom: `2px solid ${color}`}}>{title}</h2>
-                <p>HAKOWARE CONSUMER FINANCE</p>
+                <p>Hakoware Consumer Finance</p>
             </div>
             <div>
                 <div style={{fontSize: '5rem'}}>{mascot}</div>

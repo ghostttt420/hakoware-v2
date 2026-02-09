@@ -110,7 +110,7 @@ const DebtRouletteModal = ({ isOpen, onClose, friendship, showToast, onRouletteC
           <div style={iconContainerStyle}>
             <RefreshIcon size={32} color="#ff00ff" />
           </div>
-          <h2 style={{ margin: '10px 0 5px 0', color: '#ff00ff' }}>DEBT ROULETTE</h2>
+          <h2 style={{ margin: '10px 0 5px 0', color: '#ff00ff' }}>Debt roulette</h2>
           <p style={{ margin: 0, color: '#888', fontSize: '0.85rem' }}>
             Risk it all for a chance at freedom
           </p>
@@ -118,7 +118,7 @@ const DebtRouletteModal = ({ isOpen, onClose, friendship, showToast, onRouletteC
 
         {/* Current Debt Display */}
         <div style={debtDisplayStyle}>
-          <span style={{ color: '#666', fontSize: '0.75rem' }}>CURRENT DEBT</span>
+          <span style={{ color: '#666', fontSize: '0.75rem' }}>Current debt</span>
           <span style={{ color: '#fff', fontSize: '2rem', fontWeight: 'bold' }}>
             {currentDebt} APR
           </span>

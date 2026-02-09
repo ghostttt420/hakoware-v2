@@ -108,7 +108,7 @@ const BountyBoard = ({ onCreateBounty, friendships = [] }) => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <TargetIcon size={28} color="#ff8800" />
           <div>
-            <h2 style={{ margin: 0, color: '#ff8800', fontSize: '1.3rem' }}>BOUNTY BOARD</h2>
+            <h2 style={{ margin: 0, color: '#ff8800', fontSize: '1.3rem' }}>Bounty board</h2>
             <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '0.75rem' }}>
               Hunt Down Ghosts • Earn Rewards
             </p>
@@ -130,21 +130,21 @@ const BountyBoard = ({ onCreateBounty, friendships = [] }) => {
             <span style={{ color: '#ff8800', fontSize: '1.3rem', fontWeight: 'bold' }}>
               {stats.huntsCompleted}
             </span>
-            <span style={{ color: '#666', fontSize: '0.65rem' }}>HUNTS</span>
+            <span style={{ color: '#666', fontSize: '0.65rem' }}>Hunts</span>
           </div>
           <div style={{ width: '1px', height: '25px', background: '#333' }} />
           <div style={statItemStyle}>
             <span style={{ color: '#ffd700', fontSize: '1.3rem', fontWeight: 'bold' }}>
               {stats.totalEarned}
             </span>
-            <span style={{ color: '#666', fontSize: '0.65rem' }}>EARNED</span>
+            <span style={{ color: '#666', fontSize: '0.65rem' }}>Earned</span>
           </div>
           <div style={{ width: '1px', height: '25px', background: '#333' }} />
           <div style={statItemStyle}>
             <span style={{ color: '#00e676', fontSize: '1.3rem', fontWeight: 'bold' }}>
               {bounties.length}
             </span>
-            <span style={{ color: '#666', fontSize: '0.65rem' }}>ACTIVE</span>
+            <span style={{ color: '#666', fontSize: '0.65rem' }}>Active</span>
           </div>
         </div>
       )}
@@ -180,7 +180,7 @@ const BountyBoard = ({ onCreateBounty, friendships = [] }) => {
                   <span style={{ color: '#ffd700', fontWeight: 'bold', fontSize: '1.1rem' }}>
                     {bounty.amount}
                   </span>
-                  <span style={{ color: '#666', fontSize: '0.7rem' }}>AURA</span>
+                  <span style={{ color: '#666', fontSize: '0.7rem' }}>Aura</span>
                 </div>
 
                 {/* Details */}
@@ -246,7 +246,7 @@ const BountyBoard = ({ onCreateBounty, friendships = [] }) => {
           <div style={modalContentStyle} onClick={(e) => e.stopPropagation()}>
             <div style={{ textAlign: 'center', marginBottom: '20px' }}>
               <div style={{ fontSize: '3rem', marginBottom: '10px' }}>🎯</div>
-              <h3 style={{ margin: '0 0 10px 0', color: '#ff8800' }}>CONFIRM BOUNTY CLAIM</h3>
+              <h3 style={{ margin: '0 0 10px 0', color: '#ff8800' }}>Confirm bounty claim</h3>
               <p style={{ margin: 0, color: '#888', fontSize: '0.9rem' }}>
                 You are about to claim a bounty on <strong style={{ color: '#fff' }}>{confirmBounty.targetName}</strong>
               </p>

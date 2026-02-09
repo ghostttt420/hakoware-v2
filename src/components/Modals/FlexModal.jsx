@@ -48,7 +48,7 @@ const FlexModal = ({ isOpen, onClose, friendship, showToast, onFlexComplete }) =
           <div style={crownContainerStyle}>
             <CrownIcon size={40} color="#ffd700" />
           </div>
-          <h2 style={{ margin: '15px 0 5px 0', color: '#ffd700' }}>FLEX STATUS</h2>
+          <h2 style={{ margin: '15px 0 5px 0', color: '#ffd700' }}>Flex status</h2>
           <p style={{ margin: 0, color: '#888', fontSize: '0.9rem' }}>
             You're debt free! Time to celebrate.
           </p>

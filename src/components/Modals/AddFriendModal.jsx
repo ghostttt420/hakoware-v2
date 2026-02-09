@@ -29,7 +29,7 @@ const AddFriendModal = ({ isOpen, onClose, showToast }) => {
   return (
     <div style={overlayStyle}>
       <div style={modalStyle}>
-        <h2 style={{ color: '#ffd700', marginTop: 0 }}>ADD FRIEND</h2>
+        <h2 style={{ color: '#ffd700', marginTop: 0 }}>Add friend</h2>
         <p style={{ color: '#888', fontSize: '0.85rem', marginBottom: '20px' }}>
           Enter your friend's email to send them an invitation.
         </p>

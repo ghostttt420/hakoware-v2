@@ -106,7 +106,7 @@ const BailoutModal = ({ isOpen, onClose, friendship, showToast, onBailoutComplet
   return (
     <div style={overlayStyle}>
       <div style={modalStyle}>
-        <h2 style={{ color: '#00e676', marginTop: 0 }}>AURA BAILOUT</h2>
+        <h2 style={{ color: '#00e676', marginTop: 0 }}>Aura bailout</h2>
         
         <div style={{ marginBottom: '20px' }}>
           <p style={{ color: '#888', marginBottom: '15px' }}>

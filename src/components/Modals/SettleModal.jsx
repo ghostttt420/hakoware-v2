@@ -180,7 +180,7 @@ const SettleModal = ({ isOpen, onClose, contract, friendship, onRefresh, showToa
            DELETE CONTRACT
         </button>
         
-        <button onClick={onClose} style={{background: '#222', color: '#fff'}}>CANCEL</button>
+        <button onClick={onClose} style={{background: '#222', color: '#fff'}}>Cancel</button>
       </div>
     </div>
   );

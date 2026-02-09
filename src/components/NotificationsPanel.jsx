@@ -138,7 +138,7 @@ const NotificationsPanel = ({ onUpdate, isOpen, onUnreadCountChange, onClose }) 
             )}
           </div>
           <span style={{ color: unreadCount > 0 ? '#ffd700' : '#888' }}>
-            NOTIFICATIONS
+            Notifications
           </span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>

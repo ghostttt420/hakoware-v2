@@ -60,7 +60,7 @@ const CreateBountyModal = ({ isOpen, onClose, friendship, showToast, onBountyCre
         {/* Header */}
         <div style={headerStyle}>
           <TargetIcon size={32} color="#ff8800" />
-          <h2 style={{ margin: '10px 0 0 0', color: '#ff8800' }}>PLACE BOUNTY</h2>
+          <h2 style={{ margin: '10px 0 0 0', color: '#ff8800' }}>Place bounty</h2>
           <p style={{ margin: '5px 0 0 0', color: '#666', fontSize: '0.85rem' }}>
             Put a price on {target.displayName}'s head
           </p>

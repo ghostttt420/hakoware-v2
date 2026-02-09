@@ -120,7 +120,7 @@ const GhostPredictor = ({ friendships }) => {
           <CrystalBallIcon size={28} color="#9c27b0" />
         </div>
         <div>
-          <h2 style={{ margin: 0, color: '#9c27b0', fontSize: '1.2rem' }}>GHOST PREDICTOR</h2>
+          <h2 style={{ margin: 0, color: '#ffd700', fontSize: '1.2rem' }}>Ghost predictor</h2>
           <p style={{ margin: '5px 0 0 0', color: '#666', fontSize: '0.75rem' }}>
             AI-powered bankruptcy forecasting
           </p>
@@ -170,7 +170,7 @@ const GhostPredictor = ({ friendships }) => {
       {/* Risk Meter */}
       <div style={riskMeterContainerStyle}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-          <span style={{ fontSize: '0.7rem', color: '#666' }}>BANKRUPTCY RISK</span>
+          <span style={{ fontSize: '0.7rem', color: '#666' }}>Bankruptcy risk</span>
           <span style={{ fontSize: '0.7rem', color: getRiskColor(mostAtRisk.riskLevel) }}>
             {mostAtRisk.riskScore}%
           </span>

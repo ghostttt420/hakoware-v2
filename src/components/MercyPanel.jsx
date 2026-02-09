@@ -93,7 +93,7 @@ const MercyPanel = ({ onUpdate }) => {
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <ShieldIcon size={18} color="#ff4444" />
-          <span style={{ color: '#ff6666' }}>MERCY PETITIONS</span>
+          <span style={{ color: '#ff6666' }}>Mercy petitions</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <span style={badgeStyle}>{requests.length}</span>

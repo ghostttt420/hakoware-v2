@@ -54,7 +54,7 @@ const MercyRequestModal = ({ isOpen, onClose, friendship, showToast, onRequestCo
   return (
     <div style={overlayStyle}>
       <div style={modalStyle}>
-        <h2 style={{ color: '#ff4444', marginTop: 0 }}>BEG FOR AURA</h2>
+        <h2 style={{ color: '#ff4444', marginTop: 0 }}>Beg for mercy</h2>
         
         <div style={{ marginBottom: '20px' }}>
           <div style={{

@@ -20,11 +20,11 @@ const Arena = ({ friendships, showToast, onCreateBounty }) => {
   const [activeView, setActiveView] = useState('hub');
 
   const views = {
-    hub: { label: 'ARENA', component: null },
-    shame: { label: 'WALL OF SHAME', component: ShameWall },
-    bounties: { label: 'BOUNTIES', component: BountyBoard },
-    challenges: { label: 'CHALLENGES', component: FriendChallenges },
-    rankings: { label: 'RANKINGS', component: Leaderboard }
+    hub: { label: 'Arena', component: null },
+    shame: { label: 'Wall of Shame', component: ShameWall },
+    bounties: { label: 'Bounties', component: BountyBoard },
+    challenges: { label: 'Challenges', component: FriendChallenges },
+    rankings: { label: 'Rankings', component: Leaderboard }
   };
 
   const ActiveComponent = views[activeView]?.component;

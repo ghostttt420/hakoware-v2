@@ -169,7 +169,7 @@ const DebtTrendChart = ({ data = [] }) => {
     <div style={containerStyle}>
       <div style={headerStyle}>
         <ChartIcon size={24} color="#ff4444" />
-        <h3 style={{ margin: 0, color: '#fff', fontSize: '1rem' }}>DEBT TREND</h3>
+        <h3 style={{ margin: 0, color: '#fff', fontSize: '1rem' }}>Debt trend</h3>
         <span style={{ 
           color: '#ff4444', 
           fontSize: '0.85rem',

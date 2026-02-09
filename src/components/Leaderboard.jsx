@@ -179,7 +179,7 @@ const Leaderboard = () => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <TrophyIcon size={32} color="#ffd700" />
           <div>
-            <h2 style={{ margin: 0, color: '#ffd700', fontSize: '1.3rem' }}>GLOBAL RANKINGS</h2>
+            <h2 style={{ margin: 0, color: '#ffd700', fontSize: '1.3rem' }}>Global rankings</h2>
             <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '0.75rem' }}>
               Weekly Leaderboards • Top Performers
             </p>
@@ -188,7 +188,7 @@ const Leaderboard = () => {
         
         {userRank && (
           <div style={userRankStyle}>
-            <span style={{ fontSize: '0.7rem', color: '#888' }}>YOUR RANK</span>
+            <span style={{ fontSize: '0.7rem', color: '#888' }}>Your rank</span>
             <span style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#ffd700' }}>
               #{userRank}
             </span>

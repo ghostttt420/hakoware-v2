@@ -26,8 +26,8 @@ const AdminLock = ({ onUnlock }) => {
         boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
     }}>
         <div style={{fontSize: '3rem', marginBottom: '10px'}}>🔒</div>
-        <h3 style={{color: '#ffd700', marginTop: 0, fontFamily: 'var(--font-main)'}}>RESTRICTED ACCESS</h3>
-        <p style={{color: '#666', fontSize: '0.8rem'}}>ENTER ADMIN OVERRIDE CODE</p>
+        <h3 style={{color: '#ffd700', marginTop: 0, fontFamily: 'var(--font-main)'}}>Restricted access</h3>
+        <p style={{color: '#666', fontSize: '0.8rem'}}>Enter admin override code</p>
         
         <input 
             type="password" 

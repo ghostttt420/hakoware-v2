@@ -119,7 +119,7 @@ const ShameWall = () => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <SkullIcon size={28} color="#ff4444" />
           <div>
-            <h2 style={{ margin: 0, color: '#ff4444', fontSize: '1.3rem' }}>WALL OF SHAME</h2>
+            <h2 style={{ margin: 0, color: '#ff4444', fontSize: '1.3rem' }}>Wall of Shame</h2>
             <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '0.75rem' }}>
               Public Bankruptcies • Live Feed
             </p>
@@ -138,14 +138,14 @@ const ShameWall = () => {
           <span style={{ color: '#ff4444', fontSize: '1.5rem', fontWeight: 'bold' }}>
             {bankruptcies.length}
           </span>
-          <span style={{ color: '#666', fontSize: '0.7rem' }}>CURRENTLY BANKRUPT</span>
+          <span style={{ color: '#666', fontSize: '0.7rem' }}>Currently bankrupt</span>
         </div>
         <div style={{ width: '1px', height: '30px', background: '#333' }} />
         <div style={statItemStyle}>
           <span style={{ color: '#ffd700', fontSize: '1.5rem', fontWeight: 'bold' }}>
             {bankruptcies.reduce((acc, b) => acc + (b.debtAtBankruptcy || 0), 0)}
           </span>
-          <span style={{ color: '#666', fontSize: '0.7rem' }}>TOTAL APR LOST</span>
+          <span style={{ color: '#666', fontSize: '0.7rem' }}>Total APR lost</span>
         </div>
         <div style={{ width: '1px', height: '30px', background: '#333' }} />
         <div style={statItemStyle}>
@@ -154,7 +154,7 @@ const ShameWall = () => {
               ? Math.round(bankruptcies.reduce((acc, b) => acc + (b.debtAtBankruptcy || 0), 0) / bankruptcies.length)
               : 0}
           </span>
-          <span style={{ color: '#666', fontSize: '0.7rem' }}>AVG DEBT</span>
+          <span style={{ color: '#666', fontSize: '0.7rem' }}>Avg debt</span>
         </div>
       </div>
 
@@ -233,7 +233,7 @@ const ShameWall = () => {
               <div style={actionsStyle}>
                 <button style={shameButtonStyle}>
                   <FlameIcon size={16} color="#ff4444" />
-                  <span style={{ fontSize: '0.75rem' }}>SHAME</span>
+                  <span style={{ fontSize: '0.75rem' }}>Shame</span>
                 </button>
                 <button style={roastButtonStyle}>
                   <MessageIcon size={16} color="#888" />

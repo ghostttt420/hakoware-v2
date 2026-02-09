@@ -140,7 +140,7 @@ const Tools = ({ friendships }) => {
             <CrystalBallIcon size={24} color="#fff" />
           </div>
           <div>
-            <h2 style={{ margin: 0, color: '#fff', fontSize: '1.3rem' }}>TOOLS</h2>
+            <h2 style={{ margin: 0, color: '#fff', fontSize: '1.3rem' }}>Tools</h2>
             <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '0.75rem' }}>
               Analyze • Predict • Optimize
             </p>

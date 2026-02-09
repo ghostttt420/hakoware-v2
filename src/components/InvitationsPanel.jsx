@@ -41,7 +41,7 @@ const InvitationsPanel = ({ onUpdate }) => {
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <MailIcon size={18} color="#888" />
-          <span>INVITATIONS</span>
+          <span>Invitations</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           {invitations.received.length > 0 && (

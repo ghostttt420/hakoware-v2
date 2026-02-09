@@ -92,7 +92,7 @@ const NenSealedStatus = ({ friendships = [] }) => {
         
         <div style={sealTextStyle}>
           <h3 style={{ margin: '0 0 5px 0', color: '#ff4444', fontSize: '1.1rem' }}>
-            NEN SEALED
+            Nen sealed
           </h3>
           <p style={{ margin: 0, color: '#888', fontSize: '0.75rem' }}>
             Bankruptcy consequences in effect
@@ -125,7 +125,7 @@ const NenSealedStatus = ({ friendships = [] }) => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
           <ClockIcon size={16} color="#ff8800" />
           <span style={{ color: '#ff8800', fontSize: '0.8rem', fontWeight: 'bold' }}>
-            RESTORATION COUNTDOWN
+            Restoration countdown
           </span>
         </div>
         

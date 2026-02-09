@@ -52,7 +52,7 @@ const BailoutHistoryPanel = () => {
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <DollarIcon size={18} color="#00e676" />
-          <span>BAILOUT HISTORY</span>
+          <span>Bailout history</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <span style={{ color: '#666', fontSize: '0.8rem' }}>
@@ -78,13 +78,13 @@ const BailoutHistoryPanel = () => {
             borderRadius: '8px'
           }}>
             <div style={{ flex: 1, textAlign: 'center' }}>
-              <div style={{ fontSize: '0.7rem', color: '#555', marginBottom: '4px' }}>GIVEN</div>
+              <div style={{ fontSize: '0.7rem', color: '#555', marginBottom: '4px' }}>Given</div>
               <div style={{ color: '#ff4444', fontWeight: 'bold', fontSize: '1.1rem' }}>
                 -{totalGiven} APR
               </div>
             </div>
             <div style={{ flex: 1, textAlign: 'center' }}>
-              <div style={{ fontSize: '0.7rem', color: '#555', marginBottom: '4px' }}>RECEIVED</div>
+              <div style={{ fontSize: '0.7rem', color: '#555', marginBottom: '4px' }}>Received</div>
               <div style={{ color: '#00e676', fontWeight: 'bold', fontSize: '1.1rem' }}>
                 +{totalReceived} APR
               </div>
