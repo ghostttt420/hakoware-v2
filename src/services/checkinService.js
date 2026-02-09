@@ -228,10 +228,14 @@ export const applyDailyDebtAccrual = async (friendshipId) => {
   }
 };
 
+// Alias for backward compatibility
+export const calculateDailyInterest = applyDailyDebtAccrual;
+
 export default {
   performCheckin,
   hasCheckedInToday,
   getCheckinHistory,
   calculateCurrentDebt,
-  applyDailyDebtAccrual
+  applyDailyDebtAccrual,
+  calculateDailyInterest
 };
