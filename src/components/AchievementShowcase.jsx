@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { getUserAchievements, RARITY_TIERS, ACHIEVEMENTS } from '../services/achievementService';
 import { TrophyIcon, LockIcon } from './icons/Icons';
+import AchievementIcon from './AchievementIcon';
 
 const AchievementShowcase = () => {
   const { user } = useAuth();
@@ -116,7 +117,11 @@ const AchievementShowcase = () => {
                 background: isUnlocked ? `${rarityStyle.color}15` : '#111',
                 borderColor: isUnlocked ? rarityStyle.color : '#222'
               }}>
-                <span style={{ fontSize: '2rem' }}>{achievement.icon}</span>
+                <AchievementIcon 
+                  icon={achievement.id} 
+                  size={36} 
+                  color={isUnlocked ? rarityStyle.color : '#444'} 
+                />
                 {!isUnlocked && (
                   <div style={lockOverlayStyle}>
                     <LockIcon size={20} color="#444" />

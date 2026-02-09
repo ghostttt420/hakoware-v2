@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { RARITY_TIERS } from '../../services/achievementService';
+import AchievementIcon from '../AchievementIcon';
 
 const AchievementUnlockModal = ({ achievement, onClose }) => {
   const [visible, setVisible] = useState(false);
@@ -56,7 +57,11 @@ const AchievementUnlockModal = ({ achievement, onClose }) => {
           borderColor: rarityStyle.color,
           boxShadow: `inset 0 0 30px ${rarityStyle.color}30, 0 0 30px ${rarityStyle.color}40`
         }}>
-          <span style={{ fontSize: '5rem' }}>{achievement.icon}</span>
+          <AchievementIcon 
+            icon={achievement.id} 
+            size={72} 
+            color={rarityStyle.color} 
+          />
         </div>
 
         {/* Achievement Details */}
