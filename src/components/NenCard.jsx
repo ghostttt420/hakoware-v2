@@ -116,7 +116,7 @@ const NenCard = ({
   if (iAmClean) {
     btnText = "FLEX STATUS";
     btnStyle = { background: 'linear-gradient(135deg, #001a33, #003366)', color: '#33b5e5', borderColor: '#33b5e5' };
-    actionType = 'MERCY_REQUEST';
+    actionType = 'FLEX';
   } else if (iAmBankrupt) {
     btnText = "BEG FOR MERCY";
     btnStyle = { background: 'linear-gradient(135deg, #330000, #1a0000)', color: '#ff4444', borderColor: '#ff4444' };
@@ -356,6 +356,17 @@ const NenCard = ({
               title="Voice Check-in"
             >
               <MicIcon size={18} color="#888" />
+            </button>
+          )}
+          
+          {/* Debt Roulette - show when in debt but not bankrupt */}
+          {myStats.totalDebt > 0 && !iAmBankrupt && (
+            <button 
+              style={{ ...iconActionButtonStyle, borderColor: '#ff00ff' }}
+              onClick={() => onAction('ROULETTE', data)}
+              title="Debt Roulette"
+            >
+              <span style={{ fontSize: '16px' }}>🎰</span>
             </button>
           )}
           
