@@ -51,7 +51,7 @@ export const createBounty = async (creatorId, creatorName, targetId, targetName,
       claimedAt: null,
       proofOfContact: null,
       createdAt: serverTimestamp(),
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days expiry
+      expiresAt: null // We'll calculate this on the client from createdAt
     });
 
     return {
@@ -68,19 +68,21 @@ export const createBounty = async (creatorId, creatorName, targetId, targetName,
 // Get all active bounties
 export const getActiveBounties = async (limit_count = 20) => {
   try {
+    // Simple query without composite index requirement
     const q = query(
       collection(db, BOUNTIES_COLLECTION),
-      where('status', '==', 'active'),
-      orderBy('amount', 'desc'),
-      limit(limit_count)
+      where('status', '==', 'active')
     );
 
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({
+    const bounties = snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data(),
       createdAt: doc.data().createdAt?.toDate?.() || new Date()
     }));
+    
+    // Sort client-side by amount (descending)
+    return bounties.sort((a, b) => (b.amount || 0) - (a.amount || 0)).slice(0, limit_count);
   } catch (error) {
     console.error('Error getting active bounties:', error);
     return [];
