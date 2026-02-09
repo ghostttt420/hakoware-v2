@@ -8,35 +8,47 @@ service cloud.firestore {
     
     // Friendships - complex access control
     match /friendships/{friendshipId} {
-      // Allow read if user is part of the friendship
+      // Allow read if user is part of the friendship (check nested userId)
       allow read: if request.auth != null && 
-        (request.auth.uid == resource.data.user1 || 
-         request.auth.uid == resource.data.user2);
+        (request.auth.uid == resource.data.user1.userId || 
+         request.auth.uid == resource.data.user2.userId);
       
       // Allow create if user is user1
       allow create: if request.auth != null && 
-        request.auth.uid == request.resource.data.user1;
+        request.auth.uid == request.resource.data.user1.userId;
       
       // Allow update if user is part of friendship
-      // AND they're not tampering with critical debt fields
       allow update: if request.auth != null &&
-        (request.auth.uid == resource.data.user1 || 
-         request.auth.uid == resource.data.user2) &&
-        // Prevent direct manipulation of baseDebt
-        request.resource.data.baseDebt == resource.data.baseDebt;
+        (request.auth.uid == resource.data.user1.userId || 
+         request.auth.uid == resource.data.user2.userId);
     }
     
     // Check-ins - users can create for their friendships
     match /checkins/{checkinId} {
       allow read: if request.auth != null &&
-        (request.auth.uid == resource.data.userId ||
-         request.auth.uid in get(/databases/$(database)/documents/friendships/$(resource.data.friendshipId)).data.users);
+        exists(/databases/$(database)/documents/friendships/$(resource.data.friendshipId)) &&
+        (request.auth.uid == get(/databases/$(database)/documents/friendships/$(resource.data.friendshipId)).data.user1.userId ||
+         request.auth.uid == get(/databases/$(database)/documents/friendships/$(resource.data.friendshipId)).data.user2.userId);
       
       allow create: if request.auth != null &&
-        request.resource.data.userId == request.auth.uid &&
-        // Ensure timestamp is recent (within last minute)
-        request.time < request.resource.data.timestamp + duration.value(60, "s") &&
-        request.time > request.resource.data.timestamp - duration.value(60, "s");
+        exists(/databases/$(database)/documents/friendships/$(request.resource.data.friendshipId)) &&
+        (request.auth.uid == get(/databases/$(database)/documents/friendships/$(request.resource.data.friendshipId)).data.user1.userId ||
+         request.auth.uid == get(/databases/$(database)/documents/friendships/$(request.resource.data.friendshipId)).data.user2.userId) &&
+        request.auth.uid == request.resource.data.userId;
+    }
+    
+    // Invitations
+    match /invitations/{invitationId} {
+      allow read: if request.auth != null && 
+        (request.auth.uid == resource.data.fromUserId || 
+         request.auth.uid == resource.data.toUserId);
+      
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.fromUserId;
+      
+      allow update: if request.auth != null && 
+        (request.auth.uid == resource.data.fromUserId || 
+         request.auth.uid == resource.data.toUserId);
     }
   }
 }
