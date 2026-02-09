@@ -1,330 +1,237 @@
-import {
-  doc,
-  getDoc,
-  updateDoc,
-  serverTimestamp,
-  Timestamp,
-  addDoc,
-  collection,
-  query,
-  where,
-  getDocs,
-  orderBy,
-  limit
-} from 'firebase/firestore';
-import { db } from './firebase';
-import { performCheckinServer } from './functionsService';
+import { collection, addDoc, serverTimestamp, query, where, getDocs, doc, getDoc, runTransaction, Timestamp } from 'firebase/firestore';
+import { db } from '../config/firebase';
 
-// Feature flag: Use server-side check-in (more secure)
-const USE_SERVER_CHECKIN = true;
+// Feature flag - set to true when functions are deployed
+const USE_SERVER_CHECKIN = false;
 
-const CHECKINS_COLLECTION = 'checkins';
-const FRIENDSHIPS_COLLECTION = 'friendships';
+const CHECK_IN_REWARD = 2; // -2% APR per check-in
 
-// Check if user has already checked in today
-export const hasCheckedInToday = async (friendshipId, userId) => {
+/**
+ * Perform a check-in for a friendship
+ * Uses Firestore transactions for atomic updates (client-side approach)
+ */
+export const performCheckin = async (friendshipId, userId, proofOfContact = '') => {
+  // Validate input
+  if (!friendshipId || !userId) {
+    throw new Error('Friendship ID and User ID are required');
+  }
+
+  const friendshipRef = doc(db, 'friendships', friendshipId);
+  
   try {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const checkinsRef = collection(db, CHECKINS_COLLECTION);
-    const q = query(
-      checkinsRef,
-      where('friendshipId', '==', friendshipId),
-      where('userId', '==', userId),
-      where('timestamp', '>=', Timestamp.fromDate(today)),
-      orderBy('timestamp', 'desc'),
-      limit(1)
-    );
-
-    const snapshot = await getDocs(q);
-    return !snapshot.empty;
+    const result = await runTransaction(db, async (transaction) => {
+      // Get current friendship data
+      const friendshipDoc = await transaction.get(friendshipRef);
+      
+      if (!friendshipDoc.exists()) {
+        throw new Error('Friendship not found');
+      }
+      
+      const friendship = friendshipDoc.data();
+      
+      // Verify user is part of this friendship
+      if (friendship.user1 !== userId && friendship.user2 !== userId) {
+        throw new Error('Unauthorized: User is not part of this friendship');
+      }
+      
+      // Check if already checked in today
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const lastCheckin = friendship.lastCheckin?.toDate?.() || new Date(0);
+      const lastCheckinDay = new Date(lastCheckin);
+      lastCheckinDay.setHours(0, 0, 0, 0);
+      
+      if (lastCheckinDay.getTime() === today.getTime()) {
+        throw new Error('Already checked in today');
+      }
+      
+      // Calculate streak
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      
+      const isConsecutive = lastCheckinDay.getTime() === yesterday.getTime();
+      const streak = isConsecutive ? (friendship.streak || 0) + 1 : 1;
+      
+      // Calculate new APR (reward for check-in)
+      const currentAPR = friendship.currentAPR || 5;
+      const newAPR = Math.max(0.1, currentAPR - CHECK_IN_REWARD); // Min 0.1%
+      
+      // Update friendship
+      transaction.update(friendshipRef, {
+        lastCheckin: serverTimestamp(),
+        streak: streak,
+        currentAPR: newAPR,
+        updatedAt: serverTimestamp()
+      });
+      
+      // Create check-in record
+      const checkinRef = doc(collection(db, 'checkins'));
+      transaction.set(checkinRef, {
+        friendshipId,
+        userId,
+        proofOfContact,
+        timestamp: serverTimestamp(),
+        streak,
+        aprReward: CHECK_IN_REWARD,
+        newAPR
+      });
+      
+      return {
+        success: true,
+        checkinId: checkinRef.id,
+        streak,
+        newAPR,
+        isConsecutive,
+        timestamp: new Date()
+      };
+    });
+    
+    return result;
+    
   } catch (error) {
-    console.error('Error checking today\'s check-in:', error);
+    console.error('Check-in transaction failed:', error);
+    throw error;
+  }
+};
+
+/**
+ * Check if user has already checked in today
+ */
+export const hasCheckedInToday = async (friendshipId, userId) => {
+  if (!friendshipId || !userId) return false;
+  
+  try {
+    const friendshipRef = doc(db, 'friendships', friendshipId);
+    const docSnap = await getDoc(friendshipRef);
+    
+    if (!docSnap.exists()) return false;
+    
+    const data = docSnap.data();
+    if (!data.lastCheckin) return false;
+    
+    // Compare dates
+    const lastCheckin = data.lastCheckin.toDate();
+    const today = new Date();
+    
+    return lastCheckin.getDate() === today.getDate() &&
+           lastCheckin.getMonth() === today.getMonth() &&
+           lastCheckin.getFullYear() === today.getFullYear();
+  } catch (error) {
+    console.error('Error checking check-in status:', error);
     return false;
   }
 };
 
-// Get last check-in date
-export const getLastCheckin = async (friendshipId, userId) => {
+/**
+ * Get check-in history for a friendship
+ */
+export const getCheckinHistory = async (friendshipId, limit = 30) => {
   try {
-    const checkinsRef = collection(db, CHECKINS_COLLECTION);
-    const q = query(
-      checkinsRef,
-      where('friendshipId', '==', friendshipId),
-      where('userId', '==', userId),
-      orderBy('timestamp', 'desc'),
-      limit(1)
+    const checkinsQuery = query(
+      collection(db, 'checkins'),
+      where('friendshipId', '==', friendshipId)
     );
-
-    const snapshot = await getDocs(q);
-    if (!snapshot.empty) {
-      return snapshot.docs[0].data();
-    }
-    return null;
-  } catch (error) {
-    console.error('Error getting last check-in:', error);
-    return null;
-  }
-};
-
-// Perform a check-in (server-side for security)
-export const performCheckin = async (friendshipId, userId, proofOfContact = null) => {
-  try {
-    // Try server-side check-in first (more secure)
-    if (USE_SERVER_CHECKIN) {
-      try {
-        const result = await performCheckinServer(friendshipId, proofOfContact);
-        return {
-          success: true,
-          debtCleared: result.debtCleared,
-          streak: result.streak,
-          message: `Check-in successful! ${result.debtCleared > 0 ? `Cleared ${result.debtCleared} APR debt.` : ''}`,
-          fromServer: true
-        };
-      } catch (serverError) {
-        console.warn('Server check-in failed, falling back to local:', serverError.message);
-        // Fall through to local check-in
-      }
-    }
-
-    // Local fallback (less secure, but works without functions deployed)
-    return await performCheckinLocal(friendshipId, userId, proofOfContact);
-  } catch (error) {
-    console.error('Error performing check-in:', error);
-    return { success: false, error: error.message };
-  }
-};
-
-// Local check-in (fallback when server functions unavailable)
-const performCheckinLocal = async (friendshipId, userId, proofOfContact = null) => {
-  // Check if already checked in today
-  const alreadyCheckedIn = await hasCheckedInToday(friendshipId, userId);
-  if (alreadyCheckedIn) {
-    return { 
-      success: false, 
-      error: 'ALREADY_CHECKED_IN',
-      message: 'You have already checked in today. Come back tomorrow!' 
-    };
-  }
-
-  const friendshipRef = doc(db, FRIENDSHIPS_COLLECTION, friendshipId);
-  const friendshipDoc = await getDoc(friendshipRef);
-
-  if (!friendshipDoc.exists()) {
-    return { success: false, error: 'Friendship not found' };
-  }
-
-  const friendship = friendshipDoc.data();
-  const isUser1 = friendship.user1?.userId === userId || friendship.user1Id === userId;
-  const perspective = isUser1 ? 'user1Perspective' : 'user2Perspective';
-  const myData = friendship[perspective];
-
-  if (!myData) {
-    return { success: false, error: 'User perspective not found' };
-  }
-
-  // Reset debt on check-in
-  const newBaseDebt = 0;
-
-  // Calculate streak
-  const lastCheckin = await getLastCheckin(friendshipId, userId);
-  let newStreak = friendship.streak || 0;
-  
-  if (lastCheckin) {
-    const lastDate = lastCheckin.timestamp.toDate();
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    yesterday.setHours(0, 0, 0, 0);
-
-    const lastCheckinDate = new Date(lastDate);
-    lastCheckinDate.setHours(0, 0, 0, 0);
-
-    if (lastCheckinDate.getTime() === yesterday.getTime()) {
-      newStreak += 1;
-    } else if (lastCheckinDate.getTime() < yesterday.getTime()) {
-      newStreak = 1;
-    }
-  } else {
-    newStreak = 1;
-  }
-
-  const now = serverTimestamp();
-
-  // Create check-in record
-  const checkinRef = await addDoc(collection(db, CHECKINS_COLLECTION), {
-    friendshipId,
-    userId,
-    timestamp: now,
-    proofOfContact,
-    debtBefore: myData.baseDebt || 0,
-    debtAfter: newBaseDebt,
-    streakAtCheckin: newStreak
-  });
-
-  // Update friendship
-  const updates = {
-    [`${perspective}.baseDebt`]: newBaseDebt,
-    [`${perspective}.lastInteraction`]: now,
-    [`${perspective}.lastCheckinId`]: checkinRef.id,
-    [`${perspective}.calculatedDebt`]: 0,
-    streak: newStreak,
-    totalCheckins: (friendship.totalCheckins || 0) + 1,
-    lastCheckinAt: now
-  };
-
-  if (newStreak > (friendship.longestStreak || 0)) {
-    updates.longestStreak = newStreak;
-  }
-
-  await updateDoc(friendshipRef, updates);
-
-  return {
-    success: true,
-    checkinId: checkinRef.id,
-    debtCleared: myData.baseDebt || 0,
-    streak: newStreak,
-    message: 'Check-in successful!',
-    fromServer: false
-  };
-};
-
-// Get check-in history for a friendship
-export const getCheckinHistory = async (friendshipId, limit_count = 50) => {
-  try {
-    const checkinsRef = collection(db, CHECKINS_COLLECTION);
-    const q = query(
-      checkinsRef,
-      where('friendshipId', '==', friendshipId),
-      orderBy('timestamp', 'desc'),
-      limit(limit_count)
-    );
-
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({
+    
+    const snapshot = await getDocs(checkinsQuery);
+    const checkins = snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
     }));
+    
+    // Sort by timestamp descending
+    checkins.sort((a, b) => b.timestamp?.toMillis() - a.timestamp?.toMillis());
+    
+    return checkins.slice(0, limit);
   } catch (error) {
-    console.error('Error getting check-in history:', error);
+    console.error('Error fetching check-in history:', error);
     return [];
   }
 };
 
-// Get check-in stats for a user across all friendships
-export const getUserCheckinStats = async (userId) => {
+/**
+ * Calculate current debt for a friendship (client-side)
+ * This is a fallback when Cloud Functions aren't available
+ */
+export const calculateCurrentDebt = (friendship) => {
+  if (!friendship) return 0;
+  
+  const {
+    baseDebt = 0,
+    lastDebtUpdate,
+    currentAPR = 5
+  } = friendship;
+  
+  if (baseDebt <= 0) return 0;
+  
+  // Calculate days since last update
+  const lastUpdate = lastDebtUpdate?.toDate?.() || friendship.createdAt?.toDate?.() || new Date();
+  const now = new Date();
+  const daysSinceUpdate = Math.floor((now - lastUpdate) / (1000 * 60 * 60 * 24));
+  
+  if (daysSinceUpdate <= 0) return baseDebt;
+  
+  // Compound interest: P * (1 + r/100)^t
+  const debtMultiplier = Math.pow(1 + (currentAPR / 100), daysSinceUpdate);
+  const currentDebt = baseDebt * debtMultiplier;
+  
+  return Math.round(currentDebt * 100) / 100;
+};
+
+/**
+ * Daily debt accrual - should be called by a scheduled function
+ * For client-side: can be triggered when user opens app (once per day)
+ */
+export const applyDailyDebtAccrual = async (friendshipId) => {
+  const friendshipRef = doc(db, 'friendships', friendshipId);
+  
   try {
-    const checkinsRef = collection(db, CHECKINS_COLLECTION);
-    const q = query(
-      checkinsRef,
-      where('userId', '==', userId)
-    );
-
-    const snapshot = await getDocs(q);
-    const checkins = snapshot.docs.map(doc => doc.data());
-
-    const stats = {
-      totalCheckins: checkins.length,
-      thisWeek: 0,
-      thisMonth: 0
-    };
-
-    const now = new Date();
-    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-
-    checkins.forEach(checkin => {
-      const checkinDate = checkin.timestamp.toDate();
-      if (checkinDate >= weekAgo) stats.thisWeek++;
-      if (checkinDate >= monthAgo) stats.thisMonth++;
+    await runTransaction(db, async (transaction) => {
+      const friendshipDoc = await transaction.get(friendshipRef);
+      
+      if (!friendshipDoc.exists()) {
+        throw new Error('Friendship not found');
+      }
+      
+      const friendship = friendshipDoc.data();
+      const {
+        baseDebt = 0,
+        lastDebtUpdate,
+        currentAPR = 5
+      } = friendship;
+      
+      if (baseDebt <= 0) return;
+      
+      // Calculate days since last update
+      const lastUpdate = lastDebtUpdate?.toDate?.() || friendship.createdAt?.toDate?.() || new Date();
+      const now = new Date();
+      const daysSinceUpdate = Math.floor((now - lastUpdate) / (1000 * 60 * 60 * 24));
+      
+      if (daysSinceUpdate <= 0) return; // Already updated today
+      
+      // Calculate new base debt with compound interest
+      const debtMultiplier = Math.pow(1 + (currentAPR / 100), daysSinceUpdate);
+      const newBaseDebt = baseDebt * debtMultiplier;
+      
+      // Update friendship with new debt
+      transaction.update(friendshipRef, {
+        baseDebt: Math.round(newBaseDebt * 100) / 100,
+        lastDebtUpdate: Timestamp.now(),
+        updatedAt: serverTimestamp()
+      });
     });
-
-    return stats;
+    
+    return { success: true };
   } catch (error) {
-    console.error('Error getting user check-in stats:', error);
-    return { totalCheckins: 0, thisWeek: 0, thisMonth: 0 };
+    console.error('Debt accrual failed:', error);
+    throw error;
   }
 };
 
-// Calculate interest for all friendships (should be run daily by cron job)
-export const calculateDailyInterest = async () => {
-  try {
-    const friendshipsRef = collection(db, FRIENDSHIPS_COLLECTION);
-    const snapshot = await getDocs(friendshipsRef);
-
-    const results = [];
-
-    for (const docSnap of snapshot.docs) {
-      const friendship = docSnap.data();
-      const friendshipRef = doc(db, FRIENDSHIPS_COLLECTION, docSnap.id);
-
-      // Check both perspectives
-      const updates = {};
-      let hasUpdate = false;
-
-      // User 1 perspective
-      if (friendship.user1Perspective) {
-        const lastInteraction = friendship.user1Perspective.lastInteraction?.toDate();
-        if (lastInteraction) {
-          const daysSince = Math.floor((Date.now() - lastInteraction.getTime()) / (1000 * 60 * 60 * 24));
-          const limit = friendship.user1Perspective.limit || 7;
-          
-          if (daysSince > limit) {
-            const daysOverLimit = daysSince - limit;
-            const currentDebt = friendship.user1Perspective.baseDebt || 0;
-            const newDebt = currentDebt + 1; // +1 per day over limit
-            
-            updates['user1Perspective.baseDebt'] = newDebt;
-            hasUpdate = true;
-
-            results.push({
-              friendshipId: docSnap.id,
-              userId: friendship.user1.userId,
-              userName: friendship.user1.displayName,
-              debtIncrease: 1,
-              newDebt: newDebt,
-              daysGhosted: daysSince
-            });
-          }
-        }
-      }
-
-      // User 2 perspective
-      if (friendship.user2Perspective) {
-        const lastInteraction = friendship.user2Perspective.lastInteraction?.toDate();
-        if (lastInteraction) {
-          const daysSince = Math.floor((Date.now() - lastInteraction.getTime()) / (1000 * 60 * 60 * 24));
-          const limit = friendship.user2Perspective.limit || 7;
-          
-          if (daysSince > limit) {
-            const daysOverLimit = daysSince - limit;
-            const currentDebt = friendship.user2Perspective.baseDebt || 0;
-            const newDebt = currentDebt + 1;
-            
-            updates['user2Perspective.baseDebt'] = newDebt;
-            hasUpdate = true;
-
-            results.push({
-              friendshipId: docSnap.id,
-              userId: friendship.user2.userId,
-              userName: friendship.user2.displayName,
-              debtIncrease: 1,
-              newDebt: newDebt,
-              daysGhosted: daysSince
-            });
-          }
-        }
-      }
-
-      if (hasUpdate) {
-        updates.lastInterestCalculated = serverTimestamp();
-        await updateDoc(friendshipRef, updates);
-      }
-    }
-
-    return { success: true, updates: results };
-  } catch (error) {
-    console.error('Error calculating daily interest:', error);
-    return { success: false, error: error.message };
-  }
+export default {
+  performCheckin,
+  hasCheckedInToday,
+  getCheckinHistory,
+  calculateCurrentDebt,
+  applyDailyDebtAccrual
 };
