@@ -44,7 +44,9 @@ import FlexModal from './components/Modals/FlexModal'
 import DebtRouletteModal from './components/Modals/DebtRouletteModal'
 import Potclean from './components/Potclean'
 import NenSealedStatus from './components/NenSealedStatus'
-import { UsersIcon, AwardIcon, TrophyIcon, WrenchIcon } from './components/icons/Icons'
+import AuraWallet from './components/AuraWallet'
+import { initializeAuraBalance } from './services/auraService'
+import { UsersIcon, AwardIcon, TrophyIcon, WrenchIcon, DollarIcon } from './components/icons/Icons'
 
 function App() {
   const { user, isAuthenticated, isEmailVerified } = useAuth();
@@ -100,6 +102,9 @@ function App() {
     
     setLoading(true);
     try {
+        // Initialize Aura balance for new users
+        await initializeAuraBalance(user.uid);
+        
         // Load friendships using the new service
         const userFriendships = await getUserFriendships(user.uid);
         
@@ -279,6 +284,13 @@ function App() {
           <WrenchIcon size={16} color={activeTab === 'tools' ? '#33b5e5' : '#666'} />
           <span style={{ marginLeft: '8px' }}>TOOLS</span>
         </button>
+        <button 
+          style={{...tabButtonStyle, ...(activeTab === 'wallet' ? tabActiveStyle : {})}}
+          onClick={() => setActiveTab('wallet')}
+        >
+          <DollarIcon size={16} color={activeTab === 'wallet' ? '#ffd700' : '#666'} />
+          <span style={{ marginLeft: '8px' }}>WALLET</span>
+        </button>
       </div>
 
       {/* Stats Dashboard */}
@@ -332,6 +344,7 @@ function App() {
       {activeTab === 'achievements' && <AchievementShowcase />}
       {activeTab === 'arena' && <Arena friendships={friendships} showToast={showToast} />}
       {activeTab === 'tools' && <Tools friendships={friendships} />}
+      {activeTab === 'wallet' && <AuraWallet />}
 
       {/* Potclean - The Debt Collector Mascot */}
       {user && <Potclean friendships={friendships} />}

@@ -14,6 +14,7 @@ import {
   addDoc
 } from 'firebase/firestore';
 import { db } from './firebase';
+import { spendAuraForBounty, earnAuraFromBounty, refundAura } from './auraService';
 
 const BOUNTIES_COLLECTION = 'bounties';
 const BOUNTY_CLAIMS_COLLECTION = 'bountyClaims';
@@ -36,6 +37,12 @@ export const createBounty = async (creatorId, creatorName, targetId, targetName,
     
     if (!existing.empty) {
       return { success: false, error: 'A bounty already exists for this friendship' };
+    }
+
+    // Deduct Aura from creator
+    const spendResult = await spendAuraForBounty(creatorId, friendshipId, amount);
+    if (!spendResult.success) {
+      return { success: false, error: spendResult.error };
     }
 
     const bountyRef = await addDoc(collection(db, BOUNTIES_COLLECTION), {
@@ -171,6 +178,9 @@ export const claimBounty = async (bountyId, hunterId, hunterName, proofOfContact
       claimedAt: serverTimestamp()
     });
 
+    // Award Aura to hunter
+    await earnAuraFromBounty(hunterId, bountyId, bounty.amount);
+
     return {
       success: true,
       message: `Bounty claimed! You earned ${bounty.amount} Aura Points!`,
@@ -206,6 +216,9 @@ export const cancelBounty = async (bountyId, userId) => {
       status: 'cancelled',
       cancelledAt: serverTimestamp()
     });
+
+    // Refund Aura to creator
+    await refundAura(userId, bounty.amount, 'Bounty cancelled - refund', { bountyId });
 
     return {
       success: true,
