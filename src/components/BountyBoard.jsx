@@ -48,10 +48,17 @@ const BountyBoard = ({ onCreateBounty }) => {
     setClaimingId(null);
   };
 
-  const formatTimeLeft = (expiresAt) => {
+  const formatTimeLeft = (createdAt) => {
+    if (!createdAt) return '7d left';
+    
     const now = new Date();
-    const expires = new Date(expiresAt);
+    const created = createdAt instanceof Date ? createdAt : new Date(createdAt);
+    // Bounties expire 7 days after creation
+    const expires = new Date(created.getTime() + 7 * 24 * 60 * 60 * 1000);
     const diff = expires - now;
+    
+    if (diff <= 0) return 'Expired';
+    
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     
@@ -177,7 +184,7 @@ const BountyBoard = ({ onCreateBounty }) => {
                       HIGH PRIORITY
                     </span>
                     <span style={{ color: '#666', fontSize: '0.75rem' }}>
-                      {formatTimeLeft(bounty.expiresAt)}
+                      {formatTimeLeft(bounty.createdAt)}
                     </span>
                   </div>
                 </div>
