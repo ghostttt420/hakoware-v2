@@ -1,7 +1,7 @@
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import CountUp from './CountUp';
 import { calculateDebt, getDebtStatus } from '../utils/gameLogic';
-import { UsersIcon, FlameIcon, Skull2Icon, TrendingUpIcon, AlertIcon, CrownIcon } from './icons/Icons';
+import { UsersIcon, FlameIcon, Skull2Icon, TrendingUpIcon, AlertIcon, CrownIcon, ArrowUpIcon, ArrowDownIcon } from './icons/Icons';
 
 const Dashboard = ({ friendships, recentActivity }) => {
   const sfxCoin = useRef(new Audio('https://www.myinstants.com/media/sounds/ka-ching.mp3'));
@@ -96,137 +96,319 @@ const Dashboard = ({ friendships, recentActivity }) => {
 
   const fullText = `${msg1}   ${msg4}   ${msg2}   ${msg3}   ${msg5}   :: FAILURE TO PAY WILL RESULT IN EXCOMMUNICATION ::`;
 
+  // Calculate friends needing check-in
+  const friendsNeedingCheckin = friendships.filter(f => {
+    const myData = f.myPerspective === 'user1' ? f.user1Perspective : f.user2Perspective;
+    const stats = calculateDebt({
+      baseDebt: myData.baseDebt,
+      lastInteraction: myData.lastInteraction,
+      bankruptcyLimit: myData.limit
+    });
+    return stats.totalDebt > 0 && !stats.isBankrupt;
+  }).length;
+
+  // Simulate trend (in real app, compare with yesterday's data)
+  const debtTrend = totalAPR > 0 ? 'up' : 'down';
+  const trendColor = debtTrend === 'up' ? '#ff4444' : '#00e676';
+
   return (
     <div style={dashboardStyle}>
-      {/* Main Stats Grid */}
-      <div style={statsGridStyle}>
-        {/* Total Debt Card */}
-        <div style={{ ...cardStyle, ...glassCardStyle, borderColor: overallStatus.color }}>
-          <div style={cardHeaderStyle}>
-            <TrendingUpIcon size={18} color={overallStatus.color} />
-            <span style={{ ...cardLabelStyle, color: overallStatus.color }}>
-              TOTAL OUTSTANDING
-            </span>
-          </div>
-          <div style={mainValueStyle}>
-            <CountUp end={totalAPR} duration={2000} onFinish={handleFinish} />
-            <span style={unitStyle}>APR</span>
-          </div>
-          <div style={statusBadgeStyle(overallStatus.color, overallStatus.color + '20')}>
-            {overallStatus.label}
-          </div>
-        </div>
-
-        {/* Friends Card */}
-        <div style={{ ...cardStyle, ...glassCardStyle }}>
-          <div style={cardHeaderStyle}>
-            <UsersIcon size={18} color="#888" />
-            <span style={cardLabelStyle}>ACTIVE FRIENDSHIPS</span>
-          </div>
-          <div style={secondaryValueStyle}>{totalFriends}</div>
-          <div style={subInfoStyle}>
-            {activeStreaks > 0 && (
-              <span style={{ color: '#00e676' }}>{activeStreaks} with streaks</span>
-            )}
-          </div>
-        </div>
-
-        {/* Streaks Card */}
-        <div style={{ ...cardStyle, ...glassCardStyle }}>
-          <div style={cardHeaderStyle}>
-            <FlameIcon size={18} color="#ff8800" />
-            <span style={cardLabelStyle}>ACTIVE STREAKS</span>
-          </div>
-          <div style={{ ...secondaryValueStyle, color: activeStreaks > 0 ? '#ff8800' : '#666' }}>
-            {activeStreaks}
-          </div>
-          <div style={subInfoStyle}>
-            {activeStreaks === 0 && 'Start checking in daily!'}
-          </div>
-        </div>
-
-        {/* Bankruptcies Card */}
-        <div style={{ 
-          ...cardStyle, 
-          ...glassCardStyle, 
-          ...(bankruptcies > 0 ? glassRedStyle : {})
-        }}>
-          <div style={cardHeaderStyle}>
-            <Skull2Icon size={18} color={bankruptcies > 0 ? '#ff4444' : '#666'} />
-            <span style={{ ...cardLabelStyle, color: bankruptcies > 0 ? '#ff4444' : '#888' }}>
-              BANKRUPTCIES
-            </span>
-          </div>
-          <div style={{ ...secondaryValueStyle, color: bankruptcies > 0 ? '#ff4444' : '#666' }}>
-            {bankruptcies}
-          </div>
-          <div style={subInfoStyle}>
-            {warningZone > 0 && (
-              <span style={{ color: '#ff8800' }}>⚠️ {warningZone} in warning zone</span>
-            )}
+      {/* Mini Ticker - Thin strip at top */}
+      <div style={miniTickerStyle}>
+        <div className="ticker-wrap" style={{ border: 'none', background: 'transparent', padding: '4px 0' }}>
+          <div className="ticker" style={{ color: '#00e676', fontSize: '0.7rem' }}>
+            <span>{fullText}</span>
           </div>
         </div>
       </div>
 
-      {/* Spotlight Section */}
-      {(mostWanted || cleanest) && (
-        <div style={spotlightGridStyle}>
-          {mostWanted && (
-            <div style={{ ...spotlightCardStyle, ...glassRedStyle }}>
-              <div style={spotlightIconStyle}>🎯</div>
-              <div>
-                <div style={spotlightLabelStyle}>MOST WANTED</div>
-                <div style={spotlightValueStyle}>{mostWanted.friend?.displayName}</div>
-                <div style={{ ...spotlightSubStyle, color: '#ff4444' }}>
-                  {(() => {
-                    const isUser1 = mostWanted.myPerspective === 'user1';
-                    const myData = isUser1 ? mostWanted.user1Perspective : mostWanted.user2Perspective;
-                    const stats = calculateDebt({
-                      baseDebt: myData.baseDebt,
-                      lastInteraction: myData.lastInteraction,
-                      bankruptcyLimit: myData.limit
-                    });
-                    return `${stats.totalDebt} APR owed`;
-                  })()}
-                </div>
-              </div>
+      {/* Hero Section - Total Debt with Action */}
+      <div style={heroSectionStyle}>
+        <div style={{ 
+          ...heroCardStyle, 
+          borderColor: overallStatus.color,
+          boxShadow: `0 0 40px ${overallStatus.color}15, inset 0 1px 0 ${overallStatus.color}20`
+        }}>
+          <div style={heroHeaderStyle}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <TrendingUpIcon size={24} color={overallStatus.color} />
+              <span style={{ ...heroLabelStyle, color: overallStatus.color }}>
+                TOTAL OUTSTANDING
+              </span>
             </div>
+            {/* Mini Trend Indicator */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              padding: '4px 10px',
+              background: `${trendColor}15`,
+              borderRadius: '20px',
+              fontSize: '0.75rem',
+              color: trendColor
+            }}>
+              {debtTrend === 'up' ? <ArrowUpIcon size={14} /> : <ArrowDownIcon size={14} />}
+              <span>vs yesterday</span>
+            </div>
+          </div>
+          
+          <div style={heroValueStyle}>
+            <CountUp end={totalAPR} duration={2000} onFinish={handleFinish} />
+            <span style={heroUnitStyle}>APR</span>
+          </div>
+          
+          <div style={heroFooterStyle}>
+            <div style={statusBadgeStyle(overallStatus.color, overallStatus.color + '20')}>
+              {overallStatus.label}
+            </div>
+            
+            {/* Quick Action */}
+            {friendsNeedingCheckin > 0 && (
+              <button 
+                style={{
+                  ...quickActionStyle,
+                  background: overallStatus.color,
+                  boxShadow: `0 4px 15px ${overallStatus.color}40`
+                }}
+                onClick={() => {
+                  // Scroll to friends or trigger check-in
+                  window.scrollTo({ top: 400, behavior: 'smooth' });
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = `0 6px 20px ${overallStatus.color}60`;
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = `0 4px 15px ${overallStatus.color}40`;
+                }}
+              >
+                Check In Now ({friendsNeedingCheckin})
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Secondary Stats - Compact Row */}
+        <div style={secondaryStatsStyle}>
+          <CompactStat 
+            icon={<UsersIcon size={16} color="#888" />}
+            label="FRIENDS"
+            value={totalFriends}
+            subValue={activeStreaks > 0 ? `${activeStreaks} streaking` : null}
+          />
+          <CompactStat 
+            icon={<FlameIcon size={16} color="#ff8800" />}
+            label="STREAKS"
+            value={activeStreaks}
+            color="#ff8800"
+          />
+          <CompactStat 
+            icon={<Skull2Icon size={16} color={bankruptcies > 0 ? '#ff4444' : '#666'} />}
+            label="BANKRUPT"
+            value={bankruptcies}
+            color={bankruptcies > 0 ? '#ff4444' : '#666'}
+            alert={warningZone > 0 ? `${warningZone} warning` : null}
+          />
+        </div>
+      </div>
+
+      {/* Spotlight Section - Horizontal Row */}
+      {(mostWanted || cleanest) && (
+        <div style={spotlightRowStyle}>
+          {mostWanted && (
+            <SpotlightCard
+              icon="🎯"
+              label="MOST WANTED"
+              name={mostWanted.friend?.displayName}
+              subtext={(() => {
+                const isUser1 = mostWanted.myPerspective === 'user1';
+                const myData = isUser1 ? mostWanted.user1Perspective : mostWanted.user2Perspective;
+                const stats = calculateDebt({
+                  baseDebt: myData.baseDebt,
+                  lastInteraction: myData.lastInteraction,
+                  bankruptcyLimit: myData.limit
+                });
+                return `${stats.totalDebt} APR owed`;
+              })()}
+              color="#ff4444"
+            />
           )}
 
           {cleanest && (
-            <div style={{ ...spotlightCardStyle, ...glassGreenStyle }}>
-              <div style={spotlightIconStyle}>
-                <CrownIcon size={24} color="#00e676" />
-              </div>
-              <div>
-                <div style={spotlightLabelStyle}>HUNTER STAR</div>
-                <div style={spotlightValueStyle}>{cleanest.friend?.displayName}</div>
-                <div style={{ ...spotlightSubStyle, color: '#00e676' }}>
-                  Debt Free • {cleanest.streak || 0} day streak
-                </div>
-              </div>
-            </div>
+            <SpotlightCard
+              icon={<CrownIcon size={20} color="#00e676" />}
+              label="HUNTER STAR"
+              name={cleanest.friend?.displayName}
+              subtext={`Debt Free • ${cleanest.streak || 0} day streak`}
+              color="#00e676"
+            />
           )}
         </div>
       )}
-
-      {/* Ticker */}
-      <div style={tickerContainerStyle}>
-        <div className="ticker-wrap" style={{ border: 'none', background: 'transparent' }}>
-          <div className="ticker" style={{ color: '#00e676' }}>
-            <span>{fullText}</span>
-            <span style={{ display: 'inline-block', width: '50px' }}></span>
-            <span>{fullText}</span>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
 
+// Helper Components
+const CompactStat = ({ icon, label, value, subValue, color = '#fff', alert }) => (
+  <div style={compactStatStyle}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+      {icon}
+      <span style={{ fontSize: '0.65rem', color: '#666', letterSpacing: '1px' }}>{label}</span>
+    </div>
+    <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color, lineHeight: '1' }}>
+      {value}
+    </div>
+    {subValue && (
+      <div style={{ fontSize: '0.7rem', color: '#00e676', marginTop: '2px' }}>{subValue}</div>
+    )}
+    {alert && (
+      <div style={{ fontSize: '0.7rem', color: '#ff8800', marginTop: '2px' }}>⚠️ {alert}</div>
+    )}
+  </div>
+);
+
+const SpotlightCard = ({ icon, label, name, subtext, color }) => (
+  <div style={{
+    ...spotlightCardNewStyle,
+    borderColor: `${color}30`,
+    background: `linear-gradient(145deg, rgba(17,17,17,0.8), ${color}08)`
+  }}>
+    <div style={{
+      width: '40px',
+      height: '40px',
+      borderRadius: '10px',
+      background: `${color}15`,
+      border: `1px solid ${color}30`,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontSize: '1.2rem'
+    }}>
+      {icon}
+    </div>
+    <div style={{ flex: 1 }}>
+      <div style={{ fontSize: '0.6rem', letterSpacing: '1.5px', color: '#666', fontWeight: 'bold', marginBottom: '2px' }}>
+        {label}
+      </div>
+      <div style={{ fontSize: '0.95rem', color: '#fff', fontWeight: 'bold', marginBottom: '2px' }}>
+        {name}
+      </div>
+      <div style={{ fontSize: '0.75rem', color }}>
+        {subtext}
+      </div>
+    </div>
+  </div>
+);
+
 // Styles
 const dashboardStyle = {
   marginBottom: '25px'
+};
+
+const miniTickerStyle = {
+  background: '#0a0a0a',
+  borderRadius: '8px',
+  border: '1px solid #1a1a1a',
+  marginBottom: '15px',
+  overflow: 'hidden'
+};
+
+const heroSectionStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '15px',
+  marginBottom: '20px'
+};
+
+const heroCardStyle = {
+  padding: '30px',
+  borderRadius: '20px',
+  border: '2px solid',
+  background: 'linear-gradient(145deg, rgba(17,17,17,0.9), rgba(10,10,10,0.95))',
+  backdropFilter: 'blur(20px)',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '15px'
+};
+
+const heroHeaderStyle = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center'
+};
+
+const heroLabelStyle = {
+  fontSize: '0.8rem',
+  letterSpacing: '2px',
+  fontWeight: 'bold'
+};
+
+const heroValueStyle = {
+  fontSize: '4.5rem',
+  fontWeight: '900',
+  color: '#fff',
+  fontFamily: 'var(--font-main)',
+  lineHeight: '1',
+  textShadow: '0 0 30px rgba(255, 255, 255, 0.15)',
+  display: 'flex',
+  alignItems: 'baseline',
+  gap: '12px'
+};
+
+const heroUnitStyle = {
+  fontSize: '1.2rem',
+  color: '#666',
+  fontWeight: 'normal'
+};
+
+const heroFooterStyle = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  marginTop: '5px'
+};
+
+const quickActionStyle = {
+  padding: '10px 20px',
+  border: 'none',
+  borderRadius: '10px',
+  color: '#000',
+  fontSize: '0.85rem',
+  fontWeight: 'bold',
+  cursor: 'pointer',
+  transition: 'all 0.2s ease'
+};
+
+const secondaryStatsStyle = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(3, 1fr)',
+  gap: '12px'
+};
+
+const compactStatStyle = {
+  padding: '16px',
+  background: 'linear-gradient(145deg, #111, #0a0a0a)',
+  border: '1px solid #222',
+  borderRadius: '12px',
+  textAlign: 'center'
+};
+
+const spotlightRowStyle = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+  gap: '12px'
+};
+
+const spotlightCardNewStyle = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '15px',
+  padding: '16px 20px',
+  borderRadius: '14px',
+  border: '1px solid',
+  transition: 'all 0.2s ease'
 };
 
 const statsGridStyle = {
