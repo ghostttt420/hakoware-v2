@@ -130,17 +130,7 @@ body {
   box-shadow: 0 5px 15px rgba(0,0,0,0.5);
 }
 
-/* RANKINGS (Borders) */
-.rank-0 { border: 2px solid var(--gold); } /* Gold */
-.rank-1 { border: 2px solid #c0c0c0; }     /* Silver */
-.rank-2 { border: 2px solid #cd7f32; }     /* Bronze */
-
-/* BANKRUPT STATE */
-.card.bankrupt {
-  background: linear-gradient(145deg, #1a0000, #000);
-  border: 2px solid var(--red);
-  box-shadow: 0 0 15px rgba(255, 0, 0, 0.2);
-}
+/* RANKINGS and STATES are defined below in the "RESTORING THE VISUAL FX" section */
 
 .card-header {
   display: flex;
@@ -163,7 +153,6 @@ body {
 
 .debt-display {
   text-align: center;
-  font-size: 2rem;
   font-size: 2.5rem;
   font-weight: bold;
   margin: 10px 0;

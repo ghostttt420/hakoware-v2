@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from './contexts/AuthContext'
 import { getUserFriendships } from './services/friendshipService'
-import { sendSystemEmail } from './services/emailService'
+
 import { getRandomQuote } from './utils/quotes' 
 import './index.css' 
 import { calculateDebt } from './utils/gameLogic'
