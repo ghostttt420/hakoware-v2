@@ -3,8 +3,6 @@
  * Beautiful zero-data experiences
  */
 
-import { useNavigate } from 'react-router-dom';
-
 const EmptyState = ({ 
   icon,
   title,
@@ -13,8 +11,6 @@ const EmptyState = ({
   actionLabel,
   compact = false
 }) => {
-  const navigate = useNavigate();
-
   const handleAction = () => {
     if (action === 'add-friend') {
       // Dispatch custom event that App.jsx listens for
