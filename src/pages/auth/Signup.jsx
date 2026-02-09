@@ -52,6 +52,7 @@ const Signup = ({ onToggle }) => {
   };
 
   const getErrorMessage = (error) => {
+    if (!error) return 'An unknown error occurred.';
     if (error.includes('email-already-in-use')) return 'An account with this email already exists.';
     if (error.includes('invalid-email')) return 'Invalid email address.';
     if (error.includes('weak-password')) return 'Password is too weak.';

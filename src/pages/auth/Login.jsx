@@ -44,6 +44,7 @@ const Login = ({ onToggle }) => {
   };
 
   const getErrorMessage = (error) => {
+    if (!error) return 'An unknown error occurred.';
     if (error.includes('user-not-found')) return 'No account found with this email.';
     if (error.includes('wrong-password')) return 'Incorrect password.';
     if (error.includes('invalid-email')) return 'Invalid email address.';
