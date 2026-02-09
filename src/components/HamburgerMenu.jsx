@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { UserIcon, PlusIcon, RefreshIcon, LogoutIcon, MenuIcon, DollarIcon } from './icons/Icons';
+import { UserIcon, PlusIcon, RefreshIcon, LogoutIcon, MenuIcon, DollarIcon, WalletIcon } from './icons/Icons';
 
-const HamburgerMenu = ({ onAddFriend, onRefresh, onOpenMarketplace }) => {
+const HamburgerMenu = ({ onAddFriend, onRefresh, onOpenMarketplace, onOpenWallet }) => {
   const { user, logout, userProfile } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
@@ -128,6 +128,11 @@ const HamburgerMenu = ({ onAddFriend, onRefresh, onOpenMarketplace }) => {
           <MenuItem onClick={() => { onOpenMarketplace(); setIsOpen(false); }}>
             <DollarIcon size={18} color="#ffd700" />
             <span>Aura Market</span>
+          </MenuItem>
+
+          <MenuItem onClick={() => { onOpenWallet(); setIsOpen(false); }}>
+            <WalletIcon size={18} color="#00e676" />
+            <span>Wallet</span>
           </MenuItem>
 
           <div style={{ borderTop: '1px solid #1a1a1a', margin: '8px 0' }} />

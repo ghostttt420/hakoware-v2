@@ -9,7 +9,7 @@ import {
 } from '../services/notificationService';
 import { BellIcon, CheckIcon, XIcon, ChevronDownIcon, ChevronUpIcon, TrashIcon } from './icons/Icons';
 
-const NotificationsPanel = ({ onUpdate, isOpen, onUnreadCountChange }) => {
+const NotificationsPanel = ({ onUpdate, isOpen, onUnreadCountChange, onClose }) => {
   const { user } = useAuth();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -107,11 +107,11 @@ const NotificationsPanel = ({ onUpdate, isOpen, onUnreadCountChange }) => {
 
   // Don't render if externally controlled and collapsed
   if (isOpen !== undefined && !isOpen) return null;
-  if (loading && notifications.length === 0) return null;
-  if (notifications.length === 0) return null;
+  if (isOpen === undefined && loading && notifications.length === 0) return null;
+  if (isOpen === undefined && notifications.length === 0) return null;
 
-  return (
-    <div style={containerStyle}>
+  const panelContent = (
+    <div style={isOpen !== undefined ? modalContainerStyle : containerStyle}>
       <button 
         onClick={() => isOpen === undefined && setInternalExpanded(!internalExpanded)}
         style={{...headerStyle, cursor: isOpen === undefined ? 'pointer' : 'default'}}
@@ -295,6 +295,30 @@ const NotificationsPanel = ({ onUpdate, isOpen, onUnreadCountChange }) => {
       )}
     </div>
   );
+
+  if (isOpen !== undefined) {
+    return (
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0,0,0,0.9)',
+        zIndex: 1000,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '20px'
+      }} onClick={onClose}>
+        <div style={{ width: '100%', maxWidth: '500px', maxHeight: '80vh', overflow: 'auto' }} onClick={e => e.stopPropagation()}>
+          {panelContent}
+        </div>
+      </div>
+    );
+  }
+
+  return panelContent;
 };
 
 const containerStyle = {
@@ -303,6 +327,14 @@ const containerStyle = {
   border: '1px solid rgba(255,215,0,0.1)',
   borderRadius: '12px',
   overflow: 'hidden'
+};
+
+const modalContainerStyle = {
+  background: 'linear-gradient(145deg, #111, #0a0a0a)',
+  border: '1px solid rgba(255,215,0,0.2)',
+  borderRadius: '16px',
+  overflow: 'hidden',
+  width: '100%'
 };
 
 const headerStyle = {

@@ -36,7 +36,7 @@ import FriendshipSettingsModal from './components/Modals/FriendshipSettingsModal
 // NEW: Fun Features
 import AchievementShowcase from './components/AchievementShowcase'
 import Arena from './components/Arena'
-import Tools from './components/Tools'
+
 import CreateBountyModal from './components/Modals/CreateBountyModal'
 import AchievementUnlockModal from './components/Modals/AchievementUnlockModal'
 import VoiceCheckinModal from './components/Modals/VoiceCheckinModal'
@@ -46,7 +46,7 @@ import Potclean from './components/Potclean'
 import NenSealedStatus from './components/NenSealedStatus'
 import AuraWallet from './components/AuraWallet'
 import { initializeAuraBalance } from './services/auraService'
-import { UsersIcon, AwardIcon, TrophyIcon, WrenchIcon, DollarIcon, BellIcon } from './components/icons/Icons'
+import { UsersIcon, AwardIcon, TrophyIcon, BellIcon, WalletIcon } from './components/icons/Icons'
 
 function App() {
   const { user, isAuthenticated, isEmailVerified } = useAuth();
@@ -84,6 +84,9 @@ function App() {
   // Notification state
   const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
   const [showNotifications, setShowNotifications] = useState(false);
+  
+  // Wallet modal state
+  const [showWallet, setShowWallet] = useState(false);
 
   const sfxReset = useRef(new Audio('https://www.myinstants.com/media/sounds/discord-notification.mp3'));
   const sfxAchievement = useRef(new Audio('https://www.myinstants.com/media/sounds/level-up.mp3'));
@@ -292,6 +295,7 @@ function App() {
             onAddFriend={() => setShowAddFriend(true)}
             onRefresh={loadData}
             onOpenMarketplace={() => setShowMarketplace(true)}
+            onOpenWallet={() => setShowWallet(true)}
           />
         </div>
       </header>
@@ -300,6 +304,7 @@ function App() {
       <NotificationsPanel 
         isOpen={showNotifications}
         onUnreadCountChange={setUnreadNotificationCount}
+        onClose={() => setShowNotifications(false)}
       />
       <InvitationsPanel onUpdate={loadData} />
       <MercyPanel onUpdate={loadData} />
@@ -308,7 +313,7 @@ function App() {
       {/* Nen Sealed Status - Shows when bankrupt */}
       <NenSealedStatus friendships={friendships} />
 
-      {/* Simplified Tab Navigation - 4 Tabs Only */}
+      {/* Simplified Tab Navigation - 3 Tabs */}
       <div style={tabContainerStyle}>
         <button 
           style={{...tabButtonStyle, ...(activeTab === 'friends' ? tabActiveStyle : {})}}
@@ -331,20 +336,7 @@ function App() {
           <TrophyIcon size={16} color={activeTab === 'arena' ? '#ff4444' : '#666'} />
           <span style={{ marginLeft: '8px' }}>ARENA</span>
         </button>
-        <button 
-          style={{...tabButtonStyle, ...(activeTab === 'tools' ? tabActiveStyle : {})}}
-          onClick={() => setActiveTab('tools')}
-        >
-          <WrenchIcon size={16} color={activeTab === 'tools' ? '#33b5e5' : '#666'} />
-          <span style={{ marginLeft: '8px' }}>TOOLS</span>
-        </button>
-        <button 
-          style={{...tabButtonStyle, ...(activeTab === 'wallet' ? tabActiveStyle : {})}}
-          onClick={() => setActiveTab('wallet')}
-        >
-          <DollarIcon size={16} color={activeTab === 'wallet' ? '#ffd700' : '#666'} />
-          <span style={{ marginLeft: '8px' }}>WALLET</span>
-        </button>
+
       </div>
 
       {/* Stats Dashboard */}
@@ -406,8 +398,31 @@ function App() {
           }}
         />
       )}
-      {activeTab === 'tools' && <Tools friendships={friendships} />}
-      {activeTab === 'wallet' && <AuraWallet />}
+      {/* Wallet Modal */}
+      {showWallet && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.9)',
+          zIndex: 1000,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }} onClick={() => setShowWallet(false)}>
+          <div style={{
+            width: '100%',
+            maxWidth: '600px',
+            maxHeight: '90vh',
+            overflow: 'auto'
+          }} onClick={e => e.stopPropagation()}>
+            <AuraWallet />
+          </div>
+        </div>
+      )}
 
       {/* Potclean - The Debt Collector Mascot */}
       {user && <Potclean friendships={friendships} />}

@@ -346,6 +346,14 @@ export const CrystalBallIcon = ({ size = 20, color = 'currentColor' }) => (
   </svg>
 );
 
+export const WalletIcon = ({ size = 20, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/>
+    <path d="M21 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5"/>
+    <path d="M16 12h.01"/>
+  </svg>
+);
+
 // Toast Notification Icons
 export const CheckCircleIcon = ({ size = 20, color = 'currentColor' }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
