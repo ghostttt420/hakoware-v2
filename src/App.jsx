@@ -336,6 +336,7 @@ function App() {
       {activeTab === 'shame' && <ShameWall />}
       {activeTab === 'bounties' && (
         <BountyBoard 
+          friendships={friendships}
           onCreateBounty={() => {
             // Find a friendship with debt to create bounty on
             const targetFriendship = friendships.find(f => {

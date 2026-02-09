@@ -3,12 +3,13 @@ import { useAuth } from '../contexts/AuthContext';
 import { getActiveBounties, claimBounty, getUserBountyStats } from '../services/bountyService';
 import { TargetIcon, CrosshairIcon, TrophyIcon } from './icons/Icons';
 
-const BountyBoard = ({ onCreateBounty }) => {
+const BountyBoard = ({ onCreateBounty, friendships = [] }) => {
   const { user } = useAuth();
   const [bounties, setBounties] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [claimingId, setClaimingId] = useState(null);
+  const [confirmBounty, setConfirmBounty] = useState(null);
 
   useEffect(() => {
     loadData();
@@ -25,15 +26,40 @@ const BountyBoard = ({ onCreateBounty }) => {
     setLoading(false);
   };
 
-  const handleClaim = async (bounty) => {
-    if (!user) {
-      alert('You must be logged in to claim bounties');
+  // Check if user can claim this bounty
+  const canClaim = (bounty) => {
+    if (!user) return { canClaim: false, reason: 'Not logged in' };
+    if (bounty.creatorId === user.uid) return { canClaim: false, reason: 'You cannot claim your own bounty' };
+    if (bounty.targetId === user.uid) return { canClaim: false, reason: 'Target cannot claim their own bounty' };
+    
+    // Check if user is friends with the target (has a friendship)
+    const isFriendsWithTarget = friendships.some(f => {
+      const friendId = f.myPerspective === 'user1' ? f.user2Id : f.user1Id;
+      return friendId === bounty.targetId;
+    });
+    
+    if (!isFriendsWithTarget) return { canClaim: false, reason: 'You must be friends with the target to claim' };
+    
+    return { canClaim: true, reason: null };
+  };
+
+  const handleClaimClick = (bounty) => {
+    const check = canClaim(bounty);
+    if (!check.canClaim) {
+      alert(check.reason);
       return;
     }
+    setConfirmBounty(bounty);
+  };
 
-    setClaimingId(bounty.id);
+  const handleConfirmClaim = async () => {
+    if (!confirmBounty) return;
+    
+    setClaimingId(confirmBounty.id);
+    setConfirmBounty(null);
+    
     const result = await claimBounty(
-      bounty.id,
+      confirmBounty.id,
       user.uid,
       user.displayName || 'Anonymous Hunter',
       'Contact made - bounty claimed!'
@@ -191,11 +217,13 @@ const BountyBoard = ({ onCreateBounty }) => {
 
                 {/* Claim Button */}
                 <button
-                  onClick={() => handleClaim(bounty)}
+                  onClick={() => handleClaimClick(bounty)}
                   disabled={claimingId === bounty.id}
                   style={{
                     ...claimButtonStyle,
-                    opacity: claimingId === bounty.id ? 0.6 : 1
+                    opacity: claimingId === bounty.id ? 0.6 : 1,
+                    background: canClaim(bounty).canClaim ? '#ff8800' : '#444',
+                    cursor: canClaim(bounty).canClaim ? 'pointer' : 'not-allowed'
                   }}
                 >
                   {claimingId === bounty.id ? 'CLAIMING...' : 'CLAIM'}
@@ -211,6 +239,83 @@ const BountyBoard = ({ onCreateBounty }) => {
           </>
         )}
       </div>
+
+      {/* Confirmation Modal */}
+      {confirmBounty && (
+        <div style={modalOverlayStyle} onClick={() => setConfirmBounty(null)}>
+          <div style={modalContentStyle} onClick={(e) => e.stopPropagation()}>
+            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+              <div style={{ fontSize: '3rem', marginBottom: '10px' }}>🎯</div>
+              <h3 style={{ margin: '0 0 10px 0', color: '#ff8800' }}>CONFIRM BOUNTY CLAIM</h3>
+              <p style={{ margin: 0, color: '#888', fontSize: '0.9rem' }}>
+                You are about to claim a bounty on <strong style={{ color: '#fff' }}>{confirmBounty.targetName}</strong>
+              </p>
+            </div>
+
+            <div style={{ 
+              background: 'rgba(255,136,0,0.1)', 
+              border: '1px solid #ff8800',
+              borderRadius: '8px',
+              padding: '15px',
+              marginBottom: '20px'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <span style={{ color: '#666' }}>Reward:</span>
+                <span style={{ color: '#ffd700', fontWeight: 'bold' }}>{confirmBounty.amount} AURA</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: '#666' }}>Posted by:</span>
+                <span style={{ color: '#fff' }}>{confirmBounty.creatorName}</span>
+              </div>
+            </div>
+
+            <p style={{ 
+              color: '#666', 
+              fontSize: '0.8rem', 
+              textAlign: 'center',
+              marginBottom: '20px',
+              fontStyle: 'italic'
+            }}>
+              By confirming, you attest that you have made contact with {confirmBounty.targetName}.
+              False claims may result in penalties.
+            </p>
+
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button 
+                onClick={() => setConfirmBounty(null)}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  background: 'transparent',
+                  border: '1px solid #444',
+                  borderRadius: '8px',
+                  color: '#666',
+                  cursor: 'pointer',
+                  fontWeight: 'bold'
+                }}
+              >
+                CANCEL
+              </button>
+              <button 
+                onClick={handleConfirmClaim}
+                disabled={claimingId === confirmBounty.id}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  background: '#ff8800',
+                  border: 'none',
+                  borderRadius: '8px',
+                  color: '#000',
+                  cursor: 'pointer',
+                  fontWeight: 'bold'
+                }}
+              >
+                {claimingId === confirmBounty.id ? 'CLAIMING...' : 'CONFIRM CLAIM'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -338,6 +443,31 @@ const createButtonFullStyle = {
   fontSize: '0.85rem',
   marginTop: '10px',
   transition: 'all 0.2s'
+};
+
+// Modal styles
+const modalOverlayStyle = {
+  position: 'fixed',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  background: 'rgba(0,0,0,0.8)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  zIndex: 1000,
+  padding: '20px'
+};
+
+const modalContentStyle = {
+  background: 'linear-gradient(145deg, #111, #0a0a0a)',
+  border: '1px solid #333',
+  borderRadius: '16px',
+  padding: '25px',
+  maxWidth: '400px',
+  width: '100%',
+  boxShadow: '0 20px 60px rgba(0,0,0,0.8)'
 };
 
 // Add keyframes once
