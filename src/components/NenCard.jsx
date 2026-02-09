@@ -1,6 +1,6 @@
 import { calculateDebt, calculateCreditScore, getDebtStatus } from '../utils/gameLogic';
 import CountUp from './CountUp';
-import { SkullIcon, CrownIcon, FlameIcon, SettingsIcon, MicIcon, AlertIcon } from './icons/Icons';
+import { SkullIcon, CrownIcon, FlameIcon, SettingsIcon, MicIcon, AlertIcon, RouletteIcon } from './icons/Icons';
 
 const NenCard = ({ 
   contract, 
@@ -334,43 +334,21 @@ const NenCard = ({
         </div>
       ) : (
         <div style={buttonRowStyle}>
-          {/* Main Action */}
+          {/* Main Action - Always visible */}
           <button 
             style={{
               ...actionButtonStyle,
               background: btnStyle.background,
               color: btnStyle.color,
               borderColor: btnStyle.borderColor,
-              flex: 2
+              flex: 1.5
             }}
             onClick={() => onAction(actionType, data)}
           >
             {btnText}
           </button>
           
-          {/* Voice Check-in */}
-          {actionType === 'CHECKIN' && (
-            <button 
-              style={{ ...iconActionButtonStyle, borderColor: '#444' }}
-              onClick={() => onAction('VOICE_CHECKIN', data)}
-              title="Voice Check-in"
-            >
-              <MicIcon size={18} color="#888" />
-            </button>
-          )}
-          
-          {/* Debt Roulette - show when in debt but not bankrupt */}
-          {myStats.totalDebt > 0 && !iAmBankrupt && (
-            <button 
-              style={{ ...iconActionButtonStyle, borderColor: '#ff00ff' }}
-              onClick={() => onAction('ROULETTE', data)}
-              title="Debt Roulette"
-            >
-              <span style={{ fontSize: '16px' }}>🎰</span>
-            </button>
-          )}
-          
-          {/* Bailout */}
+          {/* Bailout - If friend has debt */}
           {friendData && friendStats.totalDebt > 0 && (
             <button 
               style={{
@@ -382,9 +360,34 @@ const NenCard = ({
               }}
               onClick={() => onAction('BAILOUT', data)}
             >
-              {friendIsBankrupt ? 'SAVE' : 'BAIL'}
+              {friendIsBankrupt ? 'BAILOUT' : 'HELP'}
             </button>
           )}
+          
+          {/* Icon Buttons Group */}
+          <div style={iconButtonGroupStyle}>
+            {/* Voice Check-in */}
+            {actionType === 'CHECKIN' && (
+              <button 
+                style={{ ...iconActionButtonStyle, borderColor: '#444' }}
+                onClick={() => onAction('VOICE_CHECKIN', data)}
+                title="Voice Check-in"
+              >
+                <MicIcon size={18} color="#888" />
+              </button>
+            )}
+            
+            {/* Debt Roulette - show when in debt but not bankrupt */}
+            {myStats.totalDebt > 0 && !iAmBankrupt && (
+              <button 
+                style={{ ...iconActionButtonStyle, borderColor: '#ff00ff', background: 'rgba(255,0,255,0.1)' }}
+                onClick={() => onAction('ROULETTE', data)}
+                title="Debt Roulette"
+              >
+                <RouletteIcon size={18} color="#ff00ff" />
+              </button>
+            )}
+          </div>
         </div>
       )}
     </div>
@@ -519,7 +522,13 @@ const friendDebtContainerStyle = {
 
 const buttonRowStyle = {
   display: 'flex',
-  gap: '8px'
+  gap: '8px',
+  alignItems: 'stretch'
+};
+
+const iconButtonGroupStyle = {
+  display: 'flex',
+  gap: '6px'
 };
 
 const actionButtonStyle = {
