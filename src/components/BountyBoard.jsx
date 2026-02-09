@@ -340,14 +340,17 @@ const createButtonFullStyle = {
   transition: 'all 0.2s'
 };
 
-// Add keyframes
-const styleSheet = document.createElement('style');
-styleSheet.textContent = `
-  @keyframes slideInBounty {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-`;
-document.head.appendChild(styleSheet);
+// Add keyframes once
+if (typeof document !== 'undefined' && !document.getElementById('bounty-board-styles')) {
+  const styleSheet = document.createElement('style');
+  styleSheet.id = 'bounty-board-styles';
+  styleSheet.textContent = `
+    @keyframes slideInBounty {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  `;
+  document.head.appendChild(styleSheet);
+}
 
 export default BountyBoard;

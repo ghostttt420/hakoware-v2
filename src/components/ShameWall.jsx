@@ -402,18 +402,21 @@ const footerStyle = {
   textAlign: 'center'
 };
 
-// Add keyframes
-const styleSheet = document.createElement('style');
-styleSheet.textContent = `
-  @keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(1.1); }
-  }
-  @keyframes slideIn {
-    from { opacity: 0; transform: translateX(-20px); }
-    to { opacity: 1; transform: translateX(0); }
-  }
-`;
-document.head.appendChild(styleSheet);
+// Add keyframes once
+if (typeof document !== 'undefined' && !document.getElementById('shame-wall-styles')) {
+  const styleSheet = document.createElement('style');
+  styleSheet.id = 'shame-wall-styles';
+  styleSheet.textContent = `
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.1); }
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+  `;
+  document.head.appendChild(styleSheet);
+}
 
 export default ShameWall;

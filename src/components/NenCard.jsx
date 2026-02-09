@@ -1,6 +1,6 @@
 import { calculateDebt, calculateCreditScore, getDebtStatus } from '../utils/gameLogic';
 import CountUp from './CountUp';
-import { SkullIcon, CrownIcon, FlameIcon, SettingsIcon, MicIcon, AlertIcon, ZapIcon } from './icons/Icons';
+import { SkullIcon, CrownIcon, FlameIcon, SettingsIcon, MicIcon, AlertIcon } from './icons/Icons';
 
 const NenCard = ({ 
   contract, 
@@ -116,7 +116,7 @@ const NenCard = ({
   if (iAmClean) {
     btnText = "FLEX STATUS";
     btnStyle = { background: 'linear-gradient(135deg, #001a33, #003366)', color: '#33b5e5', borderColor: '#33b5e5' };
-    actionType = 'MERCY';
+    actionType = 'MERCY_REQUEST';
   } else if (iAmBankrupt) {
     btnText = "BEG FOR MERCY";
     btnStyle = { background: 'linear-gradient(135deg, #330000, #1a0000)', color: '#ff4444', borderColor: '#ff4444' };
@@ -298,7 +298,7 @@ const NenCard = ({
         }}>
           <div style={{
             height: '100%',
-            width: `${Math.min(100, (myStats.totalDebt / (myData.limit * 2)) * 100)}%`,
+            width: `${Math.min(100, (myStats.totalDebt / (Math.max(1, myData.limit) * 2)) * 100)}%`,
             background: iAmBankrupt ? '#ff4444' : iAmInWarningZone ? '#ff8800' : iAmClean ? '#00e676' : '#ffd700',
             borderRadius: '2px',
             transition: 'width 1s ease'
