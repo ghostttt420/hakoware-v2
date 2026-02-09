@@ -25,20 +25,22 @@ const ShameWall = () => {
   useEffect(() => {
     loadBankruptcies();
     
-    // Real-time listener for new bankruptcies
+    // Real-time listener for new bankruptcies (simplified query without composite index)
     const unsubscribe = onSnapshot(
       query(
         collection(db, 'bankruptcyHistory'),
-        where('resolvedAt', '==', null),
-        orderBy('declaredAt', 'desc'),
-        limit(20)
+        where('resolvedAt', '==', null)
       ),
       (snapshot) => {
-        const data = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-          declaredAt: doc.data().declaredAt?.toDate?.() || new Date()
-        }));
+        // Sort client-side
+        const data = snapshot.docs
+          .map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+            declaredAt: doc.data().declaredAt?.toDate?.() || new Date()
+          }))
+          .sort((a, b) => b.declaredAt - a.declaredAt)
+          .slice(0, 20);
         setBankruptcies(data);
         setLoading(false);
         
@@ -59,19 +61,21 @@ const ShameWall = () => {
   const loadBankruptcies = async () => {
     setLoading(true);
     try {
+      // Simple query without composite index requirement
       const q = query(
         collection(db, 'bankruptcyHistory'),
-        where('resolvedAt', '==', null),
-        orderBy('declaredAt', 'desc'),
-        limit(20)
+        where('resolvedAt', '==', null)
       );
       
       const snapshot = await getDocs(q);
-      const data = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        declaredAt: doc.data().declaredAt?.toDate?.() || new Date()
-      }));
+      const data = snapshot.docs
+        .map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          declaredAt: doc.data().declaredAt?.toDate?.() || new Date()
+        }))
+        .sort((a, b) => b.declaredAt - a.declaredAt)
+        .slice(0, 20);
       
       setBankruptcies(data);
       
