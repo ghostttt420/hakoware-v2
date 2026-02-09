@@ -88,13 +88,13 @@ const Dashboard = ({ friendships, recentActivity }) => {
   };
 
   // Ticker Text Parts
-  const msg1 = ":: NEN CONSUMER FINANCE :: INTEREST RATES AT 1% DAILY";
-  const msg2 = mostWanted ? `MOST WANTED: ${mostWanted.friend?.displayName?.toUpperCase() || 'UNKNOWN'} (${getMostWantedDebt()} APR)` : "";
-  const msg3 = cleanest ? `HUNTER STAR: ${cleanest.friend?.displayName?.toUpperCase() || 'UNKNOWN'}` : "";
-  const msg4 = recentActivity ? ` // ${recentActivity} // ` : "";
-  const msg5 = `STATS: ${totalFriends} FRIENDS | ${activeStreaks} STREAKS | ${bankruptcies} BANKRUPTCIES`;
+  const msg1 = "Nen Consumer Finance — Interest rates at 1% daily";
+  const msg2 = mostWanted ? `Most wanted: ${mostWanted.friend?.displayName || 'Unknown'} (${getMostWantedDebt()} APR)` : "";
+  const msg3 = cleanest ? `Hunter star: ${cleanest.friend?.displayName || 'Unknown'}` : "";
+  const msg4 = recentActivity ? ` • ${recentActivity} • ` : "";
+  const msg5 = `${totalFriends} friends | ${activeStreaks} streaks | ${bankruptcies} bankruptcies`;
 
-  const fullText = `${msg1}   ${msg4}   ${msg2}   ${msg3}   ${msg5}   :: FAILURE TO PAY WILL RESULT IN EXCOMMUNICATION ::`;
+  const fullText = `${msg1}   ${msg4}   ${msg2}   ${msg3}   ${msg5}`;
 
   // Calculate friends needing check-in
   const friendsNeedingCheckin = friendships.filter(f => {
@@ -107,9 +107,16 @@ const Dashboard = ({ friendships, recentActivity }) => {
     return stats.totalDebt > 0 && !stats.isBankrupt;
   }).length;
 
-  // Simulate trend (in real app, compare with yesterday's data)
-  const debtTrend = totalAPR > 0 ? 'up' : 'down';
-  const trendColor = debtTrend === 'up' ? '#ff4444' : '#00e676';
+  // Calculate urgent friends (need check-in within 24h)
+  const urgentFriends = friendships.filter(f => {
+    const myData = f.myPerspective === 'user1' ? f.user1Perspective : f.user2Perspective;
+    const stats = calculateDebt({
+      baseDebt: myData.baseDebt,
+      lastInteraction: myData.lastInteraction,
+      bankruptcyLimit: myData.limit
+    });
+    return stats.totalDebt > 0 && stats.totalDebt < myData.limit && !stats.isBankrupt;
+  });
 
   return (
     <div style={dashboardStyle}>
@@ -133,22 +140,21 @@ const Dashboard = ({ friendships, recentActivity }) => {
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <TrendingUpIcon size={24} color={overallStatus.color} />
               <span style={{ ...heroLabelStyle, color: overallStatus.color }}>
-                TOTAL OUTSTANDING
+                Total outstanding
               </span>
             </div>
-            {/* Mini Trend Indicator */}
+            {/* Status Indicator */}
             <div style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '4px',
-              padding: '4px 10px',
-              background: `${trendColor}15`,
+              gap: '6px',
+              padding: '6px 12px',
+              background: `${overallStatus.color}15`,
               borderRadius: '20px',
               fontSize: '0.75rem',
-              color: trendColor
+              color: overallStatus.color
             }}>
-              {debtTrend === 'up' ? <ArrowUpIcon size={14} /> : <ArrowDownIcon size={14} />}
-              <span>vs yesterday</span>
+              <span>{overallStatus.label}</span>
             </div>
           </div>
           
@@ -212,6 +218,82 @@ const Dashboard = ({ friendships, recentActivity }) => {
           />
         </div>
       </div>
+
+      {/* Action Items - What needs attention NOW */}
+      {urgentFriends.length > 0 && (
+        <div style={actionItemsStyle}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+            <AlertIcon size={16} color="#ff8800" />
+            <span style={{ fontSize: '0.8rem', color: '#ff8800', fontWeight: '600' }}>
+              Needs attention
+            </span>
+          </div>
+          <div style={actionItemsListStyle}>
+            {urgentFriends.slice(0, 3).map(friendship => {
+              const friend = friendship.myPerspective === 'user1' ? friendship.user2 : friendship.user1;
+              const myData = friendship.myPerspective === 'user1' ? friendship.user1Perspective : friendship.user2Perspective;
+              const stats = calculateDebt({
+                baseDebt: myData.baseDebt,
+                lastInteraction: myData.lastInteraction,
+                bankruptcyLimit: myData.limit
+              });
+              return (
+                <div key={friendship.id} style={actionItemStyle}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1 }}>
+                    <div style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '50%',
+                      background: 'linear-gradient(145deg, #1a1a1a, #0d0d0d)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '0.9rem',
+                      fontWeight: '600'
+                    }}>
+                      {friend.displayName?.charAt(0)?.toUpperCase() || '?'}
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '0.9rem', color: '#fff', fontWeight: '500' }}>
+                        {friend.displayName}
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: '#ff8800' }}>
+                        {stats.totalDebt} APR • {stats.daysUntilBankrupt} days until bankruptcy
+                      </div>
+                    </div>
+                  </div>
+                  <button 
+                    style={{
+                      padding: '8px 16px',
+                      background: 'rgba(255,136,0,0.15)',
+                      color: '#ff8800',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '0.8rem',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.background = 'rgba(255,136,0,0.25)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.background = 'rgba(255,136,0,0.15)';
+                    }}
+                  >
+                    Check in
+                  </button>
+                </div>
+              );
+            })}
+            {urgentFriends.length > 3 && (
+              <div style={{ textAlign: 'center', padding: '8px', color: '#666', fontSize: '0.8rem' }}>
+                +{urgentFriends.length - 3} more friends need attention
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Spotlight Section - Horizontal Row */}
       {(mostWanted || cleanest) && (
@@ -280,7 +362,6 @@ const SpotlightCard = ({ icon, label, name, subtext, color }) => (
       height: '40px',
       borderRadius: '10px',
       background: `${color}15`,
-      border: `1px solid ${color}30`,
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -308,11 +389,11 @@ const dashboardStyle = {
 };
 
 const miniTickerStyle = {
-  background: '#0a0a0a',
-  borderRadius: '8px',
-  border: '1px solid #1a1a1a',
-  marginBottom: '15px',
-  overflow: 'hidden'
+  background: 'linear-gradient(145deg, #111, #0a0a0a)',
+  borderRadius: '12px',
+  marginBottom: '16px',
+  overflow: 'hidden',
+  boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
 };
 
 const heroSectionStyle = {
@@ -323,14 +404,13 @@ const heroSectionStyle = {
 };
 
 const heroCardStyle = {
-  padding: '30px',
+  padding: '32px',
   borderRadius: '20px',
-  border: '2px solid',
   background: 'linear-gradient(145deg, rgba(17,17,17,0.9), rgba(10,10,10,0.95))',
-  backdropFilter: 'blur(20px)',
   display: 'flex',
   flexDirection: 'column',
-  gap: '15px'
+  gap: '16px',
+  boxShadow: '0 4px 20px rgba(0,0,0,0.4)'
 };
 
 const heroHeaderStyle = {
@@ -340,9 +420,9 @@ const heroHeaderStyle = {
 };
 
 const heroLabelStyle = {
-  fontSize: '0.8rem',
-  letterSpacing: '2px',
-  fontWeight: 'bold'
+  fontSize: '0.85rem',
+  letterSpacing: '0.5px',
+  fontWeight: '600'
 };
 
 const heroValueStyle = {
@@ -389,10 +469,10 @@ const secondaryStatsStyle = {
 
 const compactStatStyle = {
   padding: '16px',
-  background: 'linear-gradient(145deg, #111, #0a0a0a)',
-  border: '1px solid #222',
+  background: 'linear-gradient(145deg, #151515, #0d0d0d)',
   borderRadius: '12px',
-  textAlign: 'center'
+  textAlign: 'center',
+  boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
 };
 
 const spotlightRowStyle = {
@@ -401,14 +481,38 @@ const spotlightRowStyle = {
   gap: '12px'
 };
 
+const actionItemsStyle = {
+  background: 'linear-gradient(145deg, rgba(255,136,0,0.05), rgba(20,15,10,1))',
+  borderRadius: '16px',
+  padding: '20px',
+  marginBottom: '16px',
+  boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
+};
+
+const actionItemsListStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '10px'
+};
+
+const actionItemStyle = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  padding: '12px 16px',
+  background: 'rgba(0,0,0,0.2)',
+  borderRadius: '12px',
+  transition: 'all 0.2s ease'
+};
+
 const spotlightCardNewStyle = {
   display: 'flex',
   alignItems: 'center',
   gap: '15px',
   padding: '16px 20px',
   borderRadius: '14px',
-  border: '1px solid',
-  transition: 'all 0.2s ease'
+  transition: 'all 0.2s ease',
+  boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
 };
 
 const statsGridStyle = {
@@ -428,10 +532,10 @@ const spotlightGridStyle = {
 const cardStyle = {
   padding: '20px',
   borderRadius: '16px',
-  border: '1px solid #222',
   display: 'flex',
   flexDirection: 'column',
-  gap: '10px'
+  gap: '10px',
+  boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
 };
 
 const glassCardStyle = {
