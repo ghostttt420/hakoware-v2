@@ -37,10 +37,13 @@ import FriendshipSettingsModal from './components/Modals/FriendshipSettingsModal
 import AchievementShowcase from './components/AchievementShowcase'
 import ShameWall from './components/ShameWall'
 import BountyBoard from './components/BountyBoard'
+import GhostPredictor from './components/GhostPredictor'
 import CreateBountyModal from './components/Modals/CreateBountyModal'
 import AchievementUnlockModal from './components/Modals/AchievementUnlockModal'
 import VoiceCheckinModal from './components/Modals/VoiceCheckinModal'
-import { UsersIcon, AwardIcon, Skull2Icon, Target2Icon } from './components/icons/Icons'
+import FlexModal from './components/Modals/FlexModal'
+import DebtRouletteModal from './components/Modals/DebtRouletteModal'
+import { UsersIcon, AwardIcon, Skull2Icon, Target2Icon, CrystalBallIcon } from './components/icons/Icons'
 
 function App() {
   const { user, isAuthenticated, isEmailVerified } = useAuth();
@@ -154,6 +157,10 @@ function App() {
         setModalType('VOICE_CHECKIN');
       } else if (type === 'BEG') {
         setModalType('MERCY_REQUEST');
+      } else if (type === 'FLEX') {
+        setModalType('FLEX');
+      } else if (type === 'ROULETTE') {
+        setModalType('ROULETTE');
       } else if (type === 'BAILOUT') {
         setModalType('BAILOUT');
       } else if (type === 'SETTINGS') {
@@ -268,6 +275,13 @@ function App() {
           <Target2Icon size={16} color={activeTab === 'bounties' ? '#ff8800' : '#666'} />
           <span style={{ marginLeft: '8px' }}>BOUNTIES</span>
         </button>
+        <button 
+          style={{...tabButtonStyle, ...(activeTab === 'predictor' ? tabActiveStyle : {})}}
+          onClick={() => setActiveTab('predictor')}
+        >
+          <CrystalBallIcon size={16} color={activeTab === 'predictor' ? '#9c27b0' : '#666'} />
+          <span style={{ marginLeft: '8px' }}>PREDICTOR</span>
+        </button>
       </div>
 
       {/* Stats Dashboard */}
@@ -342,6 +356,7 @@ function App() {
           }}
         />
       )}
+      {activeTab === 'predictor' && <GhostPredictor friendships={friendships} />}
 
       {/* --- MODALS --- */}
       <AddFriendModal 
