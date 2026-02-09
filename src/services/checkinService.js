@@ -13,6 +13,10 @@ import {
   limit
 } from 'firebase/firestore';
 import { db } from './firebase';
+import { performCheckinServer } from './functionsService';
+
+// Feature flag: Use server-side check-in (more secure)
+const USE_SERVER_CHECKIN = true;
 
 const CHECKINS_COLLECTION = 'checkins';
 const FRIENDSHIPS_COLLECTION = 'friendships';
@@ -64,110 +68,125 @@ export const getLastCheckin = async (friendshipId, userId) => {
   }
 };
 
-// Perform a check-in
+// Perform a check-in (server-side for security)
 export const performCheckin = async (friendshipId, userId, proofOfContact = null) => {
   try {
-    // Check if already checked in today
-    const alreadyCheckedIn = await hasCheckedInToday(friendshipId, userId);
-    if (alreadyCheckedIn) {
-      return { 
-        success: false, 
-        error: 'ALREADY_CHECKED_IN',
-        message: 'You have already checked in today. Come back tomorrow!' 
-      };
-    }
-
-    // Get friendship data
-    const friendshipRef = doc(db, FRIENDSHIPS_COLLECTION, friendshipId);
-    const friendshipDoc = await getDoc(friendshipRef);
-
-    if (!friendshipDoc.exists()) {
-      return { success: false, error: 'Friendship not found' };
-    }
-
-    const friendship = friendshipDoc.data();
-    const isUser1 = friendship.user1.userId === userId;
-    const perspective = isUser1 ? 'user1Perspective' : 'user2Perspective';
-    const myData = isUser1 ? friendship.user1Perspective : friendship.user2Perspective;
-
-    // Calculate debt reduction (2 APR per check-in - improved recovery)
-    const debtReduction = 2;
-    const newBaseDebt = Math.max(0, (myData.baseDebt || 0) - debtReduction);
-
-    // Calculate streak
-    const lastCheckin = await getLastCheckin(friendshipId, userId);
-    let newStreak = friendship.streak || 0;
-    
-    if (lastCheckin) {
-      const lastDate = lastCheckin.timestamp.toDate();
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      yesterday.setHours(0, 0, 0, 0);
-
-      const lastCheckinDate = new Date(lastDate);
-      lastCheckinDate.setHours(0, 0, 0, 0);
-
-      // If last check-in was yesterday, increment streak
-      if (lastCheckinDate.getTime() === yesterday.getTime()) {
-        newStreak += 1;
-      } else if (lastCheckinDate.getTime() < yesterday.getTime()) {
-        // Streak broken, reset to 1
-        newStreak = 1;
+    // Try server-side check-in first (more secure)
+    if (USE_SERVER_CHECKIN) {
+      try {
+        const result = await performCheckinServer(friendshipId, proofOfContact);
+        return {
+          success: true,
+          debtCleared: result.debtCleared,
+          streak: result.streak,
+          message: `Check-in successful! ${result.debtCleared > 0 ? `Cleared ${result.debtCleared} APR debt.` : ''}`,
+          fromServer: true
+        };
+      } catch (serverError) {
+        console.warn('Server check-in failed, falling back to local:', serverError.message);
+        // Fall through to local check-in
       }
-      // If same day, we already blocked above
-    } else {
-      // First check-in
-      newStreak = 1;
     }
 
-    const now = serverTimestamp();
-
-    // Create check-in record
-    const checkinRef = await addDoc(collection(db, CHECKINS_COLLECTION), {
-      friendshipId,
-      userId,
-      timestamp: now,
-      proofOfContact,
-      debtBefore: myData.baseDebt || 0,
-      debtAfter: newBaseDebt,
-      streakAtCheckin: newStreak
-    });
-
-    // Update friendship
-    const updates = {
-      [`${perspective}.baseDebt`]: newBaseDebt,
-      [`${perspective}.lastInteraction`]: now,
-      [`${perspective}.lastCheckinId`]: checkinRef.id,
-      streak: newStreak,
-      totalCheckins: (friendship.totalCheckins || 0) + 1,
-      lastCheckinAt: now
-    };
-    
-    // NEW: Clear bankruptcy status if debt is fully paid off
-    if (newBaseDebt === 0 && myData.status === 'bankrupt') {
-      updates[`${perspective}.status`] = 'active';
-      updates[`${perspective}.bankruptcyResolvedAt`] = now;
-    }
-
-    // Update longest streak if needed
-    if (newStreak > (friendship.longestStreak || 0)) {
-      updates.longestStreak = newStreak;
-    }
-
-    await updateDoc(friendshipRef, updates);
-
-    return {
-      success: true,
-      checkinId: checkinRef.id,
-      debtReduced: debtReduction,
-      newDebt: newBaseDebt,
-      streak: newStreak,
-      message: `Check-in successful! Debt reduced by ${debtReduction} APR.`
-    };
+    // Local fallback (less secure, but works without functions deployed)
+    return await performCheckinLocal(friendshipId, userId, proofOfContact);
   } catch (error) {
     console.error('Error performing check-in:', error);
     return { success: false, error: error.message };
   }
+};
+
+// Local check-in (fallback when server functions unavailable)
+const performCheckinLocal = async (friendshipId, userId, proofOfContact = null) => {
+  // Check if already checked in today
+  const alreadyCheckedIn = await hasCheckedInToday(friendshipId, userId);
+  if (alreadyCheckedIn) {
+    return { 
+      success: false, 
+      error: 'ALREADY_CHECKED_IN',
+      message: 'You have already checked in today. Come back tomorrow!' 
+    };
+  }
+
+  const friendshipRef = doc(db, FRIENDSHIPS_COLLECTION, friendshipId);
+  const friendshipDoc = await getDoc(friendshipRef);
+
+  if (!friendshipDoc.exists()) {
+    return { success: false, error: 'Friendship not found' };
+  }
+
+  const friendship = friendshipDoc.data();
+  const isUser1 = friendship.user1?.userId === userId || friendship.user1Id === userId;
+  const perspective = isUser1 ? 'user1Perspective' : 'user2Perspective';
+  const myData = friendship[perspective];
+
+  if (!myData) {
+    return { success: false, error: 'User perspective not found' };
+  }
+
+  // Reset debt on check-in
+  const newBaseDebt = 0;
+
+  // Calculate streak
+  const lastCheckin = await getLastCheckin(friendshipId, userId);
+  let newStreak = friendship.streak || 0;
+  
+  if (lastCheckin) {
+    const lastDate = lastCheckin.timestamp.toDate();
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    yesterday.setHours(0, 0, 0, 0);
+
+    const lastCheckinDate = new Date(lastDate);
+    lastCheckinDate.setHours(0, 0, 0, 0);
+
+    if (lastCheckinDate.getTime() === yesterday.getTime()) {
+      newStreak += 1;
+    } else if (lastCheckinDate.getTime() < yesterday.getTime()) {
+      newStreak = 1;
+    }
+  } else {
+    newStreak = 1;
+  }
+
+  const now = serverTimestamp();
+
+  // Create check-in record
+  const checkinRef = await addDoc(collection(db, CHECKINS_COLLECTION), {
+    friendshipId,
+    userId,
+    timestamp: now,
+    proofOfContact,
+    debtBefore: myData.baseDebt || 0,
+    debtAfter: newBaseDebt,
+    streakAtCheckin: newStreak
+  });
+
+  // Update friendship
+  const updates = {
+    [`${perspective}.baseDebt`]: newBaseDebt,
+    [`${perspective}.lastInteraction`]: now,
+    [`${perspective}.lastCheckinId`]: checkinRef.id,
+    [`${perspective}.calculatedDebt`]: 0,
+    streak: newStreak,
+    totalCheckins: (friendship.totalCheckins || 0) + 1,
+    lastCheckinAt: now
+  };
+
+  if (newStreak > (friendship.longestStreak || 0)) {
+    updates.longestStreak = newStreak;
+  }
+
+  await updateDoc(friendshipRef, updates);
+
+  return {
+    success: true,
+    checkinId: checkinRef.id,
+    debtCleared: myData.baseDebt || 0,
+    streak: newStreak,
+    message: 'Check-in successful!',
+    fromServer: false
+  };
 };
 
 // Get check-in history for a friendship
