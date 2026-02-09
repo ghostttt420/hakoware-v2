@@ -43,7 +43,11 @@ import AchievementUnlockModal from './components/Modals/AchievementUnlockModal'
 import VoiceCheckinModal from './components/Modals/VoiceCheckinModal'
 import FlexModal from './components/Modals/FlexModal'
 import DebtRouletteModal from './components/Modals/DebtRouletteModal'
-import { UsersIcon, AwardIcon, Skull2Icon, Target2Icon, CrystalBallIcon } from './components/icons/Icons'
+import Potclean from './components/Potclean'
+import Leaderboard from './components/Leaderboard'
+import FriendChallenges from './components/FriendChallenges'
+import NenSealedStatus from './components/NenSealedStatus'
+import { UsersIcon, AwardIcon, Skull2Icon, Target2Icon, CrystalBallIcon, TrophyIcon, TargetIcon } from './components/icons/Icons'
 
 function App() {
   const { user, isAuthenticated, isEmailVerified } = useAuth();
@@ -245,6 +249,9 @@ function App() {
       <MercyPanel onUpdate={loadData} />
       <BailoutHistoryPanel />
 
+      {/* Nen Sealed Status - Shows when bankrupt */}
+      <NenSealedStatus friendships={friendships} />
+
       {/* NEW: Tab Navigation */}
       <div style={tabContainerStyle}>
         <button 
@@ -281,6 +288,20 @@ function App() {
         >
           <CrystalBallIcon size={16} color={activeTab === 'predictor' ? '#9c27b0' : '#666'} />
           <span style={{ marginLeft: '8px' }}>PREDICTOR</span>
+        </button>
+        <button 
+          style={{...tabButtonStyle, ...(activeTab === 'leaderboard' ? tabActiveStyle : {})}}
+          onClick={() => setActiveTab('leaderboard')}
+        >
+          <TrophyIcon size={16} color={activeTab === 'leaderboard' ? '#ffd700' : '#666'} />
+          <span style={{ marginLeft: '8px' }}>RANKINGS</span>
+        </button>
+        <button 
+          style={{...tabButtonStyle, ...(activeTab === 'challenges' ? tabActiveStyle : {})}}
+          onClick={() => setActiveTab('challenges')}
+        >
+          <TargetIcon size={16} color={activeTab === 'challenges' ? '#9c27b0' : '#666'} />
+          <span style={{ marginLeft: '8px' }}>CHALLENGES</span>
         </button>
       </div>
 
@@ -359,6 +380,11 @@ function App() {
         />
       )}
       {activeTab === 'predictor' && <GhostPredictor friendships={friendships} />}
+      {activeTab === 'leaderboard' && <Leaderboard />}
+      {activeTab === 'challenges' && <FriendChallenges friendships={friendships} showToast={showToast} />}
+
+      {/* Potclean - The Debt Collector Mascot */}
+      {user && <Potclean friendships={friendships} />}
 
       {/* --- MODALS --- */}
       <AddFriendModal 

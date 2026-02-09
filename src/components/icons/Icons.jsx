@@ -318,3 +318,11 @@ export const CrystalBallIcon = ({ size = 20, color = 'currentColor' }) => (
     <path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>
   </svg>
 );
+
+export const MedalIcon = ({ size = 20, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 2l2 4 4 1-3 3 1 4-4-2-4 2 1-4-3-3 4-1z"/>
+    <circle cx="12" cy="14" r="4"/>
+    <path d="M12 18v4"/>
+  </svg>
+);
