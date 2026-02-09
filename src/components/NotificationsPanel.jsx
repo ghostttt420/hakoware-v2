@@ -162,7 +162,8 @@ const NotificationsPanel = ({ onUpdate, externalExpanded, onUnreadCountChange })
               <ChevronUpIcon size={18} color="#666" />
             ) : (
               <ChevronDownIcon size={18} color="#666" />
-          )}
+            )}
+          </div>
         </div>
       </button>
       )}
