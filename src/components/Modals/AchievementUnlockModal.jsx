@@ -231,14 +231,17 @@ const confettiPieceStyle = {
   opacity: 0.8
 };
 
-// Add keyframes for confetti
-const styleSheet = document.createElement('style');
-styleSheet.textContent = `
-  @keyframes confetti-fall {
-    0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
-    100% { transform: translateY(500px) rotate(720deg); opacity: 0; }
-  }
-`;
-document.head.appendChild(styleSheet);
+// Add keyframes once
+if (typeof document !== 'undefined' && !document.getElementById('achievement-modal-styles')) {
+  const styleSheet = document.createElement('style');
+  styleSheet.id = 'achievement-modal-styles';
+  styleSheet.textContent = `
+    @keyframes confetti-fall {
+      0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(500px) rotate(720deg); opacity: 0; }
+    }
+  `;
+  document.head.appendChild(styleSheet);
+}
 
 export default AchievementUnlockModal;
