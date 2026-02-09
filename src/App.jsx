@@ -14,6 +14,8 @@ import Signup from './pages/auth/Signup'
 import VerificationRequired from './pages/auth/VerificationRequired'
 
 // Components
+import ErrorBoundary from './components/ErrorBoundary'
+import LoadingSpinner from './components/LoadingSpinner'
 import Dashboard from './components/Dashboard'
 import NenCard from './components/NenCard'
 import InvitationsPanel from './components/InvitationsPanel'
@@ -357,8 +359,9 @@ function App() {
       {/* TAB CONTENT */}
       {activeTab === 'friends' && (
         loading ? (
-          <div style={{color: 'white', textAlign: 'center', marginTop: '50px', fontFamily: 'var(--font-main)'}}>
-              Connecting to Nen Network...
+          <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', marginTop: '80px', gap: '20px'}}>
+              <LoadingSpinner size={48} color="#ffd700" />
+              <span style={{color: '#888', fontSize: '0.9rem'}}>Loading...</span>
           </div>
         ) : friendships.length === 0 ? (
           <div style={{
@@ -374,15 +377,16 @@ function App() {
         ) : (
           <div className="grid-container">
             {friendships.map((friendship, index) => (
-              <NenCard 
-                key={friendship.id}
-                friendship={friendship}
-                currentUserId={user.uid}
-                index={index}
-                isAdmin={isAdmin && adminUnlocked}
-                onAction={handleAction}
-                onPoke={handlePoke}
-              />
+              <ErrorBoundary key={friendship.id} fallback="Card failed to load">
+                <NenCard 
+                  friendship={friendship}
+                  currentUserId={user.uid}
+                  index={index}
+                  isAdmin={isAdmin && adminUnlocked}
+                  onAction={handleAction}
+                  onPoke={handlePoke}
+                />
+              </ErrorBoundary>
             ))}
           </div>
         )
